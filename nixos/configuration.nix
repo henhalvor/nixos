@@ -34,6 +34,8 @@
   # Enable the X11 windowing system.
   services.xserver.enable = true;
 
+  # Enable GNOME's settings management
+  programs.dconf.enable = true;
   # Enable the GNOME Desktop Environment.
   services.xserver.displayManager.gdm.enable = true;
   services.xserver.desktopManager.gnome.enable = true;
@@ -74,13 +76,36 @@
     isNormalUser = true;
     description = "Henrik Halvorsen";
     extraGroups = [ "networkmanager" "wheel" ];
+    shell = pkgs.zsh;
     packages = with pkgs; [
     #  thunderbird
     ];
   };
 
+  # Enable zsh
+  programs.zsh.enable = true;
+
   # Install firefox.
   programs.firefox.enable = true;
+
+
+
+# Ghostyy Terminal
+    # Configure default applications and keyboard shortcuts For GNOME Desktop environment
+  services.xserver.desktopManager.gnome.extraGSettingsOverrides = ''
+    [org.gnome.desktop.default-applications.terminal]
+    exec='${pkgs.unstable.ghostty}/bin/ghostty'
+
+    [org.gnome.settings-daemon.plugins.media-keys.custom-keybindings.custom0]
+    binding='<Super>Return'
+    command='${pkgs.unstable.ghostty}/bin/ghostty'
+    name='Launch Terminal'
+  '';
+
+  # Enable custom keybindings
+  services.xserver.desktopManager.gnome.extraGSettingsOverridePackages = [
+    pkgs.gnome.gnome-settings-daemon
+  ];
 
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;

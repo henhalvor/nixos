@@ -12,13 +12,16 @@
 
   # Basic packages you might want
   home.packages = with pkgs; [
+    # Access unstable packages through the unstable attribute
+    unstable.ghostty
+
     # Core development tools
     git
+    lazygit
+    lazydocker
     ripgrep
-    fd
     tree-sitter
     unzip
-    htop
     
     # Node.js ecosystem
     nodejs_20
@@ -129,16 +132,7 @@
     };
   };
 
-  # Shell configuration
-  programs.bash = {
-    enable = true;
-    shellAliases = {
-      ll = "ls -l";
-      update = "sudo nixos-rebuild switch";
-    };
-  };
-
-  # SSH configuration
+    # SSH configuration
   programs.ssh = {
     enable = true;
     matchBlocks = {
@@ -146,6 +140,22 @@
       "github.com" = {
         identityFile = "~/.ssh/id_ed25519";
       };
+    };
+  };
+
+
+  # Shell configuration
+ programs.zsh = {
+    enable = true;
+    autosuggestion.enable = true;
+    enableCompletion = true;
+    syntaxHighlighting.enable = true;
+   history = {
+      size = 10000;
+      path = "${config.xdg.dataHome}/zsh/history";
+      save = 10000;
+      ignoreDups = true;
+      share = true;
     };
   };
 
