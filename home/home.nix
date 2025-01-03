@@ -58,8 +58,8 @@
   programs.neovim.enable = true;
 
   # Manage existing dotfiles
-#  home.file.".config/nvim" = {
-#    source = ./config/nvim;  # This path should point to your nvim config directory
-#    recursive = true;        # Include all subdirectories
-#  };
+  home.file.".config/nvim" = {
+    source = ./config/nvim;  # This path should point to your nvim config directory
+    recursive = true;        # Include all subdirectories
+  };
 }
