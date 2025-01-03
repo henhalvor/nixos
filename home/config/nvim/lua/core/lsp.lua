@@ -228,8 +228,32 @@ return { -- LSP Configuration & Plugins
       },
     }
 
-    -- Ensure the servers and tools above are installed
-    require('mason').setup()
+ require('mason').setup({
+  install_root_dir = vim.g.mason_home,
+  PATH = "append",
+  pip = {
+    install_args = {
+      "--user",
+      "--prefix", vim.fn.expand('~/.local/dev/python')
+    },
+  },
+  registries = {
+    "github:mason-org/mason-registry"
+  },
+  providers = {
+    "mason.providers.registry-api",
+    "mason.providers.client"
+  },
+  ui = {
+    border = "rounded",
+    icons = {
+      package_installed = "✓",
+      package_pending = "➜",
+      package_uninstalled = "✗"
+    }
+  },
+  log_level = vim.log.levels.INFO
+})
 
     -- You can add other tools here that you want Mason to install
     -- for you, so that they are available from within Neovim.

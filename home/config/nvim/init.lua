@@ -72,8 +72,16 @@ vim.api.nvim_create_autocmd({ 'FocusGained', 'BufEnter', 'CursorHold' }, {
   command = 'silent! checktime',
 })
 
+
 -- [[ Install `lazy.nvim` plugin manager ]]
-local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
+-- Define base directories at the start of init.lua
+vim.g.package_home = vim.fn.expand('~/.local/share/nvim')
+vim.g.mason_home = vim.fn.expand('~/.local/share/nvim/mason')
+vim.g.lazy_home = vim.fn.expand('~/.local/share/nvim/lazy')
+
+
+-- Update lazy.nvim path
+local lazypath = vim.g.lazy_home .. '/lazy.nvim'
 if not vim.loop.fs_stat(lazypath) then
   local lazyrepo = 'https://github.com/folke/lazy.nvim.git'
   vim.fn.system { 'git', 'clone', '--filter=blob:none', '--branch=stable', lazyrepo, lazypath }
@@ -82,6 +90,8 @@ vim.opt.rtp:prepend(lazypath)
 
 -- [[ Configure and install plugins ]]
 require('lazy').setup {
+  root = vim.g.lazy_home,
+  lockfile = vim.fn.expand('~/.local/state/nvim/lazy-lock.json'), -- Store lock file in state directory
 
   -- importing core plugins from "./lua/core""
   { import = 'core' },

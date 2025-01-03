@@ -12,12 +12,110 @@
 
   # Basic packages you might want
   home.packages = with pkgs; [
+    # Core development tools
     git
     ripgrep
     fd
-    tree
+    tree-sitter
+    unzip
     htop
+    
+    # Node.js ecosystem
+    nodejs_20
+    nodePackages.npm
+    
+    # Rust ecosystem
+    rustc
+    cargo
+    
+    # Python ecosystem
+    python311
+    python311Packages.pip
+    
+    # Go ecosystem
+    go
+    
+    # Build tools and utilities
+    gcc
+    gnumake
+    cmake
   ];
+
+  # Ensure npm config directory exists
+  home.activation = {
+    createDevDirectories = ''
+      mkdir -p ${config.home.homeDirectory}/.local/dev/{npm/{global,cache,config},cargo,rustup,python,go}
+      mkdir -p ${config.home.homeDirectory}/.local/share/nvim/{lazy,mason}
+    '';
+  };
+
+
+
+ # Configure all package managers to use our organized directory structure
+  home.sessionVariables = {
+    # Base directory for all development tools
+    DEV_HOME = "$HOME/.local/dev";
+    
+    # Tool-specific home directories
+    NPM_HOME = "$HOME/.local/dev/npm";
+    NPM_CONFIG_PREFIX = "$HOME/.local/dev/npm/global";
+    CARGO_HOME = "$HOME/.local/dev/cargo";
+    RUSTUP_HOME = "$HOME/.local/dev/rustup";
+    PYTHONUSERBASE = "$HOME/.local/dev/python";
+    GOPATH = "$HOME/.local/dev/go";
+
+    # Combine all PATH additions in a single definition
+    PATH = builtins.concatStringsSep ":" [
+      "$HOME/.local/dev/npm/global/bin"
+      "$HOME/.local/dev/cargo/bin"
+      "$HOME/.local/dev/python/bin"
+      "$HOME/.local/dev/go/bin"
+      "$PATH"
+    ];
+  };
+
+
+  # Configure npm to use our directory structure
+  home.file.".npmrc".text = ''
+    prefix=${config.home.homeDirectory}/.local/dev/npm/global
+    cache=${config.home.homeDirectory}/.local/dev/npm/cache
+    init-module=${config.home.homeDirectory}/.local/dev/npm/config/npm-init.js
+  '';
+
+  # Configure pip to use our directory structure
+  home.file.".config/pip/pip.conf".text = ''
+    [global]
+    user = true
+    prefix = ${config.home.homeDirectory}/.local/dev/python
+  '';
+
+ #
+ # Neovim configuration
+ #
+  programs.neovim.enable = true;
+
+  # Create writable directories for Neovim
+  home.activation.createNeovimDirs = ''
+    mkdir -p ${config.home.homeDirectory}/.local/state/nvim
+    mkdir -p ${config.home.homeDirectory}/.local/share/nvim/{lazy,mason}
+  '';
+
+  # Manage Neovim configuration files
+  home.file = {
+    ".config/nvim/init.lua".source = ./config/nvim/init.lua;
+    ".config/nvim/lua" = {
+      source = ./config/nvim/lua;
+      recursive = true;
+    };
+    # Any other Neovim config directories you need
+  };
+
+  # Ensure state directory exists for Lazy
+  home.file.".local/state/nvim/.keep".text = "";
+
+ #
+ #
+ #
 
   # Git configuration
   programs.git = {
@@ -40,10 +138,7 @@
     };
   };
 
-  # Allow unfree packages
-  nixpkgs.config.allowUnfree = true;
-
- # SSH configuration
+  # SSH configuration
   programs.ssh = {
     enable = true;
     matchBlocks = {
@@ -54,12 +149,7 @@
     };
   };
 
- # Install neovim
-  programs.neovim.enable = true;
 
-  # Manage existing dotfiles
-  home.file.".config/nvim" = {
-    source = ./config/nvim;  # This path should point to your nvim config directory
-    recursive = true;        # Include all subdirectories
-  };
+ # Allow unfree packages
+  nixpkgs.config.allowUnfree = true;
 }
