@@ -43,8 +43,6 @@
   # Graphics and Hardware Acceleration
   hardware.opengl = {
     enable = true;
-    driSupport = true;
-    driSupport32Bit = true;
   };
 
   # Enable Vulkan support
