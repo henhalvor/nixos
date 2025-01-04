@@ -1,15 +1,9 @@
 #!/bin/bash
 
-# Usage:
-# 1. Make script executable:  chmod +x install.sh
-# 2. Run the script:         ./install.sh
-#
-# On a fresh NixOS install, you can run:
-#   nix-env -iA nixos.git && \
-#   git clone https://github.com/yourusername/dotfiles.git ~/.dotfiles && \
-#   cd ~/.dotfiles && \
-#   chmod +x install.sh && \
-#   ./install.sh
+# Usage run this command in your terminal:
+# nix-env -iA nixos.git && git clone https://github.com/henhalvor/nixos.git ~/.dotfiles && cd ~/.dotfiles && chmod +x install.sh && ./install.sh
+ 
+
 
 # Colors for output
 RED='\033[0;31m'
@@ -41,7 +35,7 @@ fi
 
 # Clone the repository
 echo -e "${GREEN}Cloning dotfiles repository...${NC}"
-git clone https://github.com/yourusername/dotfiles.git "$HOME/.dotfiles"
+git clone https://github.com/henhalvor/nixos.git "$HOME/.dotfiles"
 
 # Change to the dotfiles directory
 cd "$HOME/.dotfiles"

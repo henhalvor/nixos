@@ -34,22 +34,24 @@ The configuration creates an organized directory structure in your home director
    ./install.sh
    ```
 
+### Manual Install
+
 1. Clone this repository to your home directory:
 
    ```bash
    git clone https://github.com/yourusername/dotfiles.git ~/.dotfiles
    ```
 
-1. Create necessary directories:
+2. Create necessary directories:
 
    ```bash
    mkdir -p ~/.local/dev/{npm/{global,cache,config},cargo,rustup,python,go}
    mkdir -p ~/.local/share/nvim/{lazy,mason}
    ```
 
-1. Apply the configuration:
+3. Apply the configuration:
    ```bash
-   home-manager switch
+   sudo nixos-rebuild switch --flake ~/.dotfiles#nixos
    ```
 
 ## How It Works
