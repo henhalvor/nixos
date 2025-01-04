@@ -40,6 +40,16 @@
     xwayland.enable = true;
   };
 
+  # Graphics and Hardware Acceleration
+  hardware.opengl = {
+    enable = true;
+    driSupport = true;
+    driSupport32Bit = true;
+  };
+
+  # Enable Vulkan support
+  hardware.pulseaudio.support32Bit = true;
+
   # Enable display manager
   services.xserver.displayManager.gdm.enable = true;
   

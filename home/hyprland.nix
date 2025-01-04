@@ -19,6 +19,46 @@
       monitor = [
         "eDP-1,2560x1600@60,0x0,1"
       ];
+
+      # For all categories, see https://wiki.hyprland.org/Configuring/Variables/
+      general {
+        gaps_in = 5
+        gaps_out = 10
+        border_size = 2
+        layout = "dwindle"
+        # Reduce animations
+        no_animation_overlays = true
+      }
+
+      decoration {
+        # See https://wiki.hyprland.org/Configuring/Variables/ for more
+        rounding = 5
+        blur {
+            enabled = true
+            size = 3
+            passes = 1
+            new_optimizations = true
+        }
+        drop_shadow = true
+        shadow_range = 4
+        shadow_render_power = 3
+      }
+
+      animations {
+        enabled = true
+        # Some default animations, see https://wiki.hyprland.org/Configuring/Animations/ for more
+        bezier = "myBezier, 0.05, 0.9, 0.1, 1.05"
+        animation = "windows, 1, 7, myBezier"
+        animation = "windowsOut, 1, 7, default, popin 80%"
+        animation = "border, 1, 10, default"
+        animation = "fade, 1, 7, default"
+        animation = "workspaces, 1, 6, default"
+      }
+
+      dwindle {
+        pseudotile = true
+        preserve_split = true
+      }
       
       exec-once = [
         "waybar"
