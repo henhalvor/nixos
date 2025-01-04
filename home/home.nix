@@ -150,6 +150,12 @@
     autosuggestion.enable = true;
     enableCompletion = true;
     syntaxHighlighting.enable = true;
+ initExtra = ''
+    # Load secrets
+    if [ -f "$HOME/.dotfiles/home/secrets/load-secrets.sh" ]; then
+      source "$HOME/.dotfiles/home/secrets/load-secrets.sh"
+    fi
+  '';
    history = {
       size = 10000;
       path = "${config.xdg.dataHome}/zsh/history";
@@ -158,6 +164,14 @@
       share = true;
     };
   };
+
+   # Create the secrets directory and scripts
+home.file = {
+  ".local/secrets/load-secrets.sh" = {
+    source = ./secrets/load-secrets.sh;  # This is relative to home.nix location
+    executable = true;
+  };
+};
 
 
  # Allow unfree packages

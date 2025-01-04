@@ -1,2 +1,3 @@
-./home/secrets/secrets.env
-./home/secrets/*
+home/secrets/secrets.env
+home/secrets/*
+**/*.env
