@@ -31,19 +31,34 @@
   # Select internationalisation properties.
   i18n.defaultLocale = "en_US.UTF-8";
 
-  # Enable the X11 windowing system.
+  # Enable the X11 windowing system (needed for XWayland and GDM)
   services.xserver.enable = true;
 
-  # Enable Hyprland
+  # Enable Wayland compositor - Hyprland
   programs.hyprland = {
     enable = true;
     xwayland.enable = true;
   };
 
+
+environment.sessionVariables = {
+    #  If your cursor becomes invisible
+  WLR_NO_HARDWARE_CURSORS = "1";
+    #Hint electron apps to use wayland
+  NIXOS_OZONE_WL = "1";
+};
+
+
+
   # Graphics and Hardware Acceleration
-  hardware.graphics = {
-    enable = true;
-  };
+hardware = {
+    #Opengl
+    graphics.enable = true;
+    # Most wayland compositors need this
+    nvidia.modesetting.enable = true;
+};
+
+ 
 
   # Enable Vulkan support
   hardware.pulseaudio.support32Bit = true;
@@ -53,6 +68,14 @@
   
   # Keep dconf for GTK settings
   programs.dconf.enable = true;
+
+  # XDG portal
+  xdg.portal = {
+    enable = true;
+    extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+  };
+
+ 
 
   # Configure keymap in X11
   services.xserver.xkb = {
@@ -103,23 +126,6 @@
   programs.firefox.enable = true;
 
 
-
-# Ghostyy Terminal
-    # Configure default applications and keyboard shortcuts For GNOME Desktop environment
-  services.xserver.desktopManager.gnome.extraGSettingsOverrides = ''
-    [org.gnome.desktop.default-applications.terminal]
-    exec='${pkgs.unstable.ghostty}/bin/ghostty'
-
-    [org.gnome.settings-daemon.plugins.media-keys.custom-keybindings.custom0]
-    binding='<Super>Return'
-    command='${pkgs.unstable.ghostty}/bin/ghostty'
-    name='Launch Terminal'
-  '';
-
-  # Enable custom keybindings
-  services.xserver.desktopManager.gnome.extraGSettingsOverridePackages = [
-    pkgs.gnome.gnome-settings-daemon
-  ];
 
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;

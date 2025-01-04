@@ -15,15 +15,7 @@
     # Access unstable packages through the unstable attribute
     unstable.ghostty
     
-    # Wayland essentials
-    waybar
-    wofi
-    dunst
-    swww # wallpaper
-    grim # screenshot
-    slurp # screen selection
-    wl-clipboard
-    kitty # Apparently kitty is required for hyprland
+   kitty # Apparently kitty is required for hyprland
 
     # Core development tools
     git
