@@ -41,7 +41,7 @@
   };
 
   # Graphics and Hardware Acceleration
-  hardware.opengl = {
+  hardware.graphics = {
     enable = true;
   };
 
