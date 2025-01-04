@@ -78,12 +78,6 @@
     GOPATH = "$HOME/.local/dev/go";
 
     # Combine all PATH additions in a single definition
-    # Wayland specific
-    NIXOS_OZONE_WL = "1";
-    XDG_CURRENT_DESKTOP = "Hyprland";
-    XDG_SESSION_TYPE = "wayland";
-    XDG_SESSION_DESKTOP = "Hyprland";
-    
     PATH = builtins.concatStringsSep ":" [
       "$HOME/.local/dev/npm/global/bin"
       "$HOME/.local/dev/cargo/bin"
@@ -160,40 +154,8 @@
   };
 
 
-  # Hyprland configuration
-  wayland.windowManager.hyprland = {
-    enable = true;
-    systemd.enable = true;
-    xwayland.enable = true;
-    settings = {
-      "$mod" = "SUPER";
-      
-      monitor = [
-        "eDP-1,1920x1080@60,0x0,1"
-      ];
-      
-      exec-once = [
-        "waybar"
-        "dunst"
-      ];
-      
-      bind = [
-        "$mod, Return, exec, ghostty"
-        "$mod, Q, killactive"
-        "$mod, M, exit"
-        "$mod, E, exec, wofi --show drun"
-        "$mod, V, togglefloating"
-        "$mod, P, pseudo"
-        "$mod, J, togglesplit"
-        
-        # Move focus with mod + arrow keys
-        "$mod, left, movefocus, l"
-        "$mod, right, movefocus, r"
-        "$mod, up, movefocus, u"
-        "$mod, down, movefocus, d"
-      ];
-    };
-  };
+  # Import Hyprland configuration
+  imports = [ ./hyprland.nix ];
 
   # Shell configuration
  programs.zsh = {
