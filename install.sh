@@ -1,7 +1,11 @@
 #!/bin/bash
 
-# Usage run this command in your terminal:
-# nix-env -iA nixos.git && git clone https://github.com/henhalvor/nixos.git ~/.dotfiles && cd ~/.dotfiles && chmod +x install.sh && ./install.sh
+# Usage:
+# 1. Install git:    nix-env -iA nixos.git
+# 2. Clone repo:     git clone https://github.com/henhalvor/nixos.git ~/.dotfiles
+# 3. Go to dir:      cd ~/.dotfiles
+# 4. Make executable: chmod +x install.sh
+# 5. Run script:     ./install.sh
  
 
 
@@ -27,18 +31,6 @@ for cmd in nix git; do
     fi
 done
 
-# Check if ~/.dotfiles already exists
-if [ -d "$HOME/.dotfiles" ]; then
-    echo -e "${RED}~/.dotfiles directory already exists. Please remove or backup first.${NC}"
-    exit 1
-fi
-
-# Clone the repository
-echo -e "${GREEN}Cloning dotfiles repository...${NC}"
-git clone https://github.com/henhalvor/nixos.git "$HOME/.dotfiles"
-
-# Change to the dotfiles directory
-cd "$HOME/.dotfiles"
 
 # Check and enable Nix experimental features if needed
 # This adds required settings to ~/.config/nix/nix.conf to enable:
