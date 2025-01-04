@@ -25,18 +25,29 @@ The configuration creates an organized directory structure in your home director
 
 ## Initial Setup
 
+### Quick Install
+
+1. Run this command on a fresh nixOs installation:
+
+   ```bash
+   nix-env -iA nixos.git && git clone https://github.com/henhalvor/nixos.git ~/.dotfiles && cd ~/.dotfiles && chmod +x install.sh &&
+   ./install.sh
+   ```
+
 1. Clone this repository to your home directory:
+
    ```bash
    git clone https://github.com/yourusername/dotfiles.git ~/.dotfiles
    ```
 
-2. Create necessary directories:
+1. Create necessary directories:
+
    ```bash
    mkdir -p ~/.local/dev/{npm/{global,cache,config},cargo,rustup,python,go}
    mkdir -p ~/.local/share/nvim/{lazy,mason}
    ```
 
-3. Apply the configuration:
+1. Apply the configuration:
    ```bash
    home-manager switch
    ```
@@ -60,18 +71,21 @@ These tools are installed system-wide through Home Manager but are configured to
 Each development tool is configured to install its packages in a user-accessible location:
 
 1. NPM Global Packages:
+
    ```bash
    npm install -g typescript
    # Installs to ~/.local/dev/npm/global
    ```
 
 2. Python Packages:
+
    ```bash
    pip install --user black
    # Installs to ~/.local/dev/python
    ```
 
 3. Rust Packages:
+
    ```bash
    cargo install ripgrep
    # Installs to ~/.local/dev/cargo
@@ -88,6 +102,7 @@ Each development tool is configured to install its packages in a user-accessible
 The Neovim configuration uses two package managers:
 
 1. Lazy.nvim for plugin management
+
    - Installs plugins to ~/.local/share/nvim/lazy
    - Configured in init.lua
    - Uses the system Git installation from Home Manager
@@ -111,6 +126,7 @@ home.packages = with pkgs; [
 ```
 
 Then run:
+
 ```bash
 home-manager switch
 ```
@@ -150,6 +166,7 @@ Mason will automatically install the server on next Neovim startup.
 ### Updating the System
 
 Update your NixOS system and Home Manager packages:
+
 ```bash
 sudo nixos-rebuild switch
 home-manager switch
@@ -158,6 +175,7 @@ home-manager switch
 ### Updating Neovim Packages
 
 1. Update plugins:
+
    ```vim
    :Lazy update
    ```
@@ -170,6 +188,7 @@ home-manager switch
 ### Cleaning Up
 
 To clean unused packages:
+
 ```bash
 # Clean npm packages
 npm clean-install
@@ -184,11 +203,13 @@ npm clean-install
 ## Troubleshooting
 
 If you encounter permission issues:
+
 1. Check that the directories exist in ~/.local
 2. Verify ownership: `ls -la ~/.local/dev`
 3. Ensure environment variables are set: `echo $NPM_CONFIG_PREFIX`
 
 For Mason installation issues:
+
 1. Check Mason log: `:Mason log`
 2. Verify system tools are available: `which npm`, `which pip`
 3. Check installation directory permissions
@@ -198,6 +219,7 @@ For Mason installation issues:
 The setup is designed to be extensible. Common customization points:
 
 1. Shell Configuration (home.nix):
+
    ```nix
    programs.bash = {
      shellAliases = {
@@ -207,6 +229,7 @@ The setup is designed to be extensible. Common customization points:
    ```
 
 2. Git Configuration:
+
    ```nix
    programs.git.extraConfig = {
      # Add your git config here
