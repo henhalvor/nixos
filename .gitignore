@@ -1,3 +1,4 @@
 home/secrets/secrets.env
 home/secrets/*
 **/*.env
+.aider*
