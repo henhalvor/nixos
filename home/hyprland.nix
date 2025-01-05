@@ -17,8 +17,8 @@
      general = {
         "$mod" = "SUPER";
       };
-      bindm = [
-        "$mod, Return, kitty"
+      bind = [
+        "$mod, Return, exec, ghostty"
       ];
       input = {
         "kb_layout" = "no";
@@ -26,3 +26,6 @@
     };
   };
 }
+
+
+
