@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, inputs, ... }:
+{ config, pkgs, ... }:
 
 {
   imports =
@@ -39,8 +39,6 @@
     enable = true;
     xwayland.enable = true;
   };
-  programs.hyprland.package = inputs.hyprland.packages."${pkgs.system}".hyprland;
-
 
 environment.sessionVariables = {
     #  If your cursor becomes invisible

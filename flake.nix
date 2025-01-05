@@ -8,14 +8,9 @@
       url = "github:nix-community/home-manager/release-24.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    hyprland.url = "github:hyprwm/Hyprland";
-    hyprland-plugins = {
-      url = "github:hyprwm/hyprland-plugins";
-      inputs.hyprland.follows = "hyprland";
-    };
   };
 
-outputs = { self, nixpkgs, nixpkgs-unstable, home-manager, hyprland, hyprland-plugins, ... }@inputs: 
+outputs = { self, nixpkgs, nixpkgs-unstable, home-manager, ... }: 
   let
     system = "x86_64-linux";
     # Create an overlay to make unstable packages available
@@ -33,7 +28,6 @@ outputs = { self, nixpkgs, nixpkgs-unstable, home-manager, hyprland, hyprland-pl
     nixosConfigurations = {
       nixos = nixpkgs.lib.nixosSystem {
         inherit system;
-        specialArgs = { inherit inputs; };
         modules = [
           ./nixos/configuration.nix
           home-manager.nixosModules.home-manager
