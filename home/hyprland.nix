@@ -18,12 +18,11 @@
         "$mod" = "SUPER";
       };
       bindm = [
-        "$mod, Return, ghostty"
+        "$mod, Return, kitty"
       ];
       input = {
         "kb_layout" = "no";
       };
     };
-
   };
 }
