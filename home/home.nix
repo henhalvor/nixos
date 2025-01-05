@@ -149,6 +149,13 @@
   # Import Hyprland configuration
   imports = [ ./hyprland.nix ];
 
+
+ # Enable Oh-my-zsh
+  programs.zsh.ohMyZsh = {
+    enable = true;
+    plugins = [ "git" "sudo" "docker"];
+  };
+
   # Shell configuration
  programs.zsh = {
   enable = true;
