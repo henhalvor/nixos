@@ -31,7 +31,7 @@ The configuration creates an organized directory structure in your home director
 
    ```bash
    nix-env -iA nixos.git && git clone https://github.com/henhalvor/nixos.git ~/.dotfiles && cd ~/.dotfiles && chmod +x install.sh &&
-   ./install.sh
+   bash ./install.sh
    ```
 
 ### Manual Install
@@ -48,13 +48,14 @@ The configuration creates an organized directory structure in your home director
    mkdir -p ~/.local/dev/{npm/{global,cache,config},cargo,rustup,python,go}
    mkdir -p ~/.local/share/nvim/{lazy,mason}
    ```
+
 3. Copy hardware-configuration.nix
 
    ```bash
    cp /etch/nixos/hardware-configuration.nix ~/.dotfiles/nixos/hardware-configuration.nix
    ```
 
-3. Apply the configuration:
+4. Apply the configuration:
    ```bash
    sudo nixos-rebuild switch --flake ~/.dotfiles#nixos
    ```
