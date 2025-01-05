@@ -153,9 +153,11 @@
  programs.zsh = {
   enable = true;
   enableAutosuggestions = true;
-  ohMyZsh.enable = true;
-  ohMyZsh.plugins = [ "git" ];
-  ohMyZsh.theme = "frisk";
+  oh-my-zsh = {
+    enable = true;
+    plugins = [ "git" ];
+    theme = "frisk";
+  };
   syntaxHighlighting.enable = true;
  initExtra = ''
     # Load secrets
