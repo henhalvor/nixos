@@ -16,7 +16,7 @@
     settings = {
       "$mod" = "SUPER";
       bindm = [
-        "$mod, Return, exec, ${terminal}"
+        "$mod, Return, exec, kitty"
       ];
       input = {
         "kb_layout" = "no";
