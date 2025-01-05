@@ -18,7 +18,7 @@
         "$mod" = "SUPER";
       };
       bindm = [
-        "$mod, Return, exec, ghostty"
+        "$mod, Return, exec ghostty"
       ];
       input = {
         "kb_layout" = "no";
