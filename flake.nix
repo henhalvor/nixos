@@ -15,7 +15,7 @@
     };
   };
 
-outputs = { self, nixpkgs, nixpkgs-unstable, home-manager, ... }: 
+outputs = { self, nixpkgs, nixpkgs-unstable, home-manager, hyprland, hyprland-plugins, ... }@inputs: 
   let
     system = "x86_64-linux";
     # Create an overlay to make unstable packages available
