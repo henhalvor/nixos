@@ -42,6 +42,10 @@ if ! grep -q "experimental-features = nix-command flakes" "$HOME/.config/nix/nix
     echo "experimental-features = nix-command flakes" >> "$HOME/.config/nix/nix.conf"
 fi
 
+# Copy hardware configuration
+echo -e "${YELLOW}Copying hardware configuration...${NC}"
+cp /etc/nixos/hardware-configuration.nix nixos/hardware-configuration.nix
+
 # Apply the system configuration
 echo -e "${GREEN}Building and activating configuration...${NC}"
 sudo nixos-rebuild switch --flake .#nixos

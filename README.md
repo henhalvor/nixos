@@ -48,6 +48,11 @@ The configuration creates an organized directory structure in your home director
    mkdir -p ~/.local/dev/{npm/{global,cache,config},cargo,rustup,python,go}
    mkdir -p ~/.local/share/nvim/{lazy,mason}
    ```
+3. Copy hardware-configuration.nix
+
+   ```bash
+   cp /etch/nixos/hardware-configuration.nix ~/.dotfiles/nixos/hardware-configuration.nix
+   ```
 
 3. Apply the configuration:
    ```bash

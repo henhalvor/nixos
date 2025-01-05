@@ -13,5 +13,15 @@
     enable = true;
     systemd.enable = true;
     xwayland.enable = true;
+    settings = {
+      "$mod" = "SUPER";
+      bindm = [
+        "$mod, Return, exec, ${terminal}"
+      ];
+      input = {
+        "kb_layout" = "no";
+      };
+    };
+
   };
 }

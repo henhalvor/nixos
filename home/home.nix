@@ -151,10 +151,12 @@
 
   # Shell configuration
  programs.zsh = {
-    enable = true;
-    autosuggestion.enable = true;
-    enableCompletion = true;
-    syntaxHighlighting.enable = true;
+  enable = true;
+  enableAutosuggestions = true;
+  ohMyZsh.enable = true;
+  ohMyZsh.plugins = [ "git" ];
+  ohMyZsh.theme = "frisk";
+  syntaxHighlighting.enable = true;
  initExtra = ''
     # Load secrets
     if [ -f "$HOME/.dotfiles/home/secrets/load-secrets.sh" ]; then
