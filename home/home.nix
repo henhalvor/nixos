@@ -24,10 +24,11 @@
     # slurp           # Screen region selector
     # wf-recorder     # Screen recording
     # brightnessctl   # Brightness control
-     kitty
 
     # Terminal
-    unstable.ghostty
+    # unstable.ghostty
+    kitty
+
     
     # Core development tools
     git
