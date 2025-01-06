@@ -65,6 +65,9 @@ hardware = {
   # Enable display manager
   services.xserver.displayManager.gdm.enable = true;
   
+  # enable gnome
+  services.xserver.desktopManager.gnome.enable = true;
+  
   # Keep dconf for GTK settings
   programs.dconf.enable = true;
 
