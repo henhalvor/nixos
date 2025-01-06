@@ -108,13 +108,6 @@
 
         # Application launcher
         "$mod, d, exec, wofi --show drun"
-        
-        # Screenshots
-        ", Print, exec, grim -g \"$(slurp)\" - | wl-copy"  # Screenshot region to clipboard
-        "SHIFT, Print, exec, grim -g \"$(slurp)\" ~/Pictures/screenshots/$(date +%Y-%m-%d_%H-%m-%s).png"  # Screenshot region to file
-        
-        # Notification center
-        "$mod, n, exec, swaync-client -t"  # Toggle notification center
       ];
 
       input = {

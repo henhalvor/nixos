@@ -16,14 +16,15 @@
     # Wayland essentials
     wofi            # Application launcher
     waybar          # Status bar
-    swaync          # Notification daemon
-    swaylock        # Screen locker
-    swayidle        # Idle management daemon
-    wl-clipboard    # Clipboard manager
-    grim            # Screenshot utility
-    slurp           # Screen region selector
-    wf-recorder     # Screen recording
-    brightnessctl   # Brightness control
+    # swaync          # Notification daemon
+    # swaylock        # Screen locker
+    # swayidle        # Idle management daemon
+    # wl-clipboard    # Clipboard manager
+    # grim            # Screenshot utility
+    # slurp           # Screen region selector
+    # wf-recorder     # Screen recording
+    # brightnessctl   # Brightness control
+     kitty
 
     # Terminal
     unstable.ghostty
