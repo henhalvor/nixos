@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, ... }:
+{ config, pkgs, userSettings, ... }:
 
 {
   imports =
@@ -111,9 +111,9 @@ hardware = {
   # services.xserver.libinput.enable = true;
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
-  users.users.henhal = {
+  users.users.${userSettings.username} = {
     isNormalUser = true;
-    description = "Henrik Halvorsen";
+    description = userSettings.name;
     extraGroups = [ "networkmanager" "wheel" ];
     shell = pkgs.zsh;
     packages = with pkgs; [
