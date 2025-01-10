@@ -46,7 +46,7 @@
             ./nixos/configuration.nix
             home-manager.nixosModules.home-manager
           ];
-          extraSpecialArgs = {
+          specialArgs = {
             # pass config variables from above
             inherit systemSettings;
             inherit userSettings;
@@ -57,8 +57,7 @@
         henhal = home-manager.lib.homeManagerConfiguration {
           inherit pkgs;
           modules = [ ./home/home.nix ];
-
-          extraSpecialArgs = {
+          specialArgs = {
             # pass config variables from above
             inherit systemSettings;
             inherit userSettings;
