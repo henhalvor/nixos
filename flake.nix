@@ -9,13 +9,13 @@
     };
   };
 
-outputs = { self, nixpkgs, home-manager, ... }: 
-  let
-    system = "x86_64-linux";
-    pkgs = nixpkgs.legacyPackages.${system};
-    lib = nixpkgs.lib;
+  outputs = { self, nixpkgs, home-manager, ... }:
+    let
+      system = "x86_64-linux";
+      pkgs = nixpkgs.legacyPackages.${system};
+      lib = nixpkgs.lib;
 
- # ---- SYSTEM SETTINGS ---- #
+      # ---- SYSTEM SETTINGS ---- #
       systemSettings = {
         system = "x86_64-linux"; # system arch
         hostname = "nixos"; # hostname
@@ -36,36 +36,36 @@ outputs = { self, nixpkgs, home-manager, ... }:
         browser = "firefox"; # Default browser; must select one from ./user/app/browser/
         term = "kitty"; # Default terminal command;
         editor = "vim"; # Default editor;
-       };
-  in
-  {
-    nixosConfigurations = {
-      nixos = lib.nixosSystem {
-        inherit system;
-        modules = [
-          ./nixos/configuration.nix
-          home-manager.nixosModules.home-manager
-        ];
-        extraSpecialArgs = {
+      };
+    in
+    {
+      nixosConfigurations = {
+        nixos = lib.nixosSystem {
+          inherit system;
+          modules = [
+            ./nixos/configuration.nix
+            home-manager.nixosModules.home-manager
+          ];
+          extraSpecialArgs = {
             # pass config variables from above
             inherit systemSettings;
             inherit userSettings;
           };
+        };
       };
-    };
-    homeConfigurations = {
-      henhal = home-manager.lib.homeManagerConfiguration {
-        inherit pkgs;
-        modules = [ ./home/home.nix ];
+      homeConfigurations = {
+        henhal = home-manager.lib.homeManagerConfiguration {
+          inherit pkgs;
+          modules = [ ./home/home.nix ];
 
-        extraSpecialArgs = {
+          extraSpecialArgs = {
             # pass config variables from above
             inherit systemSettings;
             inherit userSettings;
           };
+        };
       };
     };
-  };
 }
 
   

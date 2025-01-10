@@ -6,7 +6,8 @@
 
 {
   imports =
-    [ # Include the results of the hardware scan.
+    [
+      # Include the results of the hardware scan.
       ./hardware-configuration.nix
     ];
 
@@ -40,34 +41,34 @@
     xwayland.enable = true;
   };
 
-environment.sessionVariables = {
+  environment.sessionVariables = {
     #  If your cursor becomes invisible
-  WLR_NO_HARDWARE_CURSORS = "1";
+    WLR_NO_HARDWARE_CURSORS = "1";
     #Hint electron apps to use wayland
-  NIXOS_OZONE_WL = "1";
-};
+    NIXOS_OZONE_WL = "1";
+  };
 
 
 
   # Graphics and Hardware Acceleration
-hardware = {
+  hardware = {
     #Opengl
     graphics.enable = true;
     # Most wayland compositors need this
     nvidia.modesetting.enable = true;
-};
+  };
 
- 
+
 
   # Enable Vulkan support
   hardware.pulseaudio.support32Bit = true;
 
   # Enable display manager
   services.xserver.displayManager.gdm.enable = true;
-  
+
   # enable gnome
   services.xserver.desktopManager.gnome.enable = true;
-  
+
   # Keep dconf for GTK settings
   programs.dconf.enable = true;
 
@@ -77,7 +78,7 @@ hardware = {
     extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
   };
 
- 
+
 
   # Configure keymap in X11
   services.xserver.xkb = {
@@ -117,7 +118,7 @@ hardware = {
     extraGroups = [ "networkmanager" "wheel" ];
     shell = pkgs.zsh;
     packages = with pkgs; [
-    #  thunderbird
+      #  thunderbird
     ];
   };
 
@@ -135,8 +136,8 @@ hardware = {
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
-  #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
-  #  wget
+    #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
+    #  wget
   ];
 
   # Some programs need SUID wrappers, can be configured further or are
