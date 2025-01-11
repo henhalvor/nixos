@@ -1,6 +1,7 @@
 { config, pkgs, ... }:
 
 {
+
   # Shell configuration
   programs.zsh = {
     enable = true;
@@ -11,8 +12,6 @@
         "git"
         "zsh-autosuggestions"
         "zsh-syntax-highlighting"
-        "sudo"
-        "docker"
       ];
       theme = "frisk"; # You can also specify your custom theme or another built-in one.
     };
@@ -31,4 +30,12 @@
       share = true;
     };
   };
+
+  # Install zsh plugins
+  home.packages = with pkgs; [
+    zsh-syntax-highlighting
+    zsh-autosuggestions
+  ];
+
+
 }
