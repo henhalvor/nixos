@@ -118,8 +118,13 @@
     extraGroups = [ "networkmanager" "wheel" ];
     shell = pkgs.zsh;
     packages = with pkgs; [
+      #  thunderbird
     ];
   };
+
+  # Enable zsh
+  programs.zsh.enable = true;
+
 
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
