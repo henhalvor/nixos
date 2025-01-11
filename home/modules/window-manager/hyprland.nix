@@ -38,13 +38,10 @@
       binds = [
         # Launch terminal with Mod + Enter
         "bind=MOD,Return,exec,kitty"
-
         # Reload configuration with Mod + Shift + R
         "bind=MOD+Shift,C,exec,hyprctl reload"
-
         # Close active window with Mod + Q
         "bind=MOD,Q,exec,hyprctl dispatch killactive"
-
         "bind=MOD,D,exec,wofi --show drun"
       ];
 

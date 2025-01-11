@@ -16,7 +16,7 @@
 
   imports = [
     # Window-manager
-    # ./modules/window-manager/hyprland.nix
+    ./modules/window-manager/hyprland.nix
 
     # Applications
     ./modules/applications/zsh.nix
