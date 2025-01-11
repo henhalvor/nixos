@@ -14,7 +14,7 @@
     };
 
     # Enable autosuggestions
-    enableAutosuggestions = true;
+    autosuggestion.enable = true;
 
     initExtra = ''
       # Load secrets
