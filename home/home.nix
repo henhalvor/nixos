@@ -19,7 +19,7 @@
 
   # Applications
   imports = [ ./modules/applications/zsh.nix ];
-  imports = [ ./modules/applications/kitty.nix ];
+  # imports = [ ./modules/applications/kitty.nix ];
   imports = [ ./modules/applications/nvim.nix ];
 
   # Environment
