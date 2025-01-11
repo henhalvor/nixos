@@ -44,8 +44,7 @@ The configuration creates an organized directory structure in your home director
 1. Run this command on a fresh nixOs installation:
 
    ```bash
-   nix-env -iA nixos.git && git clone https://github.com/henhalvor/nixos.git ~/.dotfiles && cd ~/.dotfiles && chmod +x install.sh &&
-   bash ./install.sh
+   curl -L https://raw.githubusercontent.com/henhalvor/nixos/main/install.sh | sh
    ```
 
 ### Manual Install
