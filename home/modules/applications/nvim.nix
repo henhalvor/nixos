@@ -14,9 +14,9 @@
 
   # Manage Neovim configuration files
   home.file = {
-    ".config/nvim/init.lua".source = ./config/nvim/init.lua;
+    ".config/nvim/init.lua".source = ../../config/nvim/init.lua;
     ".config/nvim/lua" = {
-      source = ./config/nvim/lua;
+      source = ../../config/nvim/lua;
       recursive = true;
     };
     # Any other Neovim config directories you need
