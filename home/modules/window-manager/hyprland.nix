@@ -59,10 +59,6 @@
       ];
     };
 
-    # Autostart applications
-    autostart = [
-      "picom --experimental-backends" # Example for a compositor
-      "nm-applet" # Network manager applet
-    ];
+
   };
 }
