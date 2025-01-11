@@ -32,7 +32,7 @@
         # wm = "hyprland"; # Selected window manager or desktop environment
         # wmType = if (wm == "hyprland" || wm == "sway") then "wayland" else "x11";
         # browser = "firefox"; # Default browser
-        # term = "kitty"; # Default terminal
+        term = "kitty"; # Default terminal
         # editor = "vim"; # Default editor
       };
     in

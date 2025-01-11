@@ -20,7 +20,7 @@
 
     # Applications
     ./modules/applications/zsh.nix
-    ./modules/applications/kitty.nix
+    ./modules/applications/${userSettings.term}.nix
     ./modules/applications/nvim.nix
 
     # Environment
