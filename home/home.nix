@@ -14,21 +14,23 @@
 
   ### Imports
 
-  # Window-manager
-  # imports = [ ./modules/window-manager/hyprland.nix ];
+  imports = [
+    # Window-manager
+    # ./modules/window-manager/hyprland.nix
 
-  # Applications
-  imports = [ ./modules/applications/zsh.nix ];
-  # imports = [ ./modules/applications/kitty.nix ];
-  imports = [ ./modules/applications/nvim.nix ];
+    # Applications
+    ./modules/applications/zsh.nix
+    ./modules/applications/kitty.nix
+    ./modules/applications/nvim.nix
 
-  # Environment
-  imports = [ ./modules/environment/dev-tools.nix ];
-  imports = [ ./modules/environment/session-variables.nix ];
+    # Environment
+    ./modules/environment/dev-tools.nix
+    ./modules/environment/session-variables.nix
 
-  # Settings
-  imports = [ ./modules/settings/git.nix ];
-  imports = [ ./modules/settings/secrets/secrets.nix ];
+    # Settings
+    ./modules/settings/git.nix
+    ./modules/settings/secrets/secrets.nix
+  ];
 
 
 }
