@@ -16,7 +16,7 @@
     # brightnessctl   # Brightness control
     hyprland
     #picom # Compositor (optional)
-    nm-applet # Network manager applet (optional)
+    # nm-applet # Network manager applet (optional)
   ];
 
 
