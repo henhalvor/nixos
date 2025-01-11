@@ -2,6 +2,20 @@
 
 This repository contains a NixOS configuration that creates a flexible and maintainable development environment. The setup uses Home Manager to manage system tools while maintaining the ability to install and manage packages locally. It's designed to work seamlessly with Neovim and various development tools while respecting NixOS's immutable filesystem principles.
 
+## Reloading the Configuration
+
+To reload the nixos **SYSTEM** wide configuration, run the following command:
+
+```bash
+sudo nixos-rebuild switch --flake ~/.dotfiles#nixos
+```
+
+To reload the nixos **USER** wide configuration, run the following command:
+
+```bash
+home-manager switch --flake ~/.dotfiles
+```
+
 ## Directory Structure
 
 The configuration creates an organized directory structure in your home directory:
