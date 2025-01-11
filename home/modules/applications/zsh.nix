@@ -45,5 +45,5 @@
 
 
   # Link your p10k config file
-  home.file.".p10k.zsh".source = ../../config/p10k.zsh; # Assuming p10k.zsh is in the same directory as zsh.nix
+  home.file.".p10k.zsh".source = ../../config/.p10k.zsh; # Assuming p10k.zsh is in the same directory as zsh.nix
 }
