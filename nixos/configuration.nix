@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, userSettings, ... }:
+{ config, pkgs, userSettings, systemSettings, ... }:
 
 {
   imports =
@@ -16,7 +16,7 @@
   boot.loader.grub.device = "/dev/vda";
   boot.loader.grub.useOSProber = true;
 
-  networking.hostName = "nixos"; # Define your hostname.
+  networking.hostName = systemSettings.hostname; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # Configure network proxy if necessary
@@ -27,10 +27,10 @@
   networking.networkmanager.enable = true;
 
   # Set your time zone.
-  time.timeZone = "Europe/Oslo";
+  time.timeZone = systemSettings.timezone;
 
   # Select internationalisation properties.
-  i18n.defaultLocale = "en_US.UTF-8";
+  i18n.defaultLocale = systemSettings.locale;
 
   # Enable the X11 windowing system (needed for XWayland and GDM)
   services.xserver.enable = true;
@@ -118,17 +118,8 @@
     extraGroups = [ "networkmanager" "wheel" ];
     shell = pkgs.zsh;
     packages = with pkgs; [
-      #  thunderbird
     ];
   };
-
-  # Enable zsh
-  programs.zsh.enable = true;
-
-  # Install firefox.
-  programs.firefox.enable = true;
-
-
 
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
