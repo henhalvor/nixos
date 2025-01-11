@@ -56,7 +56,7 @@
         henhal = home-manager.lib.homeManagerConfiguration {
           inherit pkgs;
           modules = [ ./home/home.nix ];
-          specialArgs = {
+          extraSpecialArgs = {
             # pass config variables from above
             inherit systemSettings;
             inherit userSettings;
