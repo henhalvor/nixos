@@ -32,12 +32,13 @@ fi
 echo -e "${YELLOW}Copying hardware configuration...${NC}"
 cp /etc/nixos/hardware-configuration.nix nixos/hardware-configuration.nix
 
-# Remove Git from Shell (needs to be removed before installing rebuilding config otherwise the git shell install conflicts with the rebuild install)
-nix-env -e git
-
 # Apply the system configuration
 echo -e "${GREEN}Building and activating NixOS configuration...${NC}"
 sudo nixos-rebuild switch --flake .#nixos
+
+# Git needs to be removed after system rebuild and before home-manager install
+# Remove Git from Shell (needs to be removed before installing rebuilding config otherwise the git shell install conflicts with the rebuild install)
+nix-env -e git
 
 # Apply home-manager configuration
 echo -e "${GREEN}Building and activating home-manager configuration...${NC}"
