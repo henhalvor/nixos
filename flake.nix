@@ -7,23 +7,12 @@
       url = "github:nix-community/home-manager/release-24.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    # Add HyprPanel as an input
-    hyprpanel.url = "github:Jas-SinghFSU/HyprPanel";
-    hyprpanel.inputs.nixpkgs.follows = "nixpkgs"; # Optional: ensure version compatibility
-
   };
 
-  outputs = { self, nixpkgs, home-manager, hyprpanel, ... }:
+  outputs = { self, nixpkgs, home-manager, ... }:
     let
       system = "x86_64-linux";
-      #      pkgs = nixpkgs.legacyPackages.${system};
-      pkgs = import nixpkgs {
-        inherit system;
-        # Add the HyprPanel overlay
-        overlays = [
-          hyprpanel.overlay
-        ];
-      };
+      pkgs = nixpkgs.legacyPackages.${system};
       lib = nixpkgs.lib;
 
       # ---- SYSTEM SETTINGS ---- #
@@ -54,7 +43,6 @@
           modules = [
             ./nixos/configuration.nix
             home-manager.nixosModules.home-manager
-
           ];
           specialArgs = {
             # pass config variables from above
@@ -67,16 +55,11 @@
       homeConfigurations = {
         henhal = home-manager.lib.homeManagerConfiguration {
           inherit pkgs;
-          modules = [
-            ./home/home.nix
-            # Add the HyprPanel home-manager module
-            hyprpanel.homeManagerModules.hyprpanel
-          ];
+          modules = [ ./home/home.nix ];
           extraSpecialArgs = {
             # pass config variables from above
             inherit systemSettings;
             inherit userSettings;
-            inherit (hyprpanel) homeManagerModules;
           };
         };
       };
