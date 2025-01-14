@@ -7,6 +7,7 @@
       url = "github:nix-community/home-manager/release-24.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    hyprpanel.url = "github:Jas-SinghFSU/HyprPanel";
   };
 
   outputs = { self, nixpkgs, home-manager, ... }:
@@ -55,7 +56,16 @@
       homeConfigurations = {
         henhal = home-manager.lib.homeManagerConfiguration {
           inherit pkgs;
-          modules = [ ./home/home.nix ];
+          pkgs = import nixpkgs {
+            inherit system;
+            overlays = [
+              inputs.hyprpanel.overlay
+            ];
+          };
+          modules = [
+            ./home/home.nix
+            inputs.hyprpanel.homeManagerModules.hyprpanel
+          ];
           extraSpecialArgs = {
             # pass config variables from above
             inherit systemSettings;
