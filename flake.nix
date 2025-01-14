@@ -55,7 +55,6 @@
 
       homeConfigurations = {
         henhal = home-manager.lib.homeManagerConfiguration {
-          inherit pkgs;
           pkgs = import nixpkgs {
             inherit system;
             overlays = [
