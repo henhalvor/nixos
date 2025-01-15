@@ -22,6 +22,7 @@
     ./modules/applications/zsh.nix
     ./modules/applications/${userSettings.term}.nix
     ./modules/applications/nvim.nix
+    ./modules/applications/${userSettings.browser}.nix
 
     # Environment
     ./modules/environment/dev-tools.nix

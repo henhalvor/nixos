@@ -38,6 +38,7 @@
         # wmType = if (wm == "hyprland" || wm == "sway") then "wayland" else "x11";
         # browser = "firefox"; # Default browser
         term = "kitty"; # Default terminal
+        browser = "firefox";
         # editor = "vim"; # Default editor
       };
     in

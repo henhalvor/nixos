@@ -21,6 +21,7 @@
     # wf-recorder     # Screen recording
     # brightnessctl   # Brightness control
     hyprland
+    rofi-wayland
     #picom # Compositor (optional)
     # nm-applet # Network manager applet (optional)
   ];
@@ -201,7 +202,7 @@
         # keybindings
         "$mainMod, Return, exec, ${userSettings.term}"
         "$mainMod, B, exec, hyprctl dispatch exec '[workspace 1 silent] zen'"
-        "$mainMod, Q, killactive,"
+        "$mainMod SHIFT, Q, killactive,"
         "$mainMod, F, fullscreen, 0"
         "$mainMod SHIFT, F, fullscreen, 1"
         "$mainMod, Space, exec, toggle_float"
