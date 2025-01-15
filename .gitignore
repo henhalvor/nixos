@@ -2,3 +2,4 @@ home/secrets/secrets.env
 home/secrets/*
 **/*.env
 .aider*
+# nixos/hardware-configuration.nix
