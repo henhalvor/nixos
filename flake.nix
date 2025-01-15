@@ -50,8 +50,6 @@
             home-manager.nixosModules.home-manager
           ];
           specialArgs = {
-            # Update pkgs to use customPkgs
-            pkgs = customPkgs;
             # pass config variables from above
             inherit systemSettings;
             inherit userSettings;
