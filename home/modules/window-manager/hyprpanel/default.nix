@@ -52,6 +52,13 @@
       bar.workspaces.show_icons = true;
       bar.clock.format = "%b %d  %H:%M";
 
+      # Disable labels for modules
+      bar.volume.label = false;
+      bar.media.show_label = false;
+      bar.bluetooth.label = false;
+      bar.network.label = false;
+      bar.notifications.show_total = false;
+
       menus.clock = {
         time = {
           military = true;
