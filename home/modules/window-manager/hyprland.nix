@@ -26,39 +26,6 @@
     # nm-applet # Network manager applet (optional)
   ];
 
-
-  # config = {
-  #       # Mod key settings (default is Super)
-  #       mod = "Mod4"; # Super key
-  #
-  #       # Define key bindings
-  #       binds = [
-  #         # Launch terminal with Mod + Enter
-  #         "bind=MOD,Return,exec,kitty"
-  #         # Reload configuration with Mod + Shift + R
-  #         "bind=MOD+Shift,C,exec,hyprctl reload"
-  #         # Close active window with Mod + Q
-  #         "bind=MOD,Q,exec,hyprctl dispatch killactive"
-  #         "bind=MOD,D,exec,wofi --show drun"
-  #       ];
-  #
-  #       # Set default workspace settings (optional)
-  #       workspace = {
-  #         gaps_in = 10;
-  #         gaps_out = 20;
-  #         border_size = 2;
-  #       };
-  #
-  #       # Window rules (optional)
-  #       rules = [
-  #         # Center new windows
-  #         "windowrule=float,center"
-  #       ];
-  #     };
-  #
-
-
-
   wayland.windowManager.hyprland = {
     enable = true;
     systemd.enable = true;
@@ -197,35 +164,29 @@
 
       bind = [
         # show keybinds list
-        "$mainMod, F1, exec, show-keybinds"
+        # "$mainMod, F1, exec, show-keybinds"
 
         # keybindings
         "$mainMod, Return, exec, ${userSettings.term}"
-        "$mainMod, B, exec, hyprctl dispatch exec '[workspace 1 silent] zen'"
+        # "$mainMod, B, exec, hyprctl dispatch exec '[workspace 1 silent] zen'"
         "$mainMod SHIFT, Q, killactive,"
         "$mainMod, F, fullscreen, 0"
-        "$mainMod SHIFT, F, fullscreen, 1"
+        # "$mainMod SHIFT, F, fullscreen, 1"
         "$mainMod, Space, exec, toggle_float"
         "$mainMod, D, exec, rofi -show drun || pkill rofi"
         "$mainMod SHIFT, D, exec, webcord --enable-features=UseOzonePlatform --ozone-platform=wayland"
         "$mainMod SHIFT, S, exec, hyprctl dispatch exec '[workspace 5 silent] SoundWireServer'"
         "$mainMod, Escape, exec, swaylock"
         "ALT, Escape, exec, hyprlock"
-        "$mainMod SHIFT, Escape, exec, power-menu"
-        "$mainMod, P, pseudo,"
+        # "$mainMod SHIFT, Escape, exec, power-menu"
+        # "$mainMod, P, pseudo,"
         "$mainMod, X, togglesplit,"
         "$mainMod, T, exec, toggle_oppacity"
-        "$mainMod, E, exec, nemo"
-        "ALT, E, exec, hyprctl dispatch exec '[float; size 1111 700] nemo'"
-        "$mainMod SHIFT, E, exec, hyprctl dispatch exec '[float; size 1111 700] ghostty -e yazi'"
-        "$mainMod SHIFT, B, exec, toggle_waybar"
+        # "$mainMod, E, exec, nemo"
+        # "ALT, E, exec, hyprctl dispatch exec '[float; size 1111 700] nemo'"
+        # "$mainMod SHIFT, E, exec, hyprctl dispatch exec '[float; size 1111 700] ghostty -e yazi'"
+        # "$mainMod SHIFT, B, exec, toggle_waybar"
         "$mainMod, C ,exec, hyprpicker -a"
-        "$mainMod, W,exec, wallpaper-picker"
-        "$mainMod SHIFT, W,exec, hyprctl dispatch exec '[float; size 925 615] waypaper'"
-        "$mainMod, N, exec, swaync-client -t -sw"
-        "CTRL SHIFT, Escape, exec, hyprctl dispatch exec '[workspace 11] resources'"
-        "$mainMod, equal, exec, woomer"
-        # "$mainMod SHIFT, W, exec, vm-start"
 
         # screenshot
         ",Print, exec, screenshot --copy"
@@ -309,20 +270,20 @@
         "$mainMod, V, exec, cliphist list | rofi -dmenu -theme-str 'window {width: 50%;} listview {columns: 1;}' | cliphist decode | wl-copy"
       ];
 
-      # # binds active in lockscreen
-      # bindl = [
-      #   # laptop brigthness
-      #   ",XF86MonBrightnessUp, exec, brightnessctl set 5%+"
-      #   ",XF86MonBrightnessDown, exec, brightnessctl set 5%-"
-      #   "$mainMod, XF86MonBrightnessUp, exec, brightnessctl set 100%+"
-      #   "$mainMod, XF86MonBrightnessDown, exec, brightnessctl set 100%-"
-      # ];
+       # binds active in lockscreen
+       bindl = [
+         # laptop brigthness
+         ",XF86MonBrightnessUp, exec, brightnessctl set 5%+"
+         ",XF86MonBrightnessDown, exec, brightnessctl set 5%-"
+         "$mainMod, XF86MonBrightnessUp, exec, brightnessctl set 100%+"
+         "$mainMod, XF86MonBrightnessDown, exec, brightnessctl set 100%-"
+       ];
 
-      # # binds that repeat when held
-      # binde = [
-      #   ",XF86AudioRaiseVolume,exec, pamixer -i 2"
-      #   ",XF86AudioLowerVolume,exec, pamixer -d 2"
-      # ];
+       # binds that repeat when held
+       binde = [
+         ",XF86AudioRaiseVolume,exec, pamixer -i 2"
+         ",XF86AudioLowerVolume,exec, pamixer -d 2"
+       ];
 
       # mouse binding
       bindm = [
