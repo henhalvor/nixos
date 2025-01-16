@@ -35,9 +35,9 @@
     layout = {
       "bar.layouts" = {
         "0" = {
-          left = [ "dashboard" "workspaces" ];
+          left = [ "workspaces" ];
           middle = [ "clock" ];
-          right = [ "volume" "media" "bluetooth" "network" "systray" "notifications" ];
+          right = [ "volume" "media" "bluetooth" "network" "systray" "notifications" "dashboard" ];
         };
       };
     };
