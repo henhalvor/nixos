@@ -3,7 +3,8 @@
 {
 
   imports = [
-    ./hyprpanel.nix
+    ./hyprpanel
+    ./rofi
   ];
 
 
@@ -21,7 +22,6 @@
     # wf-recorder     # Screen recording
     # brightnessctl   # Brightness control
     hyprland
-    rofi-wayland
     #picom # Compositor (optional)
     # nm-applet # Network manager applet (optional)
   ];
