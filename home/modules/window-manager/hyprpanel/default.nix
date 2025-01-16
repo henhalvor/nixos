@@ -36,8 +36,8 @@
       "bar.layouts" = {
         "0" = {
           left = [ "dashboard" "workspaces" ];
-          middle = [ "media" ];
-          right = [ "volume" "systray" "notifications" ];
+          middle = [ "clock" ];
+          right = [ "volume" "media" "bluetooth" "network" "systray" "notifications" ];
         };
       };
     };
@@ -50,6 +50,7 @@
     settings = {
       bar.launcher.autoDetectIcon = true;
       bar.workspaces.show_icons = true;
+      bar.clock.format = "%b %d  %H:%M";
 
       menus.clock = {
         time = {
@@ -66,7 +67,7 @@
 
       theme.font = {
         name = "CaskaydiaCove NF";
-        size = "16px";
+        size = "12px";
       };
     };
   };
