@@ -11,9 +11,7 @@
 
   home.packages = with pkgs; [
     # Wayland essentials
-    wofi # Application launcher
-    waybar # Status bar
-    # swaync          # Notification daemon
+   # swaync          # Notification daemon
     # swaylock        # Screen locker
     # swayidle        # Idle management daemon
     wl-clipboard # Clipboard manager
