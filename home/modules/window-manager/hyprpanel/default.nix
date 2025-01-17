@@ -20,7 +20,7 @@
 
     # Import a theme from './themes/*.json'.
     # Default: ""
-    theme = "gruvbox_split";
+    theme = "catppuccin_macchiato";
 
     # Override the final config with an arbitrary set.
     # Useful for overriding colors in your selected theme.
@@ -37,7 +37,7 @@
         "0" = {
           left = [ "workspaces" ];
           middle = [ "clock" ];
-          right = [ "volume" "media" "bluetooth" "network" "systray" "notifications" "dashboard" ];
+          right = [ "hypridle" "hyprsunset" "volume" "media" "bluetooth" "network" "systray" "notifications" "battery" "dashboard" ];
         };
       };
     };
@@ -52,14 +52,25 @@
       bar.workspaces.show_icons = true;
       bar.clock.format = "%b %d  %H:%M";
 
-      scalingPriority =  "hyprland";
-
       # Disable labels for modules
       bar.volume.label = false;
       bar.media.show_label = false;
       bar.bluetooth.label = false;
       bar.network.label = false;
       bar.notifications.show_total = false;
+
+      # Hyprsunset
+      bar.customModules.hyprsunset.label =  false;
+      bar.customModules.hyprsunset.offIcon = "󰛨";
+      bar.customModules.hyprsunset.onIcon =  "󱩌";
+      bar.customModules.hyprsunset.pollingInterval =  2000;
+      bar.customModules.hyprsunset.temperature =  "6000k";
+
+      # Hypridle
+bar.customModules.hypridle.label =  false;
+bar.customModules.hypridle.offIcon =  "";
+bar.customModules.hypridle.onIcon =  "";
+bar.customModules.hypridle.pollingInterval =  2000;
 
       menus.clock = {
         time = {
@@ -78,6 +89,14 @@
         name = "CaskaydiaCove NF";
         size = "12px";
       };
+      
+      # Wallpaper
+      wallpaper.enable =  true;
+      wallpaper.image =  "~/.dotfiles/home/modules/window-manager/hyprpanel/catpuccin_landscape.png";
+
+       # Scaling
+      scalingPriority =  "hyprland";
+
     };
   };
 }
