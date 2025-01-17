@@ -52,6 +52,8 @@
       bar.workspaces.show_icons = true;
       bar.clock.format = "%b %d  %H:%M";
 
+      scalingPriority =  "hyprland";
+
       # Disable labels for modules
       bar.volume.label = false;
       bar.media.show_label = false;
