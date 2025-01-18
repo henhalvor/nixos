@@ -1,6 +1,6 @@
 { config, pkgs, userSettings, ... }:
 {
-  programs.rofi-wayland = {
+  programs.rofi = {
     enable = true;
     terminal = "${userSettings.term}";
     theme = ./theme.rasi;
