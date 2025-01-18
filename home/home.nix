@@ -26,6 +26,7 @@
     ./modules/applications/microsoft-edge.nix
     ./modules/applications/yazi.nix
     ./modules/applications/aider-chat.nix
+    ./modules/applications/tmux.nix
 
     # Environment
     ./modules/environment/dev-tools.nix
