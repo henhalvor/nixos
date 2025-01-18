@@ -7,6 +7,15 @@
       plugins = [ "git" ]; # only include built-in oh-my-zsh plugins here
     };
 
+     # Add your aliases here
+    shellAliases = {
+      v = "nvim";
+      # You can add more aliases here, for example:
+      # ll = "ls -la";
+      # ga = "git add";
+      # gc = "git commit";
+    };
+
     # Enable syntax highlighting
     syntaxHighlighting = {
       enable = true;
