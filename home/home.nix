@@ -24,6 +24,7 @@
     ./modules/applications/nvim.nix
     ./modules/applications/${userSettings.browser}.nix
     ./modules/applications/yazi.nix
+    ./modules/applications/aider-chat.nix
 
     # Environment
     ./modules/environment/dev-tools.nix
