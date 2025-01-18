@@ -13,18 +13,14 @@
 
 
   home.packages = with pkgs; [
+    hyprland
     # Wayland essentials
-   # swaync          # Notification daemon
-    # swaylock        # Screen locker
-    # swayidle        # Idle management daemon
     wl-clipboard # Clipboard 
     clipman # Clipboard management
-    # grim            # Screenshot utility
     # slurp           # Screen region selector
-    # wf-recorder     # Screen recording
-    # brightnessctl   # Brightness control
-    hyprland
-    #picom # Compositor (optional)
+    brightnessctl   # For screen brightness control
+    pamixer         # For volume control
+    playerctl       # You already have this for media controls
     # nm-applet # Network manager applet (optional)
   ];
 

@@ -8,7 +8,7 @@
 - [ ] Add docker
 - [ ] Add tmux for persistent sessions
 - [ ] Add aider
-- [ ] Add supermaven
+- [x] Add supermaven
 - [ ] Micorsoft Edge
 
 ### Config:
@@ -18,9 +18,9 @@
 - [x] Rounded window borders
 - [x] Transparent windows (transparent terminal)
 - [x] Kitty config
-- [ ] Neovim Markdown preview
+- [x] Neovim Markdown preview
 - [ ] Shell alias (v - nvim)
-- [ ] Screen brightness control
+- [x] Screen brightness control
 - [ ] Monitor management
 
 ## Other
