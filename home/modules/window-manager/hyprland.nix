@@ -15,7 +15,8 @@
    # swaync          # Notification daemon
     # swaylock        # Screen locker
     # swayidle        # Idle management daemon
-    wl-clipboard # Clipboard manager
+    wl-clipboard # Clipboard 
+    clipman # Clipboard management
     # grim            # Screenshot utility
     # slurp           # Screen region selector
     # wf-recorder     # Screen recording
@@ -41,6 +42,8 @@
         # "poweralertd &"
         # "wl-clip-persist --clipboard both &"
         # "wl-paste --watch cliphist store &"
+        "wl-paste --type text --watch clipman store &"    # Store text entries
+        "wl-paste --type image --watch clipman store &"   # Store images
         "hyprpanel &"
         "hyprpaper &"
         #   "swaync &"
@@ -178,6 +181,8 @@
         # "$mainMod SHIFT, F, fullscreen, 1"
         "$mainMod, Space, exec, toggle_float"
         "$mainMod, D, exec, rofi -show drun || pkill rofi"
+        "$mainMod, O, exec, clipman pick -t rofi"
+        "$mainMod SHIFT, O, exec, clipman clear --all"
         "$mainMod SHIFT, D, exec, webcord --enable-features=UseOzonePlatform --ozone-platform=wayland"
         "$mainMod SHIFT, S, exec, hyprctl dispatch exec '[workspace 5 silent] SoundWireServer'"
         "$mainMod, Escape, exec, swaylock"
