@@ -3,7 +3,7 @@
 # Set strict error handling
 set -euo pipefail
 
-SECRETS_FILE="$HOME/.dotfiles/home/secrets/secrets.env"
+SECRETS_FILE="$HOME/.dotfiles/home/modules/settings/secrets/secrets.env"
 
 # Check if secrets file exists and is readable
 if [[ -f "$SECRETS_FILE" && -r "$SECRETS_FILE" ]]; then
@@ -25,7 +25,7 @@ else
 fi
 
 # README:
-# To add secrets create a "secrets.env" file in this directory (~/.dotfiles/home/secrets/secrets.env). And add your secrets (ANTHROPIC_API_KEY=my-api-key)
+# To add secrets create a "secrets.env" file in this directory (~/.dotfiles/home/modules/settings/secrets/secrets.env). And add your secrets (ANTHROPIC_API_KEY=my-api-key)
 # Make sure the both files have the correct permissions:
-# chmod 700 ~/.dotfiles/home/secrets/load-secrets.sh
-# chmod 600 ~/.dotfiles/home/secrets/secrets.env
+# chmod 700 ~/.dotfiles/home/modules/settings/secrets/load-secrets.sh
+# chmod 600 ~/.dotfiles/home/modules/settings/secrets/secrets.env

@@ -35,11 +35,6 @@
 
 
     initExtra = ''
-      # Load secrets
-      if [ -f "$HOME/.dotfiles/home/secrets/load-secrets.sh" ]; then
-        source "$HOME/.dotfiles/home/secrets/load-secrets.sh"
-      fi
-
       source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme
     '';
 
