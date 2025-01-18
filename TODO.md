@@ -9,7 +9,7 @@
 - [ ] Add tmux for persistent sessions
 - [x] Add aider
 - [x] Add supermaven
-- [ ] Micorsoft Edge
+- [x] Micorsoft Edge
 
 ### Config:
 
@@ -23,8 +23,11 @@
 - [x] Screen brightness control
 - [ ] Monitor management
 - [ ] Change aider to default to claude and use api key
+- [ ] ADd config for firefox
 
 ## Other
+
+- [ ] Fix secrets loading
 
 <!---->
 <!-- - [ ] check bluetooth config -->

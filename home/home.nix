@@ -23,6 +23,7 @@
     ./modules/applications/${userSettings.term}.nix
     ./modules/applications/nvim.nix
     ./modules/applications/${userSettings.browser}.nix
+    ./modules/applications/microsoft-edge.nix
     ./modules/applications/yazi.nix
     ./modules/applications/aider-chat.nix
 
