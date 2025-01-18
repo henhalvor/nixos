@@ -86,7 +86,7 @@ bar.customModules.hypridle.pollingInterval =  2000;
       theme.bar.transparent = true;
 
       theme.font = {
-        name = "CaskaydiaCove NF";
+        name = "Hack Nerd Font";
         size = "12px";
       };
       
