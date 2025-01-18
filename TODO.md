@@ -9,6 +9,7 @@
 - [ ] Add tmux for persistent sessions
 - [ ] Add aider
 - [ ] Add supermaven
+- [ ] Micorsoft Edge
 
 ### Config:
 
