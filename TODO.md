@@ -20,6 +20,8 @@
 - [x] Kitty config
 - [ ] Neovim Markdown preview
 - [ ] Shell alias (v - nvim)
+- [ ] Screen brightness control
+- [ ] Monitor management
 
 ## Other
 
