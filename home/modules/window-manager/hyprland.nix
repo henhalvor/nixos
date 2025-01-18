@@ -188,7 +188,7 @@
         "$mainMod, T, exec, toggle_oppacity"
         # "$mainMod, E, exec, nemo"
         # "ALT, E, exec, hyprctl dispatch exec '[float; size 1111 700] nemo'"
-        # "$mainMod SHIFT, E, exec, hyprctl dispatch exec '[float; size 1111 700] ghostty -e yazi'"
+         "$mainMod, E, exec, hyprctl dispatch exec '[float; size 1111 650] kitty -e yazi'"
         # "$mainMod SHIFT, B, exec, toggle_waybar"
         "$mainMod, C ,exec, hyprpicker -a"
 

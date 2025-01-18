@@ -23,6 +23,7 @@
     ./modules/applications/${userSettings.term}.nix
     ./modules/applications/nvim.nix
     ./modules/applications/${userSettings.browser}.nix
+    ./modules/applications/yazi.nix
 
     # Environment
     ./modules/environment/dev-tools.nix
