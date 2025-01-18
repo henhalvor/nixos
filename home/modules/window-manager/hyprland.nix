@@ -5,6 +5,7 @@
   imports = [
     ./hyprpanel
     ./rofi
+    ./hyprpaper
   ];
 
 
@@ -41,6 +42,7 @@
         # "wl-clip-persist --clipboard both &"
         # "wl-paste --watch cliphist store &"
         "hyprpanel &"
+        "hyprpaper &"
         #   "swaync &"
         #   "hyprctl setcursor Bibata-Modern-Ice 24 &"
         #   "swww-daemon &"
@@ -52,7 +54,7 @@
         kb_layout = "no";
         kb_options = "grp:alt_caps_toggle";
         numlock_by_default = true;
-        follow_mouse = 0;
+        follow_mouse = 1;
         float_switch_override_focus = 0;
         mouse_refocus = 0;
         sensitivity = 0;
@@ -169,6 +171,7 @@
 
         # keybindings
         "$mainMod, Return, exec, ${userSettings.term}"
+        "$mainMod SHIFT, C, exec, hyprctl reload"
         # "$mainMod, B, exec, hyprctl dispatch exec '[workspace 1 silent] zen'"
         "$mainMod SHIFT, Q, killactive,"
         "$mainMod, F, fullscreen, 0"

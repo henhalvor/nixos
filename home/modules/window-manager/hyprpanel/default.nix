@@ -91,8 +91,8 @@ bar.customModules.hypridle.pollingInterval =  2000;
       };
       
       # Wallpaper
-      wallpaper.enable =  true;
-      wallpaper.image =  "~/.dotfiles/home/modules/window-manager/hyprpanel/catpuccin_landscape.png";
+      #wallpaper.enable =  true;
+      #wallpaper.image =  "~/.dotfiles/home/modules/window-manager/hyprpanel/catpuccin_landscape.png";
 
        # Scaling
       scalingPriority =  "hyprland";
