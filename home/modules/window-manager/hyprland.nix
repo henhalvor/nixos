@@ -110,8 +110,8 @@
         rounding = 10;
 
         # Opacity
-        active_opacity = 0.95;    # Opacity for focused windows (95%)
-        inactive_opacity = 0.85;  # Opacity for unfocused windows (85%)
+        active_opacity = 1.0;    # Opacity for focused windows (95%)
+        inactive_opacity = 0.8;  # Opacity for unfocused windows (85%)
         fullscreen_opacity = 1.0; # Opacity for fullscreen (100%)
 
         blur = {
