@@ -6,6 +6,8 @@
     ./hyprpanel
     ./rofi
     ./hyprpaper
+    ./hypridle
+    ./hyprlock
   ];
 
 
@@ -46,6 +48,7 @@
         "wl-paste --type image --watch clipman store &"   # Store images
         "hyprpanel &"
         "hyprpaper &"
+        "hypridle &" 
         #   "swaync &"
         #   "hyprctl setcursor Bibata-Modern-Ice 24 &"
         #   "swww-daemon &"

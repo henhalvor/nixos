@@ -4,13 +4,13 @@
 
 ### Need to add:
 
-- [ ] Add a File explorer (ranger or yazi)
+- [x] Add a File explorer (ranger or yazi)
 - [ ] Add docker
 
 ### Config:
 
-- [ ] Wallpaper
+- [x] Wallpaper
 - [ ] Hypridle / Hyprlock
-- [ ] Rounded window borders
-- [ ] Transparent windows (transparent terminal)
-- [ ] Kitty config
+- [x] Rounded window borders
+- [x] Transparent windows (transparent terminal)
+- [x] Kitty config
