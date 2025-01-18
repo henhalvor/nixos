@@ -28,6 +28,7 @@
 ## Other
 
 - [ ] Fix secrets loading
+- [ ] Dev environments
 
 <!---->
 <!-- - [ ] check bluetooth config -->
