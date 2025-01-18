@@ -10,7 +10,7 @@
 ### Config:
 
 - [x] Wallpaper
-- [ ] Hypridle / Hyprlock
+- [x] Hypridle / Hyprlock
 - [x] Rounded window borders
 - [x] Transparent windows (transparent terminal)
 - [x] Kitty config

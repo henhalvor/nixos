@@ -387,6 +387,9 @@
         "opaque,class:^()$,title:^()$"
         "noshadow,class:^()$,title:^()$"
         "noblur,class:^()$,title:^()$"
+
+       # Basic Kitty styling that applies always
+        "rounding 10, class:^(kitty)$"   # Rounded corners for all Kitty windows
       ];
 
       # No gaps when only
