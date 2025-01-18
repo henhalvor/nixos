@@ -27,6 +27,7 @@
     ./modules/applications/yazi.nix
     ./modules/applications/aider-chat.nix
     ./modules/applications/tmux.nix
+    ./modules/applications/vivaldi.nix
 
     # Environment
     ./modules/environment/dev-tools.nix
