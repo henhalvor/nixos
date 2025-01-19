@@ -144,12 +144,14 @@ return { -- LSP Configuration & Plugins
     --  So, we create new capabilities with nvim cmp, and then broadcast that to the servers.
     local capabilities = vim.lsp.protocol.make_client_capabilities()
     capabilities = vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
+    capabilities.textDocument.publishDiagnostics = {
+      refreshSupport = true,
+    }
 
     local servers = {
       -- clangd = {},
       -- gopls = {},
       -- pyright = {},
-      -- rust_analyzer = {},
       -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
       --
       -- Some languages (like typescript) have entire language plugins that can be useful:
@@ -226,34 +228,38 @@ return { -- LSP Configuration & Plugins
           },
         },
       },
+
+      -- Configure rust-analyzer settings
+      rust_analyzer = {
+        settings = {
+          ['rust-analyzer'] = {
+            checkOnSave = {
+              enable = true,
+              command = 'check',
+              extraArgs = { '--all-targets' },
+            },
+            check = {
+              command = 'check',
+              extraArgs = { '--all-targets' },
+              allTargets = true,
+            },
+            diagnostics = {
+              enable = true,
+              experimental = {
+                enable = true,
+              },
+              diagnosticsOnChange = true,
+            },
+            procMacro = {
+              enable = true,
+            },
+          },
+        },
+      },
     }
 
- require('mason').setup({
-  install_root_dir = vim.g.mason_home,
-  PATH = "append",
-  pip = {
-    install_args = {
-      "--user",
-      "--prefix", vim.fn.expand('~/.local/dev/python')
-    },
-  },
-  registries = {
-    "github:mason-org/mason-registry"
-  },
-  providers = {
-    "mason.providers.registry-api",
-    "mason.providers.client"
-  },
-  ui = {
-    border = "rounded",
-    icons = {
-      package_installed = "✓",
-      package_pending = "➜",
-      package_uninstalled = "✗"
-    }
-  },
-  log_level = vim.log.levels.INFO
-})
+    -- Ensure the servers and tools above are installed
+    require('mason').setup()
 
     -- You can add other tools here that you want Mason to install
     -- for you, so that they are available from within Neovim.
@@ -289,30 +295,34 @@ return { -- LSP Configuration & Plugins
             ['textDocument/signatureHelp'] = vim.lsp.with(vim.lsp.handlers.signature_help, { border = border }),
           }
 
-          local server = servers[server_name] or {}
-          -- This handles overriding only values explicitly passed
-          -- by the server configuration above. Useful when disabling
-          -- certain features of an LSP (for example, turning off formatting for tsserver)
-          server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
-          server.handlers = handlers -- Add border around LSPs
-          require('lspconfig')[server_name].setup(server)
+          -- Skip rust_analyzer as it will be handled by rustacean.nvim
+          if server_name ~= 'rust_analyzer' then
+            local server = servers[server_name] or {}
+            -- This handles overriding only values explicitly passed
+            -- by the server configuration above. Useful when disabling
+            -- certain features of an LSP (for example, turning off formatting for tsserver)
+            server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
+            server.handlers = handlers -- Add border around LSPs
+            require('lspconfig')[server_name].setup(server)
+          end
         end,
       },
     }
 
-    -- Rust analyzer Setup here to avoid mason installing it's own version of rust_analyzer.
-    -- This configuration ensures lspconfig uses the locally installed version of rust_analyzer installed by rustup
-    require('lspconfig').rust_analyzer.setup {
-      cmd = { 'rustup', 'run', 'stable', 'rust-analyzer' },
-    }
-
-    -- remove inline diagnostic
+    -- Configure diagnostic display
     local function setup_lsp_diags()
       vim.lsp.handlers['textDocument/publishDiagnostics'] = vim.lsp.with(vim.lsp.diagnostic.on_publish_diagnostics, {
         virtual_text = false,
         signs = true,
-        update_in_insert = false,
+        update_in_insert = true,
         underline = true,
+        severity_sort = true,
+        float = {
+          border = 'rounded',
+          source = 'always',
+          header = '',
+          prefix = '',
+        },
       })
     end
 
