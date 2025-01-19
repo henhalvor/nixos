@@ -22,3 +22,10 @@ end, { silent = true, buffer = bufnr, desc = 'Rust Runnables' })
 vim.keymap.set('n', '<leader>rm', function()
   vim.cmd.RustLsp 'expandMacro'
 end, { silent = true, buffer = bufnr, desc = 'Expand Rust Macro' })
+
+-- Automatically save the file when leaving insert mode to get rust-analyzer to work
+vim.api.nvim_create_autocmd({ 'InsertLeave', 'TextChanged' }, {
+  command = 'w',
+  buffer = 0,
+  nested = true,
+})
