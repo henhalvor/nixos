@@ -27,27 +27,48 @@ in
       vim-tmux-navigator
       resurrect
       continuum
+      catppuccin
       
-      # Theme
-      {
-        plugin = catppuccin;
-        extraConfig = ''
-          set -g @catppuccin_flavour 'machiato'
-          set -g @catppuccin_window_right_separator "█"
-          set -g @catppuccin_window_number_position "right"
-          set -g @catppuccin_window_middle_separator " "
-          set -g @catppuccin_window_default_fill "none"
-          set -g @catppuccin_window_current_fill "all"
-          set -g @catppuccin_status_modules_right "directory session"
-          set -g @catppuccin_status_left_separator "█"
-          set -g @catppuccin_status_right_separator "█"
-        '';
-      }
     ];
 
     extraConfig = ''
-      # Load status bar config
-      ${statusBar}
+
+      # Theme
+      set -g @catppuccin_flavor 'macchiato' # latte, frappe, macchiato or mocha
+
+      # Vim movement
+      bind-key h select-pane -L
+      bind-key j select-pane -D
+      bind-key k select-pane -U
+      bind-key l select-pane -R
+
+      # Status bar styling
+      set -g status "on"
+      set -g status-position top
+
+      set -g @catppuccin_window_left_separator ""
+      set -g @catppuccin_window_right_separator " "
+      set -g @catppuccin_window_middle_separator " █"
+      set -g @catppuccin_window_number_position "right"
+
+      set -g @catppuccin_window_default_fill "number"
+      set -g @catppuccin_window_default_text "#W"
+
+      set -g @catppuccin_window_current_fill "number"
+      set -g @catppuccin_window_current_text "#W"
+
+      set -g @catppuccin_status_modules_right "directory session"
+      set -g @catppuccin_status_left_separator  " "
+      set -g @catppuccin_status_right_separator ""
+      set -g @catppuccin_status_right_separator_inverse "no"
+      set -g @catppuccin_status_fill "icon"
+      set -g @catppuccin_status_connect_separator "no"
+
+      set -g @catppuccin_directory_text "#{pane_current_path}"
+
+      # Reload config
+      bind r source-file ~/.config/tmux/tmux.conf
+   
       
       # Additional quality of life settings
       set -g focus-events on
@@ -62,47 +83,3 @@ in
   };
 }
 
-# { config, lib, pkgs, ... }:
-#
-# {
-#   programs.tmux = {
-#     enable = true;
-#
-#     # Shortcut for reloading config
-#     keyMode = "vi";
-#     prefix = "C-b";  # Default prefix key
-#
-#     # Basic settings
-#     baseIndex = 1;  # Start numbering windows at 1
-#     escapeTime = 0; # No delay for escape key press
-#     historyLimit = 5000;
-#     mouse = true;
-#
-#     # Custom key bindings
-#     extraConfig = ''
-#       # Reload config
-#       bind r source-file ~/.config/tmux/tmux.conf \; display "Config reloaded!"
-#
-#       # Better split shortcuts
-#       bind | split-window -h
-#       bind - split-window -v
-#
-#       # Automatic window renaming
-#       set-option -g automatic-rename on
-#
-#       # Terminal colors
-#       set -g default-terminal "tmux-256color"
-#       set -ag terminal-overrides ",xterm-256color:RGB"
-#
-#       # Status bar customization
-#       set -g status-style 'bg=#333333 fg=#5eacd3'
-#     '';
-#
-#     # Plugins (optional)
-#     plugins = with pkgs.tmuxPlugins; [
-#       sensible    # Sensible defaults
-#       resurrect   # Save and restore sessions
-#       continuum   # Automatic session saving
-#     ];
-#   };
-# }
