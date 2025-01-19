@@ -23,7 +23,6 @@
 - [x] Screen brightness control
 - [ ] Monitor management
 - [ ] Change aider to default to claude and use api key
-- [ ] ADd config for firefox
 
 ## Other
 
