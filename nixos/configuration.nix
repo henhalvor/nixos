@@ -162,7 +162,7 @@
   users.users.${userSettings.username} = {
     isNormalUser = true;
     description = userSettings.name;
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = [ "networkmanager" "wheel" "i2c" ];
     shell = pkgs.zsh;
     packages = with pkgs; [
       #  thunderbird
@@ -182,7 +182,29 @@
     home-manager
     #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
     #  wget
+
+    # For controlling external monitor's brightness
+    ddcutil
   ];
+
+
+
+
+  #
+  # Enable I2C support for monitor control
+  #
+  hardware.i2c.enable = true;
+
+  # Add i2c group and udev rules
+  users.groups.i2c = {};
+  services.udev.extraRules = ''
+    KERNEL=="i2c-[0-9]*", GROUP="i2c", MODE="0660"
+  '';
+
+
+  #
+  #
+  #
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.

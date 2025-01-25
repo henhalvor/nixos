@@ -22,6 +22,7 @@
     pamixer         # For volume control
     playerctl       # You already have this for media controls
     # nm-applet # Network manager applet (optional)
+    ddcutil # External monitor brightness control
   ];
 
   wayland.windowManager.hyprland = {
@@ -193,7 +194,20 @@
         "$mainMod, Print, exec, screenshot --save"
         "$mainMod SHIFT, Print, exec, screenshot --swappy"
 
-        # switch focus
+        # External monitor brightness
+        # Both monitors
+        # "$mainMod, N, exec, ${config.home.homeDirectory}/.local/bin/monitor-brightness up all"
+        # "$mainMod, M, exec, ${config.home.homeDirectory}/.local/bin/monitor-brightness down all"
+        #
+        # Samsung monitor only (HDMI)
+        "$mainMod SHIFT, N, exec, ${config.home.homeDirectory}/.local/bin/monitor-brightness up samsung"
+        "$mainMod SHIFT, M, exec, ${config.home.homeDirectory}/.local/bin/monitor-brightness down samsung"
+
+        # ASUS monitor only (DP)
+        "$mainMod ALT, N, exec, ${config.home.homeDirectory}/.local/bin/monitor-brightness up asus"
+        "$mainMod ALT, M, exec, ${config.home.homeDirectory}/.local/bin/monitor-brightness down asus"
+
+        #switch focus
         "$mainMod, left, movefocus, l"
         "$mainMod, right, movefocus, r"
         "$mainMod, up, movefocus, u"
@@ -272,12 +286,16 @@
 
        # binds active in lockscreen
        bindl = [
-         # laptop brigthness
-         ",XF86MonBrightnessUp, exec, brightnessctl set 5%+"
-         ",XF86MonBrightnessDown, exec, brightnessctl set 5%-"
-         "$mainMod, XF86MonBrightnessUp, exec, brightnessctl set 100%+"
-         "$mainMod, XF86MonBrightnessDown, exec, brightnessctl set 100%-"
-       ];
+        # Brightness
+        # Control all displays together
+        # Normal press: Small adjustments (5%)
+        ",XF86MonBrightnessUp, exec, brightnessctl set 5%+ && ${config.home.homeDirectory}/.local/bin/monitor-brightness up all"
+        ",XF86MonBrightnessDown, exec, brightnessctl set 5%- && ${config.home.homeDirectory}/.local/bin/monitor-brightness down all"
+        
+        # With Super key: Large adjustments
+        "$mainMod, XF86MonBrightnessUp, exec, brightnessctl set 100%+ && ${config.home.homeDirectory}/.local/bin/monitor-brightness up all && ${config.home.homeDirectory}/.local/bin/monitor-brightness up all && ${config.home.homeDirectory}/.local/bin/monitor-brightness up all"
+        "$mainMod, XF86MonBrightnessDown, exec, brightnessctl set 100%- && ${config.home.homeDirectory}/.local/bin/monitor-brightness down all && ${config.home.homeDirectory}/.local/bin/monitor-brightness down all && ${config.home.homeDirectory}/.local/bin/monitor-brightness down all"
+             ];
 
        # binds that repeat when held
        binde = [
@@ -420,6 +438,82 @@
 
 
   };
+
+  # Create the scripts directory and add it to PATH
+  home.sessionPath = [ "${config.home.homeDirectory}/.local/bin" ];
+
+  # Ensure the .local/bin directory exists
+  home.file.".local/bin/.keep".text = "";
+
+  home.file.".local/bin/monitor-brightness" = {
+    executable = true;
+    text = ''
+      #!/bin/sh
+      # Usage: monitor-brightness up|down [monitor]
+      # monitor can be: samsung, asus, or all (default)
+      
+      SAMSUNG_BUS=4
+      ASUS_BUS=5
+      STEP=30
+      MAX_BRIGHTNESS=255  # Maximum possible DDC/CI brightness value
+      
+      adjust_brightness() {
+        local bus=$1
+        local direction=$2
+        
+        # Get the full output from ddcutil for debugging
+        ddcutil_output=$(ddcutil --bus=$bus getvcp 10)
+        echo "Raw ddcutil output for bus $bus:"
+        echo "$ddcutil_output"
+        
+        # Extract just the current value number, handling different output formats
+        current=$(echo "$ddcutil_output" | grep -o 'current value =.*' | cut -d= -f2 | cut -d, -f1 | tr -d ' ')
+        
+        # If we couldn't get a valid number, start from 0
+        if ! [ "$current" -eq "$current" ] 2>/dev/null; then
+          echo "Could not parse current value, starting from 0"
+          current=0
+        fi
+        
+        # Calculate new brightness
+        if [ "$direction" = "up" ]; then
+          new_value=$((current + STEP))
+          if [ $new_value -gt $MAX_BRIGHTNESS ]; then
+            new_value=$MAX_BRIGHTNESS
+          fi
+        else
+          new_value=$((current - STEP))
+          if [ $new_value -lt 0 ]; then
+            new_value=0
+          fi
+        fi
+        
+        echo "Adjusting monitor on bus $bus: Current=$current New=$new_value"
+        ddcutil --bus=$bus setvcp 10 $new_value
+      }
+      
+      direction=$1
+      monitor=''${2:-all}
+      
+      case "$monitor" in
+        "samsung")
+          adjust_brightness $SAMSUNG_BUS "$direction"
+          ;;
+        "asus")
+          adjust_brightness $ASUS_BUS "$direction"
+          ;;
+        "all")
+          adjust_brightness $SAMSUNG_BUS "$direction"
+          adjust_brightness $ASUS_BUS "$direction"
+          ;;
+        *)
+          echo "Usage: monitor-brightness up|down [samsung|asus|all]"
+          exit 1
+          ;;
+      esac
+    '';
+  };
+
 }
 
 
