@@ -32,6 +32,7 @@
     # Environment
     ./modules/environment/dev-tools.nix
     ./modules/environment/session-variables.nix
+    ./modules/environment/direnv.nix
 
     # Settings
     ./modules/settings/git.nix
