@@ -30,7 +30,11 @@ fi
 
 # Copy hardware configuration
 echo -e "${YELLOW}Copying hardware configuration...${NC}"
-cp /etc/nixos/hardware-configuration.nix nixos/hardware-configuration.nix
+cp /etc/nixos/hardware-configuration.nix ~/.dotfiles/nixos/hardware-configuration.nix
+
+# Stage repo changes before system rebuild to avoid error
+echo -e "${YELLOW}Staging repo changes...${NC}"
+git add .
 
 # Apply the system configuration
 echo -e "${GREEN}Building and activating NixOS configuration...${NC}"

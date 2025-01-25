@@ -11,24 +11,22 @@
       ./hardware-configuration.nix
     ];
 
-  # Default bootloader config (works with VM)
-  # # Bootloader.
-  # boot.loader.grub.enable = true;
-  # boot.loader.grub.device = "/dev/vda";
-  # boot.loader.grub.useOSProber = true;
-  #
-
-  # Updated bootloader config (works with HP laptop)
-  # Bootloader.
+  # Bootloader configuration
   boot.loader = {
-    efi = {
-      canTouchEfiVariables = true;
-    };
+    # Use GRUB for both BIOS and UEFI
     grub = {
       enable = true;
-      devices = [ "nodev" ];
-      efiSupport = true;
       useOSProber = true;
+      # For UEFI systems (laptop)
+      efiSupport = systemSettings.isEfiSystem;
+      efiInstallAsRemovable = systemSettings.isEfiSystem;
+      # For BIOS systems (desktop)
+      device = if systemSettings.isEfiSystem then "nodev" else "/dev/sda";
+    };
+    # EFI settings for UEFI systems
+    efi = {
+      canTouchEfiVariables = systemSettings.isEfiSystem;
+      efiSysMountPoint = "/boot/efi";
     };
   };
 
@@ -62,16 +60,49 @@
     WLR_NO_HARDWARE_CURSORS = "1";
     #Hint electron apps to use wayland
     NIXOS_OZONE_WL = "1";
+    # NVIDIA specific
+    LIBVA_DRIVER_NAME = "nvidia";
+    XDG_SESSION_TYPE = "wayland";
+    GBM_BACKEND = "nvidia-drm";
+    __GLX_VENDOR_LIBRARY_NAME = "nvidia";
+    # WLR_RENDERER = "vulkan";
+    WLR_RENDERER = "egl"; # Use EGL rendering - NVIDIA - Need to check if this works with amd and without graphics card
+    # Hardware acceleration
+    VDPAU_DRIVER = "nvidia";
   };
+
+  # Load nvidia driver for Xorg and Wayland
+  services.xserver.videoDrivers = ["nvidia"];
 
 
 
   # Graphics and Hardware Acceleration
   hardware = {
-    #Opengl
-    graphics.enable = true;
-    # Most wayland compositors need this
-    nvidia.modesetting.enable = true;
+    # Enable Opengl
+    graphics = {
+      enable = true;
+      extraPackages = with pkgs; [
+        nvidia-vaapi-driver
+        vaapiVdpau
+        libvdpau-va-gl
+
+        # Nvidia specific
+        libglvnd
+      ];
+    };
+
+   # NVIDIA settings
+    nvidia = {
+      modesetting.enable = true;
+      powerManagement.enable = true;
+
+      # Fine-grained power management. Turns off GPU when not in use.
+      # Experimental and only works on modern Nvidia GPUs (Turing or newer).
+      powerManagement.finegrained = false;
+      open = false;
+      nvidiaSettings = true;
+      package = config.boot.kernelPackages.nvidiaPackages.stable;
+    };
   };
 
 

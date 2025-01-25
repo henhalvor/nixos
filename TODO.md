@@ -7,6 +7,7 @@
 - [x] Add a File explorer (ranger or yazi)
 - [ ] Add docker
 - [ ] Add tmux for persistent sessions
+- [ ] React native environment (node, yarn, adb, gradle, java, emulator???)
 - [x] Add aider
 - [x] Add supermaven
 - [x] Micorsoft Edge

@@ -26,6 +26,7 @@
         hostname = "nixos"; # hostname
         timezone = "Europe/Oslo"; # select timezone
         locale = "en_US.UTF-8"; # select locale
+        isEfiSystem = false;
       };
 
       # ----- USER SETTINGS ----- #
