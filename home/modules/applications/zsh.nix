@@ -8,6 +8,7 @@
     };
     shellAliases = {
       v = "nvim";
+      lzg = "lazygit";
     };
     syntaxHighlighting.enable = true;
     autosuggestion.enable = true;
