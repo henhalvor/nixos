@@ -398,7 +398,14 @@
 
 
     extraConfig = "
-      monitor=,preferred,auto,auto
+      #monitor=,preferred,auto,auto
+
+      # ASUS monitor (DP-1) positioned on the left in portrait mode
+      # Moved up by 240px to align centers
+      monitor=DP-1,1920x1080@144,-1080x-240,1,transform,1
+      
+      # Samsung monitor (HDMI-A-1) as main display
+      monitor=HDMI-A-1,2560x1440@144,0x0,1
 
       xwayland {
         force_zero_scaling = true
