@@ -67,6 +67,10 @@
             echo "-------------------------"
             rustc --version
             cargo --version
+            # Export the PATH so Neovim can find the tools
+            export PATH="${pkgs.rust-analyzer}/bin:$PATH"
+            export PATH="${pkgs.rustfmt}/bin:$PATH"
+            export PATH="${pkgs.clippy}/bin:$PATH"
             echo
             echo "Ready for development! 🦀"
           '';

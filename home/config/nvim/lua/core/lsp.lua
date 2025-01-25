@@ -228,34 +228,6 @@ return { -- LSP Configuration & Plugins
           },
         },
       },
-
-      -- Configure rust-analyzer settings
-      rust_analyzer = {
-        settings = {
-          ['rust-analyzer'] = {
-            checkOnSave = {
-              enable = true,
-              command = 'check',
-              extraArgs = { '--all-targets' },
-            },
-            check = {
-              command = 'check',
-              extraArgs = { '--all-targets' },
-              allTargets = true,
-            },
-            diagnostics = {
-              enable = true,
-              experimental = {
-                enable = true,
-              },
-              diagnosticsOnChange = true,
-            },
-            procMacro = {
-              enable = true,
-            },
-          },
-        },
-      },
     }
 
     -- Ensure the servers and tools above are installed
@@ -295,8 +267,6 @@ return { -- LSP Configuration & Plugins
             ['textDocument/signatureHelp'] = vim.lsp.with(vim.lsp.handlers.signature_help, { border = border }),
           }
 
-          -- Skip rust_analyzer as it will be handled by rustacean.nvim
-          if server_name ~= 'rust_analyzer' then
             local server = servers[server_name] or {}
             -- This handles overriding only values explicitly passed
             -- by the server configuration above. Useful when disabling
@@ -304,7 +274,6 @@ return { -- LSP Configuration & Plugins
             server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
             server.handlers = handlers -- Add border around LSPs
             require('lspconfig')[server_name].setup(server)
-          end
         end,
       },
     }
