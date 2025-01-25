@@ -174,27 +174,19 @@
         # keybindings
         "$mainMod, Return, exec, ${userSettings.term}"
         "$mainMod SHIFT, C, exec, hyprctl reload"
-        # "$mainMod, B, exec, hyprctl dispatch exec '[workspace 1 silent] zen'"
         "$mainMod SHIFT, Q, killactive,"
         "$mainMod, F, fullscreen, 0"
-        # "$mainMod SHIFT, F, fullscreen, 1"
         "$mainMod, Space, exec, toggle_float"
         "$mainMod, D, exec, rofi -show drun || pkill rofi"
         "$mainMod, O, exec, clipman pick -t rofi"
         "$mainMod SHIFT, O, exec, clipman clear --all"
-        "$mainMod SHIFT, D, exec, webcord --enable-features=UseOzonePlatform --ozone-platform=wayland"
-        "$mainMod SHIFT, S, exec, hyprctl dispatch exec '[workspace 5 silent] SoundWireServer'"
-        "$mainMod, Escape, exec, swaylock"
-        "ALT, Escape, exec, hyprlock"
-        # "$mainMod SHIFT, Escape, exec, power-menu"
-        # "$mainMod, P, pseudo,"
         "$mainMod, X, togglesplit,"
-        "$mainMod, T, exec, toggle_oppacity"
-        # "$mainMod, E, exec, nemo"
-        # "ALT, E, exec, hyprctl dispatch exec '[float; size 1111 700] nemo'"
          "$mainMod, E, exec, hyprctl dispatch exec '[float; size 1111 650] kitty -e yazi'"
         # "$mainMod SHIFT, B, exec, toggle_waybar"
-        "$mainMod, C ,exec, hyprpicker -a"
+
+        # Lock screen
+        "$mainMod, L, exec, hyprlock"
+
 
         # screenshot
         ",Print, exec, screenshot --copy"
