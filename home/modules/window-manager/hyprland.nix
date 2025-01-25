@@ -186,7 +186,7 @@
         # "$mainMod SHIFT, B, exec, toggle_waybar"
 
         # Lock screen
-        "$mainMod, L, exec, hyprlock"
+        "$mainMod SHIFT, L, exec, hyprlock"
 
 
         # screenshot
