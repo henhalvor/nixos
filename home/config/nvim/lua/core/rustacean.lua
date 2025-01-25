@@ -37,17 +37,17 @@ return {
           vim.cmd.RustLsp('expandMacro')
         end, 'Expand Rust Macro')
         
-        -- Set up the auto-save functionality
-        vim.api.nvim_create_autocmd({ 'InsertLeave', 'TextChanged' }, {
-          buffer = bufnr,
-          callback = function()
-            -- Only save if the buffer is modifiable to prevent errors
-            if vim.bo[bufnr].modifiable then
-              vim.cmd('write')
-            end
-          end,
-          nested = true,
-        })
+        -- -- Set up the auto-save functionality
+        -- vim.api.nvim_create_autocmd({ 'InsertLeave', 'TextChanged' }, {
+        --   buffer = bufnr,
+        --   callback = function()
+        --     -- Only save if the buffer is modifiable to prevent errors
+        --     if vim.bo[bufnr].modifiable then
+        --       vim.cmd('write')
+        --     end
+        --   end,
+        --   nested = true,
+        -- })
       end,
     })
 
