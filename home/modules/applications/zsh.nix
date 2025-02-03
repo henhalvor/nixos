@@ -100,6 +100,10 @@
 
       # Add our loading function to precmd hooks
       precmd_functions+=( load_secrets_once )
+
+# Disable forward incremental search (conflicts with tmux prefix keybind)
+  bindkey -r "^S"
+  bindkey -r "^R"
     '';
     history = {
       size = 10000;

@@ -18,7 +18,7 @@ in
     escapeTime = 0;
     keyMode = "vi";
     mouse = true;
-    prefix = "C-b";
+    prefix = "C-s";
     terminal = "tmux-256color";
     
     plugins = with pkgs.tmuxPlugins; [
@@ -32,7 +32,6 @@ in
     ];
 
     extraConfig = ''
-
       # Theme
       set -g @catppuccin_flavor 'macchiato' # latte, frappe, macchiato or mocha
 
