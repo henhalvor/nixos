@@ -78,6 +78,12 @@ in
       # Better split shortcuts
       bind | split-window -h -c "#{pane_current_path}"
       bind - split-window -v -c "#{pane_current_path}"
+
+      # Automatically restore last saved environment when tmux is started
+      set -g @continuum-restore 'on'
+
+      # Save sessions every 15 minutes
+      set -g @continuum-save-interval '15'
     '';
   };
 }
