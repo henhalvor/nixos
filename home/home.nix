@@ -23,11 +23,9 @@
     ./modules/applications/${userSettings.term}.nix
     ./modules/applications/nvim.nix
     ./modules/applications/${userSettings.browser}.nix
-    # ./modules/applications/microsoft-edge.nix
     ./modules/applications/yazi.nix
     ./modules/applications/aider-chat.nix
     ./modules/applications/tmux.nix
-    # ./modules/applications/vivaldi.nix
 
     # Environment
     ./modules/environment/dev-tools.nix

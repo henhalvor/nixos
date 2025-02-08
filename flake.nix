@@ -12,9 +12,10 @@
       # This ensures it uses the same nixpkgs as your system
       inputs.nixpkgs.follows = "nixpkgs";
     };
+zen-browser.url = "github:0xc000022070/zen-browser-flake";
   };
 
-  outputs = { self, nixpkgs, home-manager, hyprpanel, ... }:
+  outputs = { self, nixpkgs, home-manager, hyprpanel, zen-browser, ... }:
     let
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
@@ -39,7 +40,8 @@
         # wmType = if (wm == "hyprland" || wm == "sway") then "wayland" else "x11";
         # browser = "firefox"; # Default browser
         term = "kitty"; # Default terminal
-        browser = "microsoft-edge";
+        browser = "zen-browser";
+      system = "x86_64-linux";
         # editor = "vim"; # Default editor
       };
     in
@@ -55,6 +57,7 @@
             # pass config variables from above
             inherit systemSettings;
             inherit userSettings;
+            inherit zen-browser;
           };
         };
       };
@@ -63,6 +66,7 @@
         henhal = home-manager.lib.homeManagerConfiguration {
           pkgs = import nixpkgs {
             inherit system;
+            inherit zen-browser;
             overlays = [
               hyprpanel.overlay
             ];
@@ -71,6 +75,7 @@
           extraSpecialArgs = {
             inherit system;
             inherit systemSettings userSettings;
+            inherit zen-browser;
             inputs = {
               inherit hyprpanel;
             };
