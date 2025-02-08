@@ -39,12 +39,10 @@ return { -- LSP Configuration & Plugins
         -- Find references for the word under your cursor.
         map('gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
 
-        -- Jump to the implementation of the word under your cursor.
-        --  Useful when your language has ways of declaring types without an actual implementation.
+        -- Jump to the        --  Useful when your language has ways of declaring types without an actual implementation.
         map('gI', require('telescope.builtin').lsp_implementations, '[G]oto [I]mplementation')
 
-        -- Jump to the type of the word under your cursor.
-        --  Useful when you're not sure what type a variable is and you want to see
+        -- Jump to the type of the        --  Useful when you're not sure what type a variable is and you want to see
         --  the definition of its *type*, not where it was *defined*.
         map('<leader>D', require('telescope.builtin').lsp_type_definitions, 'Type [D]efinition')
 
@@ -54,10 +52,7 @@ return { -- LSP Configuration & Plugins
 
         -- Fuzzy find all the symbols in your current workspace.
         --  Similar to document symbols, except searches over your entire project.
-        map('<leader>ws', require('telescope.builtin').lsp_dynamic_workspace_symbols, '[W]orkspace [S]ymbols')
-
-        -- Rename the variable under your cursor.
-        --  Most Language Servers support renaming across files, etc.
+        map('<leader>ws', require('telescope.builtin').lsp_dynamic_workspace_symbols, '[W]orkspace [S]ymbols') --  Most Language Servers support renaming across files, etc.
         map('<leader>rn', vim.lsp.buf.rename, '[R]e[n]ame')
 
         -- Execute a code action, usually your cursor needs to be on top of an error
@@ -83,9 +78,8 @@ return { -- LSP Configuration & Plugins
               vim.api.nvim_echo({ { 'No type definition found', 'WarningMsg' } }, true, {})
               return
             end
-            local first_result = result[1]
-            -- if vim.tbl_islist(result) and not vim.tbl_isempty(result) then
             if vim.tbl_isarray(result) and not vim.tbl_isempty(result) then
+              local first_result = result[1]
               if first_result.targetUri then
                 -- LSP 3.17 locationLink
                 first_result = first_result.targetUri
@@ -99,11 +93,9 @@ return { -- LSP Configuration & Plugins
                 vim.fn.bufload(bufnr)
               end
               local lines = vim.api.nvim_buf_get_lines(bufnr, first_result.range.start.line, first_result.range['end'].line + 1, false)
-              -- local filetype = vim.api.nvim_buf_get_option(bufnr, 'filetype')
 
               local filetype = vim.bo[bufnr].filetype
               vim.lsp.util.open_floating_preview(lines, filetype, {
-                -- border = 'rounded',
                 border = { '╭', '─', '╮', '│', '╯', '─', '╰', '│' },
                 focus = false,
               })
@@ -207,7 +199,6 @@ return { -- LSP Configuration & Plugins
           },
         },
       },
-
       lua_ls = {
         -- cmd = {...},
         -- filetypes = { ...},
@@ -235,65 +226,154 @@ return { -- LSP Configuration & Plugins
 
     -- You can add other tools here that you want Mason to install
     -- for you, so that they are available from within Neovim.
-    local ensure_installed = vim.tbl_keys(servers or {})
-    vim.list_extend(ensure_installed, {
-      'stylua', -- Used to format Lua code
+    local ensure_installed_tools = { -- Tools for mason-tool-installer to ensure
+      'stylua',
       'prettier',
       'eslint',
       'eslint_d',
-    })
-    require('mason-tool-installer').setup { ensure_installed = ensure_installed }
+    }
+    require('mason-tool-installer').setup { ensure_installed = ensure_installed_tools }
+
+    -- Borders
+    -- First, define your border configuration (place this before the server setups)
+    local border = {
+      { '╭', 'FloatBorder' },
+      { '─', 'FloatBorder' },
+      { '╮', 'FloatBorder' },
+      { '│', 'FloatBorder' },
+      { '╯', 'FloatBorder' },
+      { '─', 'FloatBorder' },
+      { '╰', 'FloatBorder' },
+      { '│', 'FloatBorder' },
+    }
+
+    -- Create handlers with borders
+    local handlers = {
+      ['textDocument/hover'] = vim.lsp.with(vim.lsp.handlers.hover, { border = border }),
+      ['textDocument/signatureHelp'] = vim.lsp.with(vim.lsp.handlers.signature_help, { border = border }),
+    }
 
     require('mason-lspconfig').setup {
-      ensure_installed = vim.tbl_keys(servers),
-      automatic_installation = true,
-
+      -- Explicitly list servers Mason should ensure, excluding rust_analyzer
+      ensure_installed = {
+        'ts_ls',
+        'html',
+        'cssls',
+        'tailwindcss',
+        'svelte',
+        'lua_ls',
+      },
+      -- Remove automatic_installation = true and replace with this:
+      automatic_installation = {
+        exclude = { 'rust_analyzer' },
+      },
       handlers = {
         function(server_name)
-          local border = {
-            { '╭', 'FloatBorder' },
-            { '─', 'FloatBorder' },
-            { '╮', 'FloatBorder' },
-            { '│', 'FloatBorder' },
-            { '╯', 'FloatBorder' },
-            { '─', 'FloatBorder' },
-            { '╰', 'FloatBorder' },
-            { '│', 'FloatBorder' },
-          }
+          local server = servers[server_name] or {}
+          -- This handles overriding only values explicitly passed
+          -- by the server configuration above. Useful when disabling
+          -- certain features of an LSP (for example, turning off formatting for tsserver)
+          server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
+          server.handlers = handlers -- Add border around LSPs
 
-          -- Handler for border around LSP windows
-          local handlers = {
-            ['textDocument/hover'] = vim.lsp.with(vim.lsp.handlers.hover, { border = border }),
-            ['textDocument/signatureHelp'] = vim.lsp.with(vim.lsp.handlers.signature_help, { border = border }),
-          }
-
-            local server = servers[server_name] or {}
-            -- This handles overriding only values explicitly passed
-            -- by the server configuration above. Useful when disabling
-            -- certain features of an LSP (for example, turning off formatting for tsserver)
-            server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
-            server.handlers = handlers -- Add border around LSPs
-            require('lspconfig')[server_name].setup(server)
+          if server_name == 'rust_analyzer' then
+            return
+          end
+          -- For all other servers, use mason-lspconfig's setup
+          require('lspconfig')[server_name].setup(server)
         end,
       },
     }
 
-    -- Configure diagnostic display
+    require('lspconfig').rust_analyzer.setup {
+      capabilities = capabilities,
+      handlers = handlers,
+      settings = {
+        ['rust-analyzer'] = {
+          diagnostics = {
+            enable = true,
+            enableExperimental = true,
+          },
+          check = {
+            command = 'clippy',
+            extraArgs = {},
+            features = 'all',
+            invocationStrategy = 'immediate',
+          },
+          files = {
+            watcher = 'client',
+          },
+          cargo = {
+            allFeatures = true,
+            buildScripts = {
+              enable = true,
+            },
+          },
+          procMacro = {
+            enable = true,
+          },
+        },
+      },
+    }
+
     local function setup_lsp_diags()
-      vim.lsp.handlers['textDocument/publishDiagnostics'] = vim.lsp.with(vim.lsp.diagnostic.on_publish_diagnostics, {
-        virtual_text = false,
-        signs = true,
-        update_in_insert = true,
-        underline = true,
-        severity_sort = true,
+      -- Configure diagnostics
+      vim.diagnostic.config {
+        virtual_text = {
+          source = 'if_many',
+          spacing = 4,
+          prefix = '●',
+        },
         float = {
-          border = 'rounded',
           source = 'always',
+          border = 'rounded',
           header = '',
           prefix = '',
         },
-      })
+        signs = {
+          active = true,
+          priority = 20, -- Single number for priority instead of a table
+          text = {
+            [vim.diagnostic.severity.ERROR] = ' ',
+            [vim.diagnostic.severity.WARN] = ' ',
+            [vim.diagnostic.severity.HINT] = '󰌵 ',
+            [vim.diagnostic.severity.INFO] = ' ',
+          },
+        },
+        underline = {
+          severity = {
+            min = vim.diagnostic.severity.ERROR,
+          },
+        },
+        severity_sort = true,
+        update_in_insert = true,
+      }
     end
+
+    -- Add highlight configurations
+    vim.cmd [[
+  highlight DiagnosticUnderlineError gui=undercurl guisp=#db4b4b
+  highlight DiagnosticUnderlineWarn gui=undercurl guisp=#e0af68
+  highlight DiagnosticUnderlineInfo gui=undercurl guisp=#0db9d7
+  highlight DiagnosticUnderlineHint gui=undercurl guisp=#1abc9c
+  
+  highlight DiagnosticError guifg=#db4b4b
+  highlight DiagnosticWarn guifg=#e0af68
+  highlight DiagnosticInfo guifg=#0db9d7
+  highlight DiagnosticHint guifg=#1abc9c
+
+  highlight DiagnosticSignError guifg=#db4b4b guibg=NONE
+  highlight DiagnosticSignWarn guifg=#e0af68 guibg=NONE
+  highlight DiagnosticSignInfo guifg=#0db9d7 guibg=NONE
+  highlight DiagnosticSignHint guifg=#1abc9c guibg=NONE
+]]
+
+    -- Configure hover display
+    vim.lsp.handlers['textDocument/hover'] = vim.lsp.with(vim.lsp.handlers.hover, {
+      border = 'rounded',
+      max_width = 80,
+      max_height = 20,
+    })
 
     setup_lsp_diags()
 
