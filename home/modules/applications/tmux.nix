@@ -18,7 +18,7 @@ in
     escapeTime = 0;
     keyMode = "vi";
     mouse = true;
-    prefix = "C-s";
+    # prefix = "C-s";
     terminal = "tmux-256color";
     
     plugins = with pkgs.tmuxPlugins; [
