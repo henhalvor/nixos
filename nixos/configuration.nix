@@ -195,11 +195,14 @@
   #
   hardware.i2c.enable = true;
 
-  # Add i2c group and udev rules
+  # Add i2c group and udev rules + Udev rule for configuring keyboard with VIAL
   users.groups.i2c = {};
   services.udev.extraRules = ''
     KERNEL=="i2c-[0-9]*", GROUP="i2c", MODE="0660"
+
+    KERNEL=="hidraw*", SUBSYSTEM=="hidraw", ATTRS{serial}=="*vial:f64c2b3c*", MODE="0660", GROUP="users", TAG+="uaccess", TAG+="udev-acl"
   '';
+
 
 
   #
