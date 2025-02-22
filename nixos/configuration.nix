@@ -32,6 +32,8 @@
 
 
 
+
+
   networking.hostName = systemSettings.hostname; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
@@ -188,11 +190,17 @@ services.blueman.enable = true;
     os-prober
     #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
     #  wget
+    # External hard drive tools
+ntfs3g    # If it's an NTFS drive
+  dosfstools # If it's FAT/FAT32
+
 
     # For controlling external monitor's brightness
     ddcutil
   ];
 
+
+boot.supportedFilesystems = [ "ntfs" "ext4" "vfat" ];
 
 
 
