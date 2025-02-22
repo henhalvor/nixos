@@ -27,7 +27,7 @@ zen-browser.url = "github:0xc000022070/zen-browser-flake";
         hostname = "nixos"; # hostname
         timezone = "Europe/Oslo"; # select timezone
         locale = "en_US.UTF-8"; # select locale
-        isEfiSystem = false;
+        isEfiSystem = true;
       };
 
       # ----- USER SETTINGS ----- #
