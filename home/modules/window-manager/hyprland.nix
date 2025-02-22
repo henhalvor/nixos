@@ -23,6 +23,8 @@
     playerctl       # You already have this for media controls
     # nm-applet # Network manager applet (optional)
     ddcutil # External monitor brightness control
+    bluez # bluetooth
+    blueberry
   ];
 
   wayland.windowManager.hyprland = {
