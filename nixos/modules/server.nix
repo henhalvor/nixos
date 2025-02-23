@@ -13,9 +13,12 @@
 
   # SSH Key Config
   users.users.${userSettings.username} = {
+    # Add your SSH keys here
+    # Yoga Pro 7 Ubuntu key (sway)
+    # Yoga Pro 7 Nixos key (hyprland)
     openssh.authorizedKeys.keys = [
-      # Add your public SSH key here
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDjlpTB8/FqToM9BkFuhL7w627YGto8ZYwAdXVR5AT+T henhal@henhal-Yoga-Pro-7-14APH8-Ubuntu"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOf2s4mEBjowY2N6DSav5d5s9dTQzLQEpB3oU2qLvvrX henhalvor@gmail.com"
     ];
   };
 
