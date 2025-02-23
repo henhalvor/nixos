@@ -31,20 +31,20 @@
 
   # Bootloader configuration
   boot.loader = {
-    # Use GRUB for both BIOS and UEFI
     grub = {
+      enable = false;
+   };
+
+   # Use systemd-boot instead of grub
+    systemd-boot = {
       enable = true;
-      useOSProber = true;
-      # For UEFI systems (laptop)
-      efiSupport = systemSettings.isEfiSystem;
-      efiInstallAsRemovable = systemSettings.isEfiSystem;
-      # For BIOS systems (desktop)
-      device = if systemSettings.isEfiSystem then "nodev" else "/dev/sda";
+      # This ensures systemd-boot can handle your generations
+      configurationLimit = 10;  # Adjust this number to control how many generations to keep
     };
+    
     # EFI settings for UEFI systems
     efi = {
       canTouchEfiVariables = false;
-      efiSysMountPoint = "/boot/efi";
     };
   };
 
