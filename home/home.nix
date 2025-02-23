@@ -38,6 +38,7 @@
     ./modules/settings/git.nix
     ./modules/settings/secrets/secrets.nix
     ./modules/settings/nerd-fonts.nix
+    ./modules/settings/ssh.nix
   ];
 
 
