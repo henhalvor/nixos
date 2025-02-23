@@ -41,7 +41,7 @@
     htop
     iftop
     iotop
-    ufw      # Firewall
+    #ufw      # Firewall
     fail2ban # Protection against brute force attacks
   ];
 
@@ -57,7 +57,6 @@
     enable = true;
     maxretry = 5;  # Number of attempts before ban
     bantime = "24h";
-    findtime = "1h";
   };
 
   # Keep the system awake
@@ -69,7 +68,7 @@
 
   # Network settings for better server operation
   networking = {
-    useDHCP = true;  # Or set a static IP if needed
+    # useDHCP = true;  # Or set a static IP if needed
     # Optionally configure static IP:
     # interfaces.<interface>.ipv4.addresses = [{
     #   address = "192.168.1.100";

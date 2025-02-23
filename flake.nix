@@ -28,7 +28,7 @@ zen-browser.url = "github:0xc000022070/zen-browser-flake";
         timezone = "Europe/Oslo"; # select timezone
         locale = "en_US.UTF-8"; # select locale
         isEfiSystem = true;
-        type = "laptop"; # laptop, desktop or server
+        type = "server"; # laptop, desktop or server
       };
 
       # ----- USER SETTINGS ----- #
