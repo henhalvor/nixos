@@ -24,7 +24,7 @@ zen-browser.url = "github:0xc000022070/zen-browser-flake";
       # ---- SYSTEM SETTINGS ---- #
       systemSettings = {
         system = system; # Use the 'system' from the let binding
-        hostname = "nixos"; # hostname
+        hostname = "nixos-server"; # hostname
         timezone = "Europe/Oslo"; # select timezone
         locale = "en_US.UTF-8"; # select locale
         isEfiSystem = true;
