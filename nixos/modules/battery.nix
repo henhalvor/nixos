@@ -1,10 +1,17 @@
-{ config, ... }: {
+{ config, pkgs, ... }: {
+
+ environment.systemPackages = with pkgs; [
+    powertop
+    thermald
+    auto-cpufreq
+  ];
 
   powerManagement = {
     enable = true;
     powertop.enable = true;
     cpuFreqGovernor = "powersave";
   };
+
   services = {
     thermald.enable = true;
     power-profiles-daemon.enable = false;
