@@ -7,10 +7,27 @@
 {
   imports =
     [
+      # Shared imports
       # Include the results of the hardware scan.
       ./hardware-configuration.nix
-      ./modules/battery.nix
-    ];
+    ] ++
+
+    # Laptop-only imports
+    (if systemSettings.type == "laptop" then [
+     ./modules/battery.nix
+    ] else []) ++
+    
+    # Desktop-only imports
+    (if systemSettings.type == "desktop" then [
+     
+    ] else []) ++
+    
+    # Server-only imports
+    (if systemSettings.type == "server" then [
+      ./modules/server.nix
+    ] else []);
+
+
 
   # Bootloader configuration
   boot.loader = {

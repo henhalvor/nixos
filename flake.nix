@@ -28,6 +28,7 @@ zen-browser.url = "github:0xc000022070/zen-browser-flake";
         timezone = "Europe/Oslo"; # select timezone
         locale = "en_US.UTF-8"; # select locale
         isEfiSystem = true;
+        type = "laptop"; # laptop, desktop or server
       };
 
       # ----- USER SETTINGS ----- #
@@ -41,7 +42,7 @@ zen-browser.url = "github:0xc000022070/zen-browser-flake";
         # browser = "firefox"; # Default browser
         term = "kitty"; # Default terminal
         browser = "zen-browser";
-      system = "x86_64-linux";
+        system = "x86_64-linux";
         # editor = "vim"; # Default editor
       };
     in
