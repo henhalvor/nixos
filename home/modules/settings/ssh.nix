@@ -7,6 +7,10 @@
       "devserver" = {
         hostname = "10.0.0.17";
         user = "henhal";
+        extraOptions = {
+          RequestTTY = "yes";
+          RemoteCommand = "tmux new-session -A -s ssh";
+        };
         # Forward all necessary ports for Next.js and Supabase
         localForwards = [
           {
