@@ -4,8 +4,8 @@
   programs.ssh = {
     enable = true;
     matchBlocks = {
-      "devserver" = {
-        hostname = "10.0.0.17";
+      "server" = {
+        hostname = "10.0.0.120";
         user = "henhal";
         extraOptions = {
           RequestTTY = "yes";
