@@ -7,6 +7,7 @@
     settings = {
       PasswordAuthentication = false;
       PermitRootLogin = "no";
+      OpenFireWall = true;
       PubKeyAuthentication = true;
       UsePAM = false;  # Disable PAM to ensure public key authentication is used
       LogLevel = "VERBOSE";

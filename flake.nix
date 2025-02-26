@@ -28,22 +28,32 @@ zen-browser.url = "github:0xc000022070/zen-browser-flake";
         timezone = "Europe/Oslo"; # select timezone
         locale = "en_US.UTF-8"; # select locale
         isEfiSystem = true;
-        type = "laptop"; # laptop, desktop or server
+        stateVersion = "24.11";
+        #
+        # Has to be one of the systems defined in ./systems/
+        #
+        # lenovo-yoga-pro-7
+        # desktop
+        # hp-server
+        #
+        systemName = "lenovo-yoga-pro-7";
       };
 
       # ----- USER SETTINGS ----- #
       userSettings = rec {
-        username = "henhal"; # username
+        #
+        # Has to be one of the users defined in ./users/
+        #
+        # henhal
+        #
+        username = "henhal";
         name = "Henrik"; # name/identifier
-        email = "henhalvor@gmail.com"; # email (used for certain configurations)
+        email = "henhalvor@gmail.com";
         dotfilesDir = "${pkgs.lib.getHomeDir username}/.dotfiles"; # absolute path of the local repo
-        # wm = "hyprland"; # Selected window manager or desktop environment
-        # wmType = if (wm == "hyprland" || wm == "sway") then "wayland" else "x11";
-        # browser = "firefox"; # Default browser
-        term = "kitty"; # Default terminal
+        term = "kitty";
         browser = "zen-browser";
         system = "x86_64-linux";
-        # editor = "vim"; # Default editor
+        stateVersion = "24.11";
       };
     in
     {
@@ -51,7 +61,7 @@ zen-browser.url = "github:0xc000022070/zen-browser-flake";
         nixos = lib.nixosSystem {
           inherit system;
           modules = [
-            ./nixos/configuration.nix
+            ./systems/${systemSettings.systemName}/configuration.nix
             home-manager.nixosModules.home-manager
           ];
           specialArgs = {
@@ -72,7 +82,7 @@ zen-browser.url = "github:0xc000022070/zen-browser-flake";
               hyprpanel.overlay
             ];
           };
-          modules = [ ./home/home.nix ];
+         modules = [ ./users/${userSettings.username}/home.nix ];
           extraSpecialArgs = {
             inherit system;
             inherit systemSettings userSettings;
