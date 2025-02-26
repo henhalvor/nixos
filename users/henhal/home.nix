@@ -27,6 +27,7 @@
     ../../home/modules/applications/aider-chat.nix
     ../../home/modules/applications/tmux.nix
     ../../home/modules/applications/vial.nix
+    ../../home/modules/applications/brave.nix
 
     # Environment
     ../../home/modules/environment/dev-tools.nix
