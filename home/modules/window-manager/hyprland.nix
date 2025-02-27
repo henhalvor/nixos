@@ -48,6 +48,7 @@
         "hyprpanel &"
         "hyprpaper &"
         "hypridle &" 
+
         #   "swaync &"
         #   "hyprctl setcursor Bibata-Modern-Ice 24 &"
         #   "swww-daemon &"
@@ -436,6 +437,9 @@
       env = LIBVA_DRIVER_NAME,nvidia
       env = XDG_SESSION_TYPE,wayland
       env = NVD_BACKEND,direct
+
+
+      source = ~/.config/hypr/colorscheme.conf
     ";
 
 
