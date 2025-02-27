@@ -5,7 +5,7 @@
     [
       ./hardware-configuration.nix
       ../../nixos/default.nix
-      ../../nixos/modules/graphics.nix
+      ../../nixos/modules/nvidia-graphics.nix
       ../../nixos/modules/ssh.nix
       ../../nixos/modules/pipewire.nix
       ../../nixos/modules/bluetooth.nix
