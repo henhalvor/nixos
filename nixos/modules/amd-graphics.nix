@@ -2,7 +2,11 @@
 
 {
   # Video drivers configuration
-  services.xserver.videoDrivers = [ "amdgpu" ];  # Modern AMD GPUs use amdgpu driver
+  services.xserver.videoDrivers = [ "amdgpu" ];  # Only use amdgpu driver
+
+  # Remove any NVIDIA-related packages and modules
+  hardware.nvidia.package = null;
+  hardware.nvidia.modesetting.enable = false;
 
   # Environment variables for AMD graphics
   environment.sessionVariables = {
@@ -13,6 +17,9 @@
     # Wayland-specific settings (if using Wayland)
     WLR_RENDERER = "vulkan";         # Better performance on AMD
     
+    # Force Mesa to ignore NVIDIA
+    MESA_LOADER_DRIVER_OVERRIDE = "radeonsi";
+    
     # Optional: Use Vulkan by default for games
     AMD_VULKAN_ICD = "RADV";         # Use RADV Vulkan driver
   };
@@ -22,6 +29,7 @@
     graphics = {
       enable = true;
       
+      # Add drivers for AMD and definitely exclude NVIDIA
       extraPackages = with pkgs; [
         # Vulkan support
         vulkan-loader
@@ -31,10 +39,7 @@
         # OpenGL and VA-API support
         mesa                      # Main OpenGL implementation
         libva                     # Video Acceleration API
-        
-        # The correct package for Mesa VA-API drivers
         mesa.drivers              # Contains the VA-API drivers
-        
         libva-utils              
         
         # VDPAU support
@@ -62,6 +67,7 @@
     
     # Enable firmware for amdgpu if needed
     firmware = [ pkgs.linux-firmware ];
+    
   };
 
   # Optional: For better performance with AMDGPU
@@ -71,5 +77,18 @@
     "radeon.cik_support=0"             # Disable Sea Islands support
     "amdgpu.si_support=1"              # Enable Southern Islands support in amdgpu
     "amdgpu.cik_support=1"             # Enable Sea Islands support in amdgpu
+    "module_blacklist=nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm" # Blacklist NVIDIA modules
   ];
+  
+  # XDG Desktop Portal for proper application integrations
+  xdg.portal = {
+    enable = true;
+    extraPortals = with pkgs; [
+      xdg-desktop-portal-gtk
+      xdg-desktop-portal-gnome
+    ];
+    config.common.default = "*";
+  };
+  
+
 }
