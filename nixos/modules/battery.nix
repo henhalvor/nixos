@@ -187,7 +187,7 @@
     kernelParams = [
       "quiet"
       "acpi_osi=Linux"
-      "mem_sleep_default=deep"
+      # "mem_sleep_default=deep"
       "intel_pstate=passive"
       "pcie_aspm=force"
       "i915.enable_psr=1"
