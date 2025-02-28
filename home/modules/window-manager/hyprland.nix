@@ -424,20 +424,20 @@
         force_zero_scaling = true
       }
 
-      env = XCURSOR_SIZE,24
-      env = QT_QPA_PLATFORM,wayland
-      env = SDL_VIDEODRIVER,wayland
-      env = CLUTTER_BACKEND,wayland
-      env = __GLX_VENDOR_LIBRARY_NAME,nvidia
-      env = WLR_NO_HARDWARE_CURSORS,1
-      env = WLR_RENDERER,vulkan
-      env = GBM_BACKEND,nvidia-drm
-      env = __GL_GSYNC_ALLOWED,0
-      env = __GL_VRR_ALLOWED,0
-      env = LIBVA_DRIVER_NAME,nvidia
-      env = XDG_SESSION_TYPE,wayland
-      env = NVD_BACKEND,direct
-
+      # env = XCURSOR_SIZE,24
+      # env = QT_QPA_PLATFORM,wayland
+      # env = SDL_VIDEODRIVER,wayland
+      # env = CLUTTER_BACKEND,wayland
+      # # env = __GLX_VENDOR_LIBRARY_NAME,nvidia
+      # env = WLR_NO_HARDWARE_CURSORS,1
+      # env = WLR_RENDERER,vulkan
+      # # env = GBM_BACKEND,nvidia-drm
+      # env = __GL_GSYNC_ALLOWED,0
+      # env = __GL_VRR_ALLOWED,0
+      # # env = LIBVA_DRIVER_NAME,nvidia
+      # env = XDG_SESSION_TYPE,wayland
+      # env = NVD_BACKEND,direct
+      #
 
       source = ~/.config/hypr/colorscheme.conf
     ";

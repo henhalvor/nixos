@@ -28,6 +28,7 @@
     ../../home/modules/applications/tmux.nix
     ../../home/modules/applications/vial.nix
     ../../home/modules/applications/brave.nix
+    ../../home/modules/applications/microsoft-edge.nix
     ../../home/modules/applications/vscode.nix
 
     # Environment
