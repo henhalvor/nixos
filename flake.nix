@@ -28,7 +28,6 @@ vscode-server.url = "github:nix-community/nixos-vscode-server";
         hostname = "nixos"; # hostname
         timezone = "Europe/Oslo"; # select timezone
         locale = "en_US.UTF-8"; # select locale
-        isEfiSystem = true;
         stateVersion = "24.11";
         #
         # Has to be one of the systems defined in ./systems/
@@ -37,7 +36,7 @@ vscode-server.url = "github:nix-community/nixos-vscode-server";
         # desktop
         # hp-server
         #
-        systemName = "lenovo-yoga-pro-7";
+        systemName = "desktop";
       };
 
       # ----- USER SETTINGS ----- #

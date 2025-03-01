@@ -8,7 +8,8 @@
       ../../nixos/modules/nvidia-graphics.nix
       ../../nixos/modules/pipewire.nix
       ../../nixos/modules/bluetooth.nix
-      ../../nixos/modules/bootloader.nix
       ../../nixos/modules/networking.nix
+      # Custom bootloader for desktop (using grub + non efi system)
+      ./bootloader.nix
     ];
 }
