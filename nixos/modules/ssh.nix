@@ -7,7 +7,7 @@
     settings = {
       PasswordAuthentication = false;
       PermitRootLogin = "no";
-      OpenFireWall = true;
+      # OpenFireWall = true # Bad config option error caused by this
       PubKeyAuthentication = true;
       UsePAM = false;  # Disable PAM to ensure public key authentication is used
       LogLevel = "VERBOSE";

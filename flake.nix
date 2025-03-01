@@ -13,9 +13,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 zen-browser.url = "github:0xc000022070/zen-browser-flake";
+vscode-server.url = "github:nix-community/nixos-vscode-server";
   };
 
-  outputs = { self, nixpkgs, home-manager, hyprpanel, zen-browser, ... }:
+  outputs = { self, nixpkgs, home-manager, hyprpanel, zen-browser, vscode-server, ... }:
     let
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
@@ -24,7 +25,7 @@ zen-browser.url = "github:0xc000022070/zen-browser-flake";
       # ---- SYSTEM SETTINGS ---- #
       systemSettings = {
         system = system; # Use the 'system' from the let binding
-        hostname = "nixos"; # hostname
+        hostname = "nixos-server"; # hostname
         timezone = "Europe/Oslo"; # select timezone
         locale = "en_US.UTF-8"; # select locale
         isEfiSystem = true;
@@ -36,7 +37,7 @@ zen-browser.url = "github:0xc000022070/zen-browser-flake";
         # desktop
         # hp-server
         #
-        systemName = "lenovo-yoga-pro-7";
+        systemName = "hp-server";
       };
 
       # ----- USER SETTINGS ----- #
@@ -63,6 +64,10 @@ zen-browser.url = "github:0xc000022070/zen-browser-flake";
           modules = [
             ./systems/${systemSettings.systemName}/configuration.nix
             home-manager.nixosModules.home-manager
+            vscode-server.nixosModules.default
+            ({ config, pkgs, ... }: {
+              services.vscode-server.enable = true;
+            })
           ];
           specialArgs = {
             # pass config variables from above
