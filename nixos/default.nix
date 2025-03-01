@@ -29,8 +29,9 @@
     XDG_SESSION_TYPE = "wayland";
   };
 
-
-
+   
+  # Needed for remote ssh for vscode. Run unpatched dynamic binaries on NixOS.
+  programs.nix-ld.enable = true; 
 
   # Enable Vulkan support
   hardware.pulseaudio.support32Bit = true;

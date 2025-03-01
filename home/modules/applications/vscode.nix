@@ -12,6 +12,8 @@
       esbenp.prettier-vscode               # Prettier
       bradlc.vscode-tailwindcss            # Tailwind CSS IntelliSense
       formulahendry.auto-rename-tag        # Auto Rename Tag
+      ms-vscode-remote.remote-ssh
+      ms-vscode-remote.vscode-remote-extensionpack
       
       # NeoVim
       asvetliakov.vscode-neovim            # VSCode Neovim
