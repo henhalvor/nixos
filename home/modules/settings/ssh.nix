@@ -32,6 +32,30 @@
             host.port = 54321;
           }
           {
+            # Supabase DB shadow port
+            bind.port = 54320;
+            host.address = "localhost";
+            host.port = 54320;
+          }
+          {
+            # Supabase DB pooler
+            bind.port = 54329;
+            host.address = "localhost";
+            host.port = 54329;
+          }
+          {
+            # Supabase DB pooler
+            bind.port = 54329;
+            host.address = "localhost";
+            host.port = 54329;
+          }
+          {
+            # Supabase Chrome inspector for edge functions
+            bind.port = 8083;
+            host.address = "localhost";
+            host.port = 8083;
+          }
+          {
             # Supabase PostgreSQL
             bind.port = 54322;
             host.address = "localhost";
@@ -48,6 +72,12 @@
             bind.port = 54324;
             host.address = "localhost";
             host.port = 54324;
+          }
+          {
+            # Supabase analytics
+            bind.port = 54327;
+            host.address = "localhost";
+            host.port = 54327;
           }
           #
           # React Native
