@@ -25,7 +25,7 @@ vscode-server.url = "github:nix-community/nixos-vscode-server";
       # ---- SYSTEM SETTINGS ---- #
       systemSettings = {
         system = system; # Use the 'system' from the let binding
-        hostname = "nixos-server"; # hostname
+        hostname = "nixos"; # hostname
         timezone = "Europe/Oslo"; # select timezone
         locale = "en_US.UTF-8"; # select locale
         isEfiSystem = true;
@@ -37,7 +37,7 @@ vscode-server.url = "github:nix-community/nixos-vscode-server";
         # desktop
         # hp-server
         #
-        systemName = "hp-server";
+        systemName = "lenovo-yoga-pro-7";
       };
 
       # ----- USER SETTINGS ----- #
@@ -64,11 +64,14 @@ vscode-server.url = "github:nix-community/nixos-vscode-server";
           modules = [
             ./systems/${systemSettings.systemName}/configuration.nix
             home-manager.nixosModules.home-manager
+            
+          ] ++ (if systemSettings.systemName == "hp-server" then [
+            # VS Code server fix (only for server systems)
             vscode-server.nixosModules.default
             ({ config, pkgs, ... }: {
               services.vscode-server.enable = true;
             })
-          ];
+          ] else []);
           specialArgs = {
             # pass config variables from above
             inherit systemSettings;
