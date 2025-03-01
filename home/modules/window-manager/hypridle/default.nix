@@ -14,6 +14,12 @@
     # This listener handles immediate lock on lid close
     listener {
         device = LIBINPUT_DEVICE_LID_SWITCH    # Monitors laptop lid events
+        on-lid-close = hyprlock && hyprctl dispatch dpms off               # Locks immediately when lid closes
+        on-lid-open = hyprctl dispatch dpms on && notify-send "Welcome back!"
+    }
+
+    listener {
+        device = LIBINPUT_DEVICE_LID_SWITCH    # Monitors laptop lid events
         on-lid-close = hyprlock                # Locks immediately when lid closes
         on-lid-open = notify-send "Welcome back!"
     }
@@ -21,7 +27,7 @@
     # This listener adds a 5-minute delay before suspending after lid close
     listener {
         device = LIBINPUT_DEVICE_LID_SWITCH    # Also monitors lid events
-        timeout = 300                          # 5 minute delay (in seconds)
+        timeout = 180                          # 5 minute delay (in seconds)
         on-timeout = systemctl suspend         # Suspends system after timeout
         # The timeout only starts counting after the lid closes
         on-lid-open = reset                    # Cancels suspension if lid opens
@@ -29,7 +35,7 @@
 
     # Standard idle-based screen locking remains active
     listener {
-        timeout = 300                          # 5 minutes of inactivity
+        timeout = 180                          # 5 minutes of inactivity
         on-timeout = notify-send "Locking screen in 30 seconds..."
         on-resume = notify-send "Welcome back!"
     }
