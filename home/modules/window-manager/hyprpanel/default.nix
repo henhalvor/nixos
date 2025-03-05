@@ -64,7 +64,7 @@
       bar.customModules.hyprsunset.offIcon = "󰛨";
       bar.customModules.hyprsunset.onIcon =  "󱩌";
       bar.customModules.hyprsunset.pollingInterval =  2000;
-      bar.customModules.hyprsunset.temperature =  "6000k";
+      bar.customModules.hyprsunset.temperature =  "3500k";
 
       # Hypridle
 bar.customModules.hypridle.label =  false;
