@@ -21,21 +21,21 @@ in
     edge-wayland
   ];
 
-  # Set up Edge as the default browser
-  xdg.mimeApps = {
-    enable = true;
-    defaultApplications = {
-      "text/html" = [ "microsoft-edge-wayland.desktop" ];
-      "application/xhtml+xml" = [ "microsoft-edge-wayland.desktop" ];
-      "x-scheme-handler/http" = [ "microsoft-edge-wayland.desktop" ];
-      "x-scheme-handler/https" = [ "microsoft-edge-wayland.desktop" ];
-      "application/x-extension-htm" = [ "microsoft-edge-wayland.desktop" ];
-      "application/x-extension-html" = [ "microsoft-edge-wayland.desktop" ];
-      "application/x-extension-shtml" = [ "microsoft-edge-wayland.desktop" ];
-      "application/x-extension-xht" = [ "microsoft-edge-wayland.desktop" ];
-    };
-  };
-
+  # # Set up Edge as the default browser
+  # xdg.mimeApps = {
+  #   enable = true;
+  #   defaultApplications = {
+  #     "text/html" = [ "microsoft-edge-wayland.desktop" ];
+  #     "application/xhtml+xml" = [ "microsoft-edge-wayland.desktop" ];
+  #     "x-scheme-handler/http" = [ "microsoft-edge-wayland.desktop" ];
+  #     "x-scheme-handler/https" = [ "microsoft-edge-wayland.desktop" ];
+  #     "application/x-extension-htm" = [ "microsoft-edge-wayland.desktop" ];
+  #     "application/x-extension-html" = [ "microsoft-edge-wayland.desktop" ];
+  #     "application/x-extension-shtml" = [ "microsoft-edge-wayland.desktop" ];
+  #     "application/x-extension-xht" = [ "microsoft-edge-wayland.desktop" ];
+  #   };
+  # };
+  #
   # Create a desktop entry that uses our Wayland-optimized wrapper
   xdg.desktopEntries.microsoft-edge-wayland = {
     name = "Edge (Wayland)";
