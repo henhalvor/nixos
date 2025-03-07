@@ -10,7 +10,26 @@
         extraOptions = {
           RequestTTY = "yes";
           RemoteCommand = "tmux new-session -A -s ssh";
+          # Improve connection reliability for proxied services
+          ExitOnForwardFailure = "yes";
+          
         };
+          # Compression can help with web applications
+          compression = true;
+          # dynamicForward = "8888";  # SOCKS proxy for more flexible forwarding
+
+          # More aggressively keep connection alive
+          serverAliveInterval = 30;
+          serverAliveCountMax = 6;
+
+          # Add a dynamic SOCKS proxy for flexible forwarding
+          dynamicForwards = [
+            {
+              port = 8888;
+              address = "localhost";
+            }
+          ];
+         
         # Forward all necessary ports for Next.js and Supabase
         localForwards = [
           {
@@ -119,9 +138,6 @@
             host.port = 19003;
           }
         ];
-        # Keep connection alive
-        serverAliveInterval = 60;
-        serverAliveCountMax = 3;
       };
     };
   };
