@@ -9,6 +9,7 @@
     shellAliases = {
       v = "nvim";
       lzg = "lazygit";
+      cd = "z";
     };
     syntaxHighlighting.enable = true;
     autosuggestion.enable = true;
