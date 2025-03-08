@@ -1,8 +1,14 @@
-
-{ config, pkgs, ... }:
+{ config, pkgs, unstable, ... }:
 
 {
+  # Your existing config...
+  
   home.packages = with pkgs; [
-    aider-chat
+    # Your existing packages...
+    
+    # Use aider-chat from unstable channel for latest version
+    unstable.aider-chat
   ];
+  
+  # Rest of your config...
 }

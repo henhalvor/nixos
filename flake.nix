@@ -3,6 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
+nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
     home-manager = {
       url = "github:nix-community/home-manager/release-24.11";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -16,10 +17,12 @@ zen-browser.url = "github:0xc000022070/zen-browser-flake";
 vscode-server.url = "github:nix-community/nixos-vscode-server";
   };
 
-  outputs = { self, nixpkgs, home-manager, hyprpanel, zen-browser, vscode-server, ... }:
+  outputs = { self, nixpkgs, nixpkgs-unstable, home-manager, hyprpanel, zen-browser, vscode-server, ... }:
     let
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
+      # Add reference to unstable packages
+      unstable = nixpkgs-unstable.legacyPackages.${system};
       lib = nixpkgs.lib;
 
       # ---- SYSTEM SETTINGS ---- #
@@ -36,7 +39,7 @@ vscode-server.url = "github:nix-community/nixos-vscode-server";
         # desktop
         # hp-server
         #
-        systemName = "desktop";
+        systemName = "lenovo-yoga-pro-7";
       };
 
       # ----- USER SETTINGS ----- #
@@ -76,6 +79,8 @@ vscode-server.url = "github:nix-community/nixos-vscode-server";
             inherit systemSettings;
             inherit userSettings;
             inherit zen-browser;
+            # Pass unstable packages
+            inherit unstable;
           };
         };
       };
@@ -87,6 +92,10 @@ vscode-server.url = "github:nix-community/nixos-vscode-server";
             inherit zen-browser;
             overlays = [
               hyprpanel.overlay
+               # Add overlay to expose unstable packages
+              (final: prev: {
+                unstable = unstable;
+              })
             ];
           };
          modules = [ ./users/${userSettings.username}/home.nix ];
@@ -94,6 +103,7 @@ vscode-server.url = "github:nix-community/nixos-vscode-server";
             inherit system;
             inherit systemSettings userSettings;
             inherit zen-browser;
+            inherit unstable;
             inputs = {
               inherit hyprpanel;
             };
