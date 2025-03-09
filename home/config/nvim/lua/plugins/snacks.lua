@@ -131,18 +131,31 @@ return {
 
     -- Terminal 1
     {
-      '<leader>t1',
+      '<leader>ai',
       function()
-        Snacks.terminal.toggle(nil, {
-          env = { TERM_ID = '1' },
+        -- Calculate window dimensions and position
+        local width = vim.o.columns
+        local height = vim.o.lines
+        local win_height = math.floor(height * 0.9)
+        local win_width = math.floor(width * 0.9)
+        local row = math.floor((height - win_height) / 2)
+        local col = math.floor((width - win_width) / 2)
+
+        -- Snacks.terminal.toggle('aider --no-auto-commits --read CONVENTIONS.md --dark-mode --model gemini-2.0-flash-thinking-exp', {
+        Snacks.terminal.toggle('aider --no-auto-commits --read CONVENTIONS.md --dark-mode --architect --yes-always', {
           win = {
             border = 'rounded',
             relative = 'editor',
-            height = 0.15,
+            width = win_width,
+            height = win_height,
+            row = row,
+            col = col,
+            position = 'float',
           },
+          env = { TERM_ID = '1' },
         })
       end,
-      desc = 'Toggle Terminal 1',
+      desc = 'Toggle Aider Ai',
     },
     -- Terminal 2
     {

@@ -11,9 +11,8 @@ return {
  ]]
     keys = {
 
-      { '<leader>aa', '<cmd>AvanteAsk<cr>', mode = { 'n', 'v' }, desc = 'Avante Ask' },
       { '<leader>ae', '<cmd>AvanteEdit<cr>', mode = { 'n', 'v' }, desc = 'Avante Edit' },
-      { '<leader>ac', '<cmd>AvanteChat<cr>', mode = { 'n', 'v' }, desc = 'Avante Chat' },
+      { '<leader>aa', '<cmd>AvanteChat<cr>', mode = { 'n', 'v' }, desc = 'Avante Chat' },
     },
     opts = {
       ---@alias Provider "claude" | "openai" | "azure" | "gemini" | "cohere" | "copilot" | string
@@ -28,6 +27,14 @@ return {
         temperature = 0,
         max_tokens = 4096,
       },
+
+      gemini = {
+        -- @see https://ai.google.dev/gemini-api/docs/models/gemini
+        model = 'gemini-2.0-flash', -- your desired model (or use gpt-4o, etc.)
+        timeout = 30000, -- timeout in milliseconds
+        temperature = 0, -- adjust if needed
+        max_tokens = 8192,
+      },
       ---Specify the special dual_boost mode
       ---1. enabled: Whether to enable dual_boost mode. Default to false.
       ---2. first_provider: The first provider to generate response. Default to "openai".
@@ -39,8 +46,8 @@ return {
       ---Note: This is an experimental feature and may not work as expected.
       dual_boost = {
         enabled = false,
-        first_provider = 'openai',
-        second_provider = 'claude',
+        first_provider = 'gemini',
+        second_provider = 'gemini',
         prompt = 'Based on the two reference outputs below, generate a response that incorporates elements from both but reflects your own judgment and unique perspective. Do not provide any explanation, just give the response directly. Reference Output 1: [{{provider1_output}}], Reference Output 2: [{{provider2_output}}]',
         timeout = 60000, -- Timeout in milliseconds
       },
@@ -48,10 +55,18 @@ return {
         auto_suggestions = false, -- Experimental stage
         auto_set_highlight_group = true,
         auto_set_keymaps = true,
-        auto_apply_diff_after_generation = false,
-        support_paste_from_clipboard = false,
+        auto_apply_diff_after_generation = true,
+        support_paste_from_clipboard = true,
         minimize_diff = true, -- Whether to remove unchanged lines when applying a code block
         enable_token_counting = true, -- Whether to enable token counting. Default to true.
+      },
+      rag_service = {
+        enabled = true, -- Enables the RAG service
+        host_mount = os.getenv 'HOME', -- Host mount path for the rag service
+        provider = 'openai', -- The provider to use for RAG service (e.g. openai or ollama)
+        llm_model = '', -- The LLM model to use for RAG service
+        embed_model = '', -- The embedding model to use for RAG service
+        endpoint = 'https://api.openai.com/v1', -- The API endpoint for RAG service
       },
       mappings = {
         --- @class AvanteConflictMappings
@@ -90,9 +105,9 @@ return {
         ---@type "right" | "left" | "top" | "bottom"
         position = 'right', -- the position of the sidebar
         wrap = true, -- similar to vim.o.wrap
-        width = 30, -- default % based on available width
+        width = 35, -- default % based on available width
         sidebar_header = {
-          enabled = true, -- true, false to enable/disable the header
+          enabled = false, -- true, false to enable/disable the header
           align = 'center', -- left, center, right for title
           rounded = true,
         },
