@@ -30,6 +30,7 @@
     ../../home/modules/applications/brave.nix
     ../../home/modules/applications/microsoft-edge.nix
     ../../home/modules/applications/vscode.nix
+    ../../home/modules/applications/cursor.nix
 
     # Environment
     ../../home/modules/environment/dev-tools.nix
