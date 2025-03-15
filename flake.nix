@@ -33,7 +33,7 @@ vscode-server.url = "github:nix-community/nixos-vscode-server";
       # ---- SYSTEM SETTINGS ---- #
       systemSettings = {
         system = system; # Use the 'system' from the let binding
-        hostname = "nixos-server"; # hostname
+        hostname = "nixos"; # hostname
         timezone = "Europe/Oslo"; # select timezone
         locale = "en_US.UTF-8"; # select locale
         stateVersion = "24.11";
@@ -44,7 +44,7 @@ vscode-server.url = "github:nix-community/nixos-vscode-server";
         # desktop
         # hp-server
         #
-        systemName = "hp-server";
+        systemName = "lenovo-yoga-pro-7";
       };
 
       # ----- USER SETTINGS ----- #
