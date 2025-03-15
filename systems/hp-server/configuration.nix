@@ -16,6 +16,6 @@
       ../../nixos/modules/server/default.nix
       ../../nixos/modules/server/ssh.nix
       ../../nixos/modules/server/laptop-server.nix
-      ../../nixos/modules/server/cockpit.nix
+      ../../nixos/modules/server/server-monitoring.nix
     ];
 }
