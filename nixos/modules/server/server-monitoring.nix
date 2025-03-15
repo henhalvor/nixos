@@ -1,6 +1,13 @@
 { config, pkgs, ... }:
 
 {
+  environment.systemPackages = with pkgs; [
+    prometheus
+    grafana
+ ];
+
+
+
   # Prometheus setup
   services.prometheus = {
     enable = true;
@@ -58,9 +65,9 @@
     settings = {
       server = {
         http_addr = "0.0.0.0";  # Listen on all interfaces
-        http_port = 3000;       # Default Grafana port
+        http_port = 4000;       # Default Grafana port
         domain = "10.0.0.120";  # Your server IP
-        root_url = "http://10.0.0.120:3000/";
+        root_url = "http://10.0.0.120:4000/";
       };
       
       # Authentication (we'll set a simple admin password for now)
@@ -90,5 +97,5 @@
   };
 
   # Open firewall ports for both services
-  networking.firewall.allowedTCPPorts = [ 9090 9100 3000 ];
+  networking.firewall.allowedTCPPorts = [ 9090 9100 4000 ];
 }
