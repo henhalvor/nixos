@@ -13,11 +13,19 @@
       LogLevel = "VERBOSE";
 
         # Performance tweaks
-      UseDNS = "no";  # Speeds up connections by skipping reverse DNS lookups
+      # UseDNS = "no";  # Speeds up connections by skipping reverse DNS lookups
       # Optimize ciphers and algorithms
-      Ciphers = "chacha20-poly1305@openssh.com,aes128-ctr,aes192-ctr,aes256-ctr";
-      KexAlgorithms = "curve25519-sha256@libssh.org,diffie-hellman-group-exchange-sha256";
-      MACs = "hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com";
+      Ciphers = [
+        "chacha20-poly1305@openssh.com"
+        "aes128-ctr"
+        "aes192-ctr"
+        "aes256-ctr"
+      ];
+      KexAlgorithms = [
+        "curve25519-sha256@libssh.org"
+        "diffie-hellman-group-exchange-sha256"
+      ];
+      # MACs = "hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com";
    
     };
     extraConfig = ''
