@@ -210,6 +210,13 @@
         "$mainMod ALT, N, exec, ${config.home.homeDirectory}/.local/bin/monitor-brightness up asus"
         "$mainMod ALT, M, exec, ${config.home.homeDirectory}/.local/bin/monitor-brightness down asus"
 
+        # Laptop display
+        # Enable built-in display
+        # "$mainMod SHIFT, F, exec, hyprctl keyword monitor 'eDP-1,  2560x1600@90, 0x0, 1.6'"
+        "$mainMod SHIFT, F, exec, hyprctl keyword monitor 'eDP-1, enable'"
+        # Disable built-in display
+        "$mainMod ALT, F, exec, hyprctl keyword monitor 'eDP-1, disable'"
+
         #switch focus
         "$mainMod, left, movefocus, l"
         "$mainMod, right, movefocus, r"
@@ -411,14 +418,21 @@
 
 
     extraConfig = "
-      #monitor=,preferred,auto,auto
+
+      # Laptop built in display (eDP-1) as primary display (1.6 scaling) (default is 2 scaling)
+      monitor=eDP-1, 2560x1600@90, 0x0, 1.6
+
+      # Auto switch built-in display on lid open/close
+      bindl = , switch:off:Lid Switch, exec, hyprctl keyword monitor 'eDP-1, preferred, 0x0, 1.6'
+      bindl = , switch:on:Lid Switch, exec, hyprctl keyword monitor 'eDP-1, disable'
+
 
       # ASUS monitor (DP-1) positioned on the left in portrait mode
       # Moved up by 240px to align centers
-      monitor=DP-1,1920x1080@144,-1080x-240,1,transform,1
+      monitor=DP-9,1920x1080@144,-1080x-240,1,transform,1
       
       # Samsung monitor (HDMI-A-1) as main display
-      monitor=HDMI-A-1,2560x1440@144,0x0,1
+      monitor=DP-8,2560x1440@144,0x0,1
 
       xwayland {
         force_zero_scaling = true
