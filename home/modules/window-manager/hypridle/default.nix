@@ -12,11 +12,11 @@
     }
 
     # This listener handles immediate lock on lid close
-    listener {
-        device = LIBINPUT_DEVICE_LID_SWITCH    # Monitors laptop lid events
-        on-lid-close = hyprlock && hyprctl dispatch dpms off               # Locks immediately when lid closes
-        on-lid-open = hyprctl dispatch dpms on && notify-send "Welcome back!"
-    }
+    # listener {
+    #     device = LIBINPUT_DEVICE_LID_SWITCH    # Monitors laptop lid events
+    #     on-lid-close = hyprlock && hyprctl dispatch dpms off               # Locks immediately when lid closes
+    #     on-lid-open = hyprctl dispatch dpms on && notify-send "Welcome back!"
+    # }
 
     listener {
         device = LIBINPUT_DEVICE_LID_SWITCH    # Monitors laptop lid events
@@ -35,14 +35,14 @@
 
     # Standard idle-based screen locking remains active
     listener {
-        timeout = 180                          # 5 minutes of inactivity
+        timeout = 330                          # 5.5 minutes of inactivity
         on-timeout = notify-send "Locking screen in 30 seconds..."
         on-resume = notify-send "Welcome back!"
     }
 
-    listener {
-        timeout = 330                          # 5.5 minutes of inactivity
-        on-timeout = hyprlock                  # Locks screen after warning
-    }
+    # listener {
+    #     timeout = 330                          # 5.5 minutes of inactivity
+    #     on-timeout = hyprlock                  # Locks screen after warning
+    # }
   '';
 }

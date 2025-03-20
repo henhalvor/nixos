@@ -41,8 +41,6 @@
         #
         # "nm-applet &"
         # "poweralertd &"
-        # "wl-clip-persist --clipboard both &"
-        # "wl-paste --watch cliphist store &"
         "wl-paste --type text --watch clipman store &"    # Store text entries
         "wl-paste --type image --watch clipman store &"   # Store images
         "hyprpanel &"
@@ -53,7 +51,7 @@
         #   "hyprctl setcursor Bibata-Modern-Ice 24 &"
         #   "swww-daemon &"
         #
-        #   "hyprlock"
+          # "hyprlock"
       ];
 
       input = {
@@ -418,12 +416,13 @@
 
 
     extraConfig = "
+      #monitor=,preferred,auto,auto
 
       # Laptop built in display (eDP-1) as primary display (1.6 scaling) (default is 2 scaling)
-      monitor=eDP-1, 2560x1600@90, 0x0, 1.6
+      #monitor=eDP-1, 2560x1600@90, 0x0, 2
 
       # Auto switch built-in display on lid open/close
-      bindl = , switch:off:Lid Switch, exec, hyprctl keyword monitor 'eDP-1, preferred, 0x0, 1.6'
+      bindl = , switch:off:Lid Switch, exec, hyprctl keyword monitor 'eDP-1, preferred, 0x0, 2'
       bindl = , switch:on:Lid Switch, exec, hyprctl keyword monitor 'eDP-1, disable'
 
 
@@ -439,17 +438,17 @@
       }
 
       # env = XCURSOR_SIZE,24
-      # env = QT_QPA_PLATFORM,wayland
-      # env = SDL_VIDEODRIVER,wayland
-      # env = CLUTTER_BACKEND,wayland
+      env = QT_QPA_PLATFORM,wayland
+      env = SDL_VIDEODRIVER,wayland
+      env = CLUTTER_BACKEND,wayland
+      env = XDG_SESSION_TYPE,wayland
+      env = WLR_RENDERER,vulkan
       # # env = __GLX_VENDOR_LIBRARY_NAME,nvidia
       # env = WLR_NO_HARDWARE_CURSORS,1
-      # env = WLR_RENDERER,vulkan
       # # env = GBM_BACKEND,nvidia-drm
       # env = __GL_GSYNC_ALLOWED,0
       # env = __GL_VRR_ALLOWED,0
       # # env = LIBVA_DRIVER_NAME,nvidia
-      # env = XDG_SESSION_TYPE,wayland
       # env = NVD_BACKEND,direct
       #
 
