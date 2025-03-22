@@ -150,38 +150,39 @@ return { -- LSP Configuration & Plugins
       --    https://github.com/pmizio/typescript-tools.nvim
       --
       -- But for many setups, the LSP (`tsserver`) will work just fine
-      ts_ls = {
-        -- setting = {
-        --   typescript = {
-        --     updateImportsOnFileMove = { enabled = 'always' },
-        --     suggest = {
-        --       completeFunctionCalls = true,
-        --     },
-        --     inlayHints = {
-        --       includeInlayParameterNameHints = 'all',
-        --       includeInlayParameterNameHintsWhenArgumentMatchesName = true,
-        --       includeInlayFunctionParameterTypeHints = true,
-        --       includeInlayVariableTypeHints = true,
-        --       includeInlayVariableTypeHintsWhenTypeMatchesName = true,
-        --       includeInlayPropertyDeclarationTypeHints = true,
-        --       includeInlayFunctionLikeReturnTypeHints = true,
-        --       includeInlayEnumMemberValueHints = true,
-        --     },
-        --   },
-        --   javascript = {
-        --     inlayHints = {
-        --       includeInlayParameterNameHints = 'all',
-        --       includeInlayParameterNameHintsWhenArgumentMatchesName = true,
-        --       includeInlayFunctionParameterTypeHints = true,
-        --       includeInlayVariableTypeHints = true,
-        --       includeInlayVariableTypeHintsWhenTypeMatchesName = true,
-        --       includeInlayPropertyDeclarationTypeHints = true,
-        --       includeInlayFunctionLikeReturnTypeHints = true,
-        --       includeInlayEnumMemberValueHints = true,
-        --     },
-        --   },
-        -- },
-      },
+      --      ts_ls = {
+      -- setting = {
+      --   typescript = {
+      --     updateImportsOnFileMove = { enabled = 'always' },
+      --     suggest = {
+      --       completeFunctionCalls = true,
+      --     },
+      --     inlayHints = {
+      --       includeInlayParameterNameHints = 'all',
+      --       includeInlayParameterNameHintsWhenArgumentMatchesName = true,
+      --       includeInlayFunctionParameterTypeHints = true,
+      --       includeInlayVariableTypeHints = true,
+      --       includeInlayVariableTypeHintsWhenTypeMatchesName = true,
+      --       includeInlayPropertyDeclarationTypeHints = true,
+      --       includeInlayFunctionLikeReturnTypeHints = true,
+      --       includeInlayEnumMemberValueHints = true,
+      --     },
+      --   },
+      --   javascript = {
+      --     inlayHints = {
+      --       includeInlayParameterNameHints = 'all',
+      --       includeInlayParameterNameHintsWhenArgumentMatchesName = true,
+      --       includeInlayFunctionParameterTypeHints = true,
+      --       includeInlayVariableTypeHints = true,
+      --       includeInlayVariableTypeHintsWhenTypeMatchesName = true,
+      --       includeInlayPropertyDeclarationTypeHints = true,
+      --       includeInlayFunctionLikeReturnTypeHints = true,
+      --       includeInlayEnumMemberValueHints = true,
+      --     },
+      --   },
+      -- },
+      --     },
+      vtsls = {}, -- js / ts alternative
       html = {},
       cssls = {},
       tailwindcss = {},
@@ -256,7 +257,7 @@ return { -- LSP Configuration & Plugins
     require('mason-lspconfig').setup {
       -- Explicitly list servers Mason should ensure, excluding rust_analyzer
       ensure_installed = {
-        'ts_ls',
+        'vtsls',
         'html',
         'cssls',
         'tailwindcss',
@@ -276,7 +277,9 @@ return { -- LSP Configuration & Plugins
           server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
           server.handlers = handlers -- Add border around LSPs
 
-          if server_name == 'rust_analyzer' or server_name == 'ts_ls' then
+          -- if server_name == 'rust_analyzer' or server_name == 'ts_ls' then
+
+          if server_name == 'rust_analyzer' then
             return
           end
           -- For all other servers, use mason-lspconfig's setup
