@@ -77,7 +77,11 @@
         "col.inactive_border" = "0x00000000";
         border_part_of_window = false;
         no_border_on_floating = false;
-      };
+       # Allow dragging with left mouse button
+        resize_on_border = true;
+        extend_border_grab_area = 15;
+        hover_icon_on_border = true;
+            };
 
       misc = {
         disable_autoreload = true;
@@ -319,16 +323,11 @@
 
       # windowrule
       windowrule = [
-        "float,Viewnior"
         "float,imv"
         "float,mpv"
         "tile,Aseprite"
-        "float,audacious"
         "pin,rofi"
-        "pin,waypaper"
-        "tile, neovide"
         "idleinhibit focus,mpv"
-        "float,udiskie"
         "float,title:^(Transmission)$"
         "float,title:^(Volume Control)$"
         "float,title:^(Firefox — Sharing Indicator)$"
@@ -339,30 +338,50 @@
 
       # windowrulev2
       windowrulev2 = [
+        # Firefox/Zen Picture-in-Picture rules
         "float, title:^(Picture-in-Picture)$"
+        "size 480 270, title:^(Picture-in-Picture)$"  # 16:9 aspect ratio at reasonable size
+        "move 68% 70%, title:^(Picture-in-Picture)$"  # Position farther from right edge (68% instead of 75%)
         "opacity 1.0 override 1.0 override, title:^(Picture-in-Picture)$"
-        "pin, title:^(Picture-in-Picture)$"
+        "noborder, title:^(Picture-in-Picture)$"
+        "rounding 6, title:^(Picture-in-Picture)$"
+        "keepaspectratio, title:^(Picture-in-Picture)$"
+        "minsize 320 180, title:^(Picture-in-Picture)$"  # Minimum size (16:9)
+        "maxsize 960 540, title:^(Picture-in-Picture)$"  # Maximum size (16:9)
+
+        # More generic PiP rules (for other applications)
+        "float, title:.*Picture.?in.?Picture.*"
+        "size 480 270, title:.*Picture.?in.?Picture.*"
+        "move 68% 70%, title:.*Picture.?in.?Picture.*"  # Adjusted position
+
+        # More rules for Firefox specifically
+        "float, class:^(firefox)$, title:^(Picture-in-Picture)$"
+        "size 480 270, class:^(firefox)$, title:^(Picture-in-Picture)$"
+        "move 68% 70%, class:^(firefox)$, title:^(Picture-in-Picture)$"  # Adjusted position
+
+        # More specific rules for Zen browser if needed
+        "float, class:^(zen)$, title:^(Picture-in-Picture)$"
+        "size 480 270, class:^(zen)$, title:^(Picture-in-Picture)$"
+        "move 68% 70%, class:^(zen)$, title:^(Picture-in-Picture)$"  # Adjusted position       
+
+        # Add these rules to your configuration
+        "unset, pin, title:^(Picture-in-Picture)$"
+        # "forceinput, title:^(Picture-in-Picture)$"
+
+          # Opacity for specific windows
         "opacity 1.0 override 1.0 override, title:^(.*imv.*)$"
         "opacity 1.0 override 1.0 override, title:^(.*mpv.*)$"
-        "opacity 1.0 override 1.0 override, class:(Aseprite)"
-        "opacity 1.0 override 1.0 override, class:(Unity)"
         "opacity 1.0 override 1.0 override, class:(zen)"
-        "opacity 1.0 override 1.0 override, class:(evince)"
         "workspace 1, class:^(zen)$"
-        "workspace 3, class:^(evince)$"
-        "workspace 4, class:^(Gimp-2.10)$"
-        "workspace 4, class:^(Aseprite)$"
-        "workspace 5, class:^(Audacious)$"
-        "workspace 5, class:^(Spotify)$"
-        "workspace 8, class:^(com.obsproject.Studio)$"
-        "workspace 10, class:^(discord)$"
-        "workspace 10, class:^(WebCord)$"
+
+        # Idle inhibit
         "idleinhibit focus, class:^(mpv)$"
         "idleinhibit fullscreen, class:^(firefox)$"
+        "idleinhibit focus, class:^(firefox)$"
+        "idleinhibit fullscreen, class:^(zen)$"
+        "idleinhibit focus, class:^(zen)$"
+
         "float,class:^(org.gnome.Calculator)$"
-        "float,class:^(waypaper)$"
-        "float,class:^(zenity)$"
-        "size 850 500,class:^(zenity)$"
         "float,class:^(org.gnome.FileRoller)$"
         "float,class:^(pavucontrol)$"
         "float,class:^(SoundWireServer)$"
