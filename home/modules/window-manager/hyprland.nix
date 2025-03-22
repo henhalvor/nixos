@@ -365,7 +365,9 @@
         "move 68% 70%, class:^(zen)$, title:^(Picture-in-Picture)$"  # Adjusted position       
 
         # Add these rules to your configuration
-        "unset, pin, title:^(Picture-in-Picture)$"
+        # "unset, pin, title:^(Picture-in-Picture)$"
+
+        "pin, title:^(Picture-in-Picture)$"
         # "forceinput, title:^(Picture-in-Picture)$"
 
           # Opacity for specific windows
