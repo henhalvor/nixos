@@ -194,6 +194,10 @@
         "$mainMod SHIFT, L, exec, hyprlock"
 
 
+        "$mainMod SHIFT, D, exec, ~/.local/bin/toggle-laptop-display"
+        "$mainMod SHIFT, M, exec, hyprctl dispatch dpms on && notify-send 'All displays forced on'"
+
+
         # screenshot
         ",Print, exec, screenshot --copy"
         "$mainMod, Print, exec, screenshot --save"
@@ -204,14 +208,14 @@
         # "$mainMod, N, exec, ${config.home.homeDirectory}/.local/bin/monitor-brightness up all"
         # "$mainMod, M, exec, ${config.home.homeDirectory}/.local/bin/monitor-brightness down all"
         #
-        # Samsung monitor only (HDMI)
-        "$mainMod SHIFT, N, exec, ${config.home.homeDirectory}/.local/bin/monitor-brightness up samsung"
-        "$mainMod SHIFT, M, exec, ${config.home.homeDirectory}/.local/bin/monitor-brightness down samsung"
-
-        # ASUS monitor only (DP)
-        "$mainMod ALT, N, exec, ${config.home.homeDirectory}/.local/bin/monitor-brightness up asus"
-        "$mainMod ALT, M, exec, ${config.home.homeDirectory}/.local/bin/monitor-brightness down asus"
-
+        # # Samsung monitor only (HDMI)
+        # "$mainMod SHIFT, N, exec, ${config.home.homeDirectory}/.local/bin/monitor-brightness up samsung"
+        # "$mainMod SHIFT, M, exec, ${config.home.homeDirectory}/.local/bin/monitor-brightness down samsung"
+        #
+        # # ASUS monitor only (DP)
+        # "$mainMod ALT, N, exec, ${config.home.homeDirectory}/.local/bin/monitor-brightness up asus"
+        # "$mainMod ALT, M, exec, ${config.home.homeDirectory}/.local/bin/monitor-brightness down asus"
+        #
         # Laptop display
         # Enable built-in display
         # "$mainMod SHIFT, F, exec, hyprctl keyword monitor 'eDP-1,  2560x1600@90, 0x0, 1.6'"
@@ -437,37 +441,40 @@
 
 
     extraConfig = "
-  # Laptop built in display (eDP-1) as primary display (1.6 scaling) (default is 2 scaling)
-    monitor=eDP-1, 2560x1600@90, 0x0, 1.6
-
-    # Don't handle lid switch directly in Hyprland - let hypridle handle it
-    # Remove these lines:
-    # bindl = , switch:off:Lid Switch, exec, hyprctl keyword monitor 'eDP-1, preferred, 0x0, 2'
-    # bindl = , switch:on:Lid Switch, exec, hyprctl keyword monitor 'eDP-1, disable'
-    
-    # ASUS monitor (DP-1) positioned on the left in portrait mode
-    # Moved up by 240px to align centers
-    monitor=DP-9,1920x1080@144,-1080x-240,1,transform,1
-    
-    # Samsung monitor (HDMI-A-1) as main display
-    monitor=DP-8,2560x1440@144,0x0,1
-    
-    # Add hook to restart components after resume
+ 
+  # Clear any previous monitor settings and set defaults
+  monitor=,preferred,auto,1
+  
+  # Define specific monitor configurations
+  # Laptop built-in display
+  monitor=eDP-1,2560x1600@90,0x0,1.6
+  
+  # Samsung Odyssey (DP-9) - Center screen with native resolution
+  monitor=DP-9,2560x1440@144,0x0,1
+  
+  # ASUS monitor (DP-8) - Position in portrait to the left of Samsung
+  monitor=DP-8,1920x1080@144,-1080x240,1,transform,1
+  
+  # Better startup sequence to ensure monitors turn on
+  exec-once = sleep 1 && hyprctl dispatch dpms on
+  
+    # Suspend and resume fix
     exec-once = ${pkgs.bash}/bin/bash -c 'echo 'systemctl --user restart hyprpaper.service hyprpanel.service' > /tmp/hypr-resume-fix && systemd-inhibit --what=handle-lid-switch sleep infinity'
 
       xwayland {
         force_zero_scaling = true
       }
 
-      # env = XCURSOR_SIZE,24
       env = QT_QPA_PLATFORM,wayland
       env = SDL_VIDEODRIVER,wayland
       env = CLUTTER_BACKEND,wayland
       env = XDG_SESSION_TYPE,wayland
       env = WLR_RENDERER,vulkan
       env = MOZ_ENABLE_WAYLAND,1
+      env = WLR_NO_HARDWARE_CURSORS,0
+      env = XCURSOR_SIZE,24
+ 
       # # env = __GLX_VENDOR_LIBRARY_NAME,nvidia
-      # env = WLR_NO_HARDWARE_CURSORS,1
       # # env = GBM_BACKEND,nvidia-drm
       # env = __GL_GSYNC_ALLOWED,0
       # env = __GL_VRR_ALLOWED,0
@@ -486,6 +493,20 @@
 
   # Ensure the .local/bin directory exists
   home.file.".local/bin/.keep".text = "";
+
+  home.file.".local/bin/toggle-laptop-display" = {
+    executable = true;
+    text = ''
+      #!/bin/sh
+      if hyprctl monitors | grep -A 20 "Monitor eDP-1" | grep -q "disabled: false"; then
+        hyprctl keyword monitor "eDP-1,disable"
+        hyprctl notify 1 5000 0 "Laptop display disabled"
+      else
+        hyprctl keyword monitor "eDP-1,2560x1600@90,0x0,1.6"
+        hyprctl notify 1 5000 0 "Laptop display enabled"
+      fi
+    '';
+  };
 
   home.file.".local/bin/monitor-brightness" = {
     executable = true;
