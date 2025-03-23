@@ -112,7 +112,8 @@ return {
 
     -- Define servers
     local servers = {
-      vtsls = {}, -- js / ts alternative
+      -- vtsls = {}, -- js / ts alternative
+      ts_ls = {},
       html = {},
       cssls = {},
       tailwindcss = {},
@@ -164,6 +165,14 @@ return {
         function(server_name)
           -- Skip rust_analyzer, will handle separately
           if server_name == 'rust_analyzer' then
+            return
+          end
+
+          if server_name == 'ts_ls' then
+            return
+          end
+
+          if server_name == 'vtsls' then
             return
           end
 
