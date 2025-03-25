@@ -172,9 +172,9 @@ return {
             return
           end
 
-          if server_name == 'vtsls' then
-            return
-          end
+          -- if server_name == 'vtsls' then
+          --   return
+          -- end
 
           -- Get server config or empty table if not defined
           local server_config = servers[server_name] or {}
