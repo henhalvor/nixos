@@ -37,6 +37,7 @@ return { -- Autoformat
       lua = { 'stylua' },
       python = { 'black' },
       rust = { 'rustfmt' },
+      nix = { 'nixfmt' },
     },
   },
   keys = {
