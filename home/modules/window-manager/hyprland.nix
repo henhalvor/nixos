@@ -8,6 +8,8 @@
     ./hyprpaper
     ./hypridle
     ./hyprlock
+    ./hyprland-services.nix
+    ./kanshi
   ];
 
 
