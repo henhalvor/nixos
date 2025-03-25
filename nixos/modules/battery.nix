@@ -15,7 +15,7 @@
   powerManagement = {
     enable = true;
     powertop.enable = true;
-    cpuFreqGovernor = "powersave";
+    cpuFreqGovernor = "ondemand";
     # Remove the conflicting scsiLinkPolicy
   };
 
@@ -32,11 +32,11 @@
           energy_performance_preference = "power"; # Prioritize power saving over performance
         };
         charger = {
-          governor = "powersave";
+          governor = "performance";
           turbo = "auto";
-          scaling_min_freq = 400000;  # Also set lower min frequency on AC
-          scaling_max_freq = 2400000; # Moderate max frequency on AC
-          energy_performance_preference = "balance_power"; # Balance power and performance
+          scaling_min_freq = 800000;  # Higher min frequency on AC
+          scaling_max_freq = 3600000; # Max frequency on AC
+          energy_performance_preference = "performance"; # Full performance on AC
         };
       };
     };
@@ -46,14 +46,14 @@
       enable = true;
       settings = {
         # CPU settings
-        CPU_SCALING_GOVERNOR_ON_AC = "powersave";
+        CPU_SCALING_GOVERNOR_ON_AC = "performance";
         CPU_SCALING_GOVERNOR_ON_BAT = "powersave";
         CPU_BOOST_ON_AC = 0;
         CPU_BOOST_ON_BAT = 0;
         
         # CPU frequency limits
-        CPU_SCALING_MIN_FREQ_ON_AC = 400000;
-        CPU_SCALING_MAX_FREQ_ON_AC = 2400000;  # Throttle even on AC
+        CPU_SCALING_MIN_FREQ_ON_AC = 800000;
+        CPU_SCALING_MAX_FREQ_ON_AC = 3600000;  # Full performance on AC
         CPU_SCALING_MIN_FREQ_ON_BAT = 400000;
         CPU_SCALING_MAX_FREQ_ON_BAT = 1800000;
         
@@ -62,7 +62,7 @@
         CPU_ENERGY_PERF_POLICY_ON_BAT = "power";
         
         # CPU scaling factors
-        CPU_MAX_PERF_ON_AC = 80;        # Limit to 80% performance on AC
+        CPU_MAX_PERF_ON_AC = 100;        # 100% performance on AC
         CPU_MAX_PERF_ON_BAT = 60;       # Limit to 60% performance on battery
         
         # CPU throttle temperatures
@@ -188,16 +188,13 @@
       "quiet"
       "acpi_osi=Linux"
       # "mem_sleep_default=deep"
-      "intel_pstate=passive"
       "pcie_aspm=force"
       "i915.enable_psr=1"
       "i915.enable_fbc=1"
       "nmi_watchdog=0"
       "usbcore.autosuspend=1"
       "processor.max_cstate=5"          # Limit CPU to C-state 5
-      "intel_pstate=passive"            # Allow userspace control of CPU freq
-      "intel_pstate.max_perf_pct=80"    # Limit max performance to 80%
-      "intel_pstate.no_turbo=1"         # Disable turbo boost
+      "intel_pstate=active"            
     ];
     
     # I/O scheduler optimization
@@ -262,7 +259,7 @@
     serviceConfig = {
       Type = "oneshot";
       # Only use commands known to work and avoid the failing set -b command
-      ExecStart = "${pkgs.bash}/bin/bash -c '${pkgs.linuxPackages.cpupower}/bin/cpupower frequency-set -g powersave && ${pkgs.linuxPackages.cpupower}/bin/cpupower frequency-set --min 400MHz --max 2.4GHz'";
+      ExecStart = "${pkgs.bash}/bin/bash -c '${pkgs.linuxPackages.cpupower}/bin/cpupower frequency-set -g performance && ${pkgs.linuxPackages.cpupower}/bin/cpupower frequency-set --min 800MHz --max 4.0GHz'";
       RemainAfterExit = true;
       # Add permissions to access CPU controls
       CapabilityBoundingSet = ["CAP_SYS_NICE" "CAP_SYS_ADMIN"];
