@@ -20,6 +20,11 @@
     xwayland.enable = true;
   };
 
+  programs.sway = {
+    enable = true;
+    xwayland.enable = true;
+  };
+
   environment.sessionVariables = {
     #  If your cursor becomes invisible
     WLR_NO_HARDWARE_CURSORS = "1";

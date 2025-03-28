@@ -18,5 +18,11 @@
       ../../nixos/modules/server/laptop-server.nix
       ../../nixos/modules/server/server-monitoring.nix
       # ../../nixos/modules/server/cockpit.nix
+
+      # window-manager
+      ../../nixos/modules/window-manager/default.nix
+      ../../nixos/modules/window-manager/gnome.nix
+      ../../nixos/modules/window-manager/hyrpland.nix
+      ../../nixos/modules/window-manager/sway.nix
     ];
 }
