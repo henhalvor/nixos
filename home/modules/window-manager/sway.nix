@@ -118,8 +118,9 @@
       terminal = "{userSettings.term}";
       startup = [
         # TODO change to userSettings.browser
+        { command = "zen"; }
         {
-          command = "zen";
+          command = "waybar";
         }
         # Set wallpaper
         {
@@ -151,9 +152,9 @@
         "${modifier}+Return" = "exec ${pkgs.kitty}/bin/kitty";
         "${modifier}+Shift+q" = "kill";
         "${modifier}+d" = "exec ${menu}";
-        "${modifier}+Shift+c" = "reload";
-        "${modifier}+o" = "clipman pick -t rofi";
-        "${modifier}+Shift+o" = "clipman clear --all";
+        "${modifier}+Shift+c" = "exec reload";
+        "${modifier}+o" = "exec clipman pick -t rofi";
+        "${modifier}+Shift+o" = "exec clipman clear --all";
         "${modifier}+e" =
           "exec ${pkgs.kitty}/bin/kitty -e yazi, floating enable, resize set 1111 650";
 

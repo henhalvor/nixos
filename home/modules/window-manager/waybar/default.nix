@@ -91,7 +91,7 @@ in {
   programs.waybar = {
     enable = true;
     # Use systemd user service for better management
-    systemd.enable = true;
+    systemd.enable = false;
 
     # 3. Configure Waybar Settings
     settings = [{
@@ -276,7 +276,7 @@ in {
         # Alternative icon suggestion (nf-fa-adjust): 
         format-icons = [ "󰔎" ]; # Choose one icon
         # Set tooltip to false as we are not providing dynamic text
-        tooltip = true;
+        tooltip = false;
         # Call the Nix-managed scripts on different clicks
         on-click = "${gamma-toggle-script}/bin/gamma-toggle";
       };
@@ -465,6 +465,8 @@ in {
 
       #custom-gammastep {
         font-size: 14px; /* Slightly larger font size */
+
+        margin-left: 2px; /* Extra space */
       }
 
 
