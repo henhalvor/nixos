@@ -6,6 +6,7 @@
     ./waybar
     ./swaylock
     ./swayidle
+    ./wlogout
 
     # ./kanshi
   ];
@@ -19,11 +20,11 @@
     brightnessctl # For screen brightness control
     pamixer # For volume control
     playerctl # You already have this for media controls
-    # nm-applet # Network manager applet (optional)
     ddcutil # External monitor brightness control
     bluez # bluetooth
     blueberry
     autotiling-rs
+    swaybg # Wallpaper setter
   ];
 
   home.sessionVariables = {
@@ -49,30 +50,58 @@
 
   wayland.windowManager.sway = {
     enable = true;
+    # Add extraConfig here to inject raw Sway commands
+    extraConfig = ''
+         # Disable default title bars and borders for new windows
+      for_window [class=".*"] border none
+    '';
     config = {
-      #input = {
-      #"*" = {
-      #"repeat_delay" = "230";
-      #"repeat_rate" = "23";
-      #};
-      #};
+      # --- Disable Sway's built-in bar ---
+      bars = [ ]; # Set to an empty list to disable all swaybars
+
       input = {
         "*" = {
           xkb_layout = "no";
           xkb_options = "caps:escape";
+          tap = "enabled";
+          dwt = "enabled";
+          natural_scroll = "enabled";
+          middle_emulation = "enabled";
+
         };
-        "SYNA2BA6:00 06CB:CF00 Touchpad" = {
-          tap = true;
-          dwt = true;
-          natural_scroll = true;
+        "1739:52992:SYNA2BA6:00 06CB:CF00 Touchpad" = {
+          tap = "enabled";
+          dwt = "enabled";
+          natural_scroll = "enabled";
+          middle_emulation = "enabled";
+        };
+
+      };
+
+      # --- Output Configuration ---
+      output = {
+        "eDP-1" = {
+          scale = "1.6";
+          mode = "2560x1600@90Hz";
         };
       };
 
-      output = {
-        "*" = {
-          bg =
-            "~/.dotfiles/home/modules/window-manager/hyprpaper/catpuccin_landscape.png fill";
-        };
+      # --- Assign applications to workspaces ---
+      assigns = {
+        # Workspace numbers are strings here
+        "1" = [
+          # Add criteria for zen browser here.
+          # Use app_id if available and reliable:
+          {
+            app_id = "zen";
+          }
+          # Or use class if app_id doesn't work or isn't suitable:
+          # { class = "Zen"; } # Replace "Zen" with the actual class name
+        ];
+        # Example: Assign kitty terminal to workspace 2
+        # "2" = [ { app_id = "kitty"; } ];
+        # Example: Assign Firefox to workspace 3
+        # "3" = [ { class = "firefox"; } ];
       };
 
       modifier = "Mod4";
@@ -88,8 +117,15 @@
       terminal = "{userSettings.term}";
       startup = [
         # TODO change to userSettings.browser
-        { command = "zen"; }
-        { command = "waybar"; }
+        {
+          command = "zen";
+        }
+        # Set wallpaper
+        {
+          command =
+            "${pkgs.swaybg}/bin/swaybg -i ~/.dotfiles/home/modules/window-manager/hyprpaper/catpuccin_landscape.png -m fill";
+        }
+        # { command = "waybar"; }
         { command = "autotiling-rs"; }
         {
           # Store text entries
@@ -98,6 +134,14 @@
         {
           # Store images
           command = "wl-paste --type image --watch clipman store &";
+        }
+        {
+          # Bluetooth manager
+          command = "--no-startup-id blueman-applet";
+        }
+        {
+          # Network manager
+          command = "--no-startup-id nm-applet";
         }
       ];
 
@@ -116,11 +160,14 @@
         "${modifier}+e" =
           "exec ${pkgs.kitty}/bin/kitty -e yazi, floating enable, resize set 1111 650";
 
-        "XF86MonBrightnessDown" = "light -U 10";
-        "XF86MonBrightnessUp" = "light -A 10";
-        "XF86AudioRaiseVolume" = "pactl set-sink-volume @DEFAULT_SINK@ +1%";
-        "XF86AudioLowerVolume" = "pactl set-sink-volume @DEFAULT_SINK@ -1%";
-        "XF86AudioMute" = "pactl set-sink-mute @DEFAULT_SINK@ toggle";
+        "XF86MonBrightnessUp" = "exec brightnessctl s +10%";
+        "XF86MonBrightnessDown" = "exec brightnessctl s 10%-";
+        "XF86AudioRaiseVolume" =
+          "exec pactl set-sink-volume @DEFAULT_SINK@ +10%";
+        "XF86AudioLowerVolume" =
+          "exec pactl set-sink-volume @DEFAULT_SINK@ -10%";
+        "XF86AudioMute" = "exec pactl set-sink-mute @DEFAULT_SINK@ toggle";
+
       };
     };
 

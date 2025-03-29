@@ -16,8 +16,8 @@
 
   imports = [
     # Window-manager
-    ../../home/modules/window-manager/hyprland.nix
-
+    # ../../home/modules/window-manager/hyprland.nix
+    ../../home/modules/window-manager/sway.nix
     # Applications
     ../../home/modules/applications/zsh.nix
     ../../home/modules/applications/${userSettings.term}.nix
@@ -45,6 +45,5 @@
     ../../home/modules/settings/ssh.nix
     ../../home/modules/settings/theme.nix
   ];
-
 
 }
