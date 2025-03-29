@@ -23,6 +23,7 @@
       ../../nixos/modules/bootloader.nix
       ../../nixos/modules/networking.nix
       ../../nixos/modules/systemd-loginhd.nix
+      # window-manager
       ../../nixos/modules/window-manager/default.nix
     ];
 }
