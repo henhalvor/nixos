@@ -137,11 +137,7 @@
         }
         {
           # Bluetooth manager
-          command = "--no-startup-id blueman-applet";
-        }
-        {
-          # Network manager
-          command = "--no-startup-id nm-applet";
+          command = "blueman-applet";
         }
       ];
 
