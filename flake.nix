@@ -169,7 +169,7 @@
 
         hp-server = mkNixosSystem {
           systemName = "hp-server";
-          hostname = "nixos-server";
+          hostname = "hp-server";
           userSettings =
             userHenhal; # Or userAdmin if defined and preferred for server
           windowManager = "hyprland";
