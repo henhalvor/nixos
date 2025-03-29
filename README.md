@@ -2,9 +2,6 @@
 
 This repository contains a NixOS configuration using **Nix Flakes** and **Home Manager** to create a flexible, multi-system, and potentially multi-user development environment. It's designed to work seamlessly with Neovim and various development tools while respecting NixOS's principles.
 
-**Current Time:** Saturday, March 29, 2025 at 10:03:08 AM
-**Location Context:** Bergen Municipality, Vestland, Norway
-
 ## How the Flake Works
 
 This setup is managed by `flake.nix`, which defines the structure and dependencies:
@@ -44,49 +41,56 @@ cd ~/.dotfiles
 
 # Choose the target system key and action
 sudo nixos-rebuild <action> --flake .#<system_key>
+```
 
-    Replace <action> with:
-        switch: (Recommended) Build, set as default boot option, and activate immediately.
-        boot: Build, set as default boot option, activate on next reboot.
-        test: Build and activate temporarily (doesn't change boot options).
-        build: Build only, no activation.
-    Replace <system_key> with the key matching your target machine from nixosConfigurations in flake.nix (e.g., lenovo-yoga-pro-7, desktop, hp-server).
+- Replace `<action>` with one of the following:
+  - `switch`: (Recommended) Build, set as default boot option, and activate immediately.
+  - `boot`: Build, set as default boot option, activate on next reboot.
+  - `test`: Build and activate temporarily (doesn't change boot options).
+  - `build`: Build only, no activation.
+- Replace `<system_key>` with the key matching your target machine from `nixosConfigurations` in `flake.nix` (e.g., `lenovo-yoga-pro-7`, `desktop`, `hp-server`).
 
-Example (Applying changes to your laptop):
-Bash
+**Example (Applying changes to your laptop):**
 
+```bash
 sudo nixos-rebuild switch --flake .#lenovo-yoga-pro-7
+```
 
-This command builds the lenovo-yoga-pro-7 configuration, which includes system settings and the Home Manager setup for userHenhal (as defined in the flake), and activates both.
-2. Home Manager Only Rebuild (Standalone)
+This command builds the `lenovo-yoga-pro-7` configuration, which includes system settings and the Home Manager setup for `userHenhal` (as defined in the flake), and activates both.
 
-Use this only when you've made changes exclusively to files managed by Home Manager (e.g., ./users/henhal/home.nix, linked dotfiles) and want a faster update without rebuilding the OS.
+### 2. Home Manager Only Rebuild (Standalone)
 
-Command:
-Bash
+Use this _only_ when you've made changes _exclusively_ to files managed by Home Manager (e.g., `./users/henhal/home.nix`, linked dotfiles) and want a faster update without rebuilding the OS.
 
+**Command:**
+
+```bash
 # Navigate to your flake directory (~/.dotfiles)
 cd ~/.dotfiles
 
 # Run AS THE USER whose config you are changing
 home-manager switch --flake .#<username_key>
+```
 
-    Replace <username_key> with the key from homeConfigurations in flake.nix (e.g., henhal).
-    Important: Run this command as the actual user (e.g., logged in as henhal). If running as root, use sudo -u henhal home-manager switch ....
+- Replace `<username_key>` with the key from `homeConfigurations` in `flake.nix` (e.g., `henhal`).
+- **Important:** Run this command as the actual user (e.g., logged in as `henhal`). If running as root, use `sudo -u henhal home-manager switch ...`.
 
-Example (Quick update for user henhal):
-Bash
+**Example (Quick update for user henhal):**
 
+```bash
 # Assuming you are logged in as henhal
 home-manager switch --flake .#henhal
+```
 
-This uses the standalone homeConfigurations.henhal definition, applying only user-level changes. It uses the default windowManager specified in its extraSpecialArgs for evaluating conditional imports in home.nix.
-Directory Structure
+This uses the standalone `homeConfigurations.henhal` definition, applying only user-level changes. It uses the default `windowManager` specified in its `extraSpecialArgs` for evaluating conditional imports in `home.nix`.
+
+## Directory Structure
 
 (This section seems mostly related to user-space directories managed outside Nix/HM, likely still accurate)
 
 The configuration encourages an organized directory structure in your home directory:
 
+```
 ~/.local/
 ├── dev/                 # Development tools and global packages
 │   ├── npm/             # Node.js related
@@ -101,91 +105,98 @@ The configuration encourages an organized directory structure in your home direc
     └── nvim/            # Neovim-specific installations
         ├── lazy/        # Lazy.nvim plugins
         └── mason/       # Mason-installed tools
+```
 
-Initial Setup
-Quick Install
+## Initial Setup
 
-    Run this command on a fresh NixOS installation:
-    Bash
+### Quick Install
 
+1.  Run this command on a fresh NixOS installation:
+
+    ```bash
     curl -L [https://raw.githubusercontent.com/henhalvor/nixos/main/install.sh](https://raw.githubusercontent.com/henhalvor/nixos/main/install.sh) | sh
+    ```
 
-    (Note: Ensure install.sh is updated to use the new flake commands)
+    _(Note: Ensure `install.sh` is updated to use the new flake commands)_
 
-Manual Install
+### Manual Install
 
-    Clone this repository (replace yourusername if necessary):
-    Bash
+1.  Clone this repository (replace `yourusername` if necessary):
 
-git clone [https://github.com/henhalvor/nixos.git](https://www.google.com/search?q=https://github.com/henhalvor/nixos.git) ~/.dotfiles
+    ```bash
+    git clone [https://github.com/henhalvor/nixos.git](https://github.com/henhalvor/nixos.git) ~/.dotfiles
+    ```
 
-Copy Hardware Configuration: NixOS generates a hardware-specific configuration during installation. Copy it into your flake's structure. A common place is ./nixos/:
-Bash
+2.  **Copy Hardware Configuration:** NixOS generates a hardware-specific configuration during installation. Copy it into your flake's structure. A common place is `./nixos/`:
 
-mkdir -p ~/.dotfiles/nixos
-sudo cp /etc/nixos/hardware-configuration.nix ~/.dotfiles/nixos/hardware-configuration.nix
-# Ensure ownership is correct if needed: sudo chown $USER:$USER ~/.dotfiles/nixos/hardware-configuration.nix
+    ```bash
+    mkdir -p ~/.dotfiles/nixos
+    sudo cp /etc/nixos/hardware-configuration.nix ~/.dotfiles/nixos/hardware-configuration.nix
+    # Ensure ownership is correct if needed: sudo chown $USER:$USER ~/.dotfiles/nixos/hardware-configuration.nix
+    ```
 
-Important: You then need to import this file from your machine-specific configuration (e.g., inside ~/.dotfiles/systems/lenovo-yoga-pro-7/configuration.nix add imports = [ ../../nixos/hardware-configuration.nix ];).
+    **Important:** You then need to **import** this file from your machine-specific configuration (e.g., inside `~/.dotfiles/systems/lenovo-yoga-pro-7/configuration.nix` add `imports = [ ../../nixos/hardware-configuration.nix ];`).
 
-Create User-Space Directories (Optional but Recommended):
-Bash
+3.  **Create User-Space Directories (Optional but Recommended):**
 
-mkdir -p ~/.local/dev/{npm/{global,cache,config},cargo,rustup,python,go}
-mkdir -p ~/.local/share/nvim/{lazy,mason}
+    ```bash
+    mkdir -p ~/.local/dev/{npm/{global,cache,config},cargo,rustup,python,go}
+    mkdir -p ~/.local/share/nvim/{lazy,mason}
+    ```
 
-Apply the Configuration: Choose the correct <system_key> for the machine you are installing on from flake.nix.
-Bash
+4.  **Apply the Configuration:** Choose the correct `<system_key>` for the machine you are installing on from `flake.nix`.
 
+    ```bash
     cd ~/.dotfiles
     # Example for the laptop:
     sudo nixos-rebuild switch --flake .#lenovo-yoga-pro-7
+    ```
 
-Adding a New System (Machine)
+## Adding a New System (Machine)
 
-    Create System Directory: Make a new directory under ./systems/ named after your new machine (e.g., systems/new-server/).
-    Add Configuration: Create a configuration.nix file inside this new directory. You can copy from an existing system and adapt it. Define machine-specific settings (kernel modules, drivers, file systems, system services) here. Remember to import the hardware configuration if applicable: imports = [ ../../nixos/hardware-configuration.nix ];.
-    Add Flake Entry: Open flake.nix and add a new entry to the nixosConfigurations block:
-    Nix
+1.  **Create System Directory:** Make a new directory under `./systems/` named after your new machine (e.g., `systems/new-server/`).
+2.  **Add Configuration:** Create a `configuration.nix` file inside this new directory. You can copy from an existing system and adapt it. Define machine-specific settings (kernel modules, drivers, file systems, system services) here. Remember to import the hardware configuration if applicable: `imports = [ ../../nixos/hardware-configuration.nix ];`.
+3.  **Add Flake Entry:** Open `flake.nix` and add a new entry to the `nixosConfigurations` block:
 
-nixosConfigurations = {
-  # ... existing systems ...
+    ```nix
+    nixosConfigurations = {
+      # ... existing systems ...
 
-  # Entry for the new system
-  new-server = mkNixosSystem {
-    systemName = "new-server";        # Matches directory name
-    hostname = "new-server-hostname"; # Desired network hostname
-    userSettings = userHenhal;        # Choose the primary user (or define a new one)
-    windowManager = "none";           # Choose WM ('none' for servers)
-    # Add extraModules if needed (e.g., for specific server software)
-    # extraModules = [ ... ];
-  };
-};
+      # Entry for the new system
+      new-server = mkNixosSystem {
+        systemName = "new-server";        # Matches directory name
+        hostname = "new-server-hostname"; # Desired network hostname
+        userSettings = userHenhal;        # Choose the primary user (or define a new one)
+        windowManager = "none";           # Choose WM ('none' for servers)
+        # Add extraModules if needed (e.g., for specific server software)
+        # extraModules = [ ... ];
+      };
+    };
+    ```
 
-Rebuild: On the new machine, after cloning the flake, run nixos-rebuild targeting the new key:
-Bash
-
+4.  **Rebuild:** On the _new machine_, after cloning the flake, run `nixos-rebuild` targeting the new key:
+    ```bash
     sudo nixos-rebuild switch --flake .#new-server
+    ```
 
-Adding a New User
+## Adding a New User
 
-    Define User Settings: Open flake.nix and add a new user settings block in the let section:
-    Nix
+1.  **Define User Settings:** Open `flake.nix` and add a new user settings block in the `let` section:
+    ```nix
+    userAdmin = rec {
+      username = "admin";
+      name = "Administrator";
+      email = "admin@example.com";
+      homeDirectory = "/home/admin";
+      term = "foot";
+      browser = "firefox";
+      stateVersion = "24.11";
+    };
+    ```
+2.  **Create Home Manager Config:** Create the user's directory and `home.nix` file: `users/admin/home.nix`. Populate it with their desired Home Manager configuration.
+3.  **Add Standalone HM Config:** Add an entry to `homeConfigurations` in `flake.nix`:
 
-userAdmin = rec {
-  username = "admin";
-  name = "Administrator";
-  email = "admin@example.com";
-  homeDirectory = "/home/admin";
-  term = "foot";
-  browser = "firefox";
-  stateVersion = "24.11";
-};
-
-Create Home Manager Config: Create the user's directory and home.nix file: users/admin/home.nix. Populate it with their desired Home Manager configuration.
-Add Standalone HM Config: Add an entry to homeConfigurations in flake.nix:
-Nix
-
+    ```nix
     homeConfigurations = {
       henhal = { ... }; # Existing user
 
@@ -201,69 +212,74 @@ Nix
         };
       };
     };
+    ```
 
-    Associate with System(s): Decide which system(s) this user will primarily use.
-        New System: If adding a new system for this user, pass their settings: userSettings = userAdmin; when calling mkNixosSystem for that system (as shown in "Adding a New System").
-        Existing System: If adding this user as the primary managed user for an existing system config (e.g., you want hp-server managed for admin instead of henhal), change the userSettings = userHenhal; line to userSettings = userAdmin; for the hp-server entry in nixosConfigurations. (Note: The current mkNixosSystem easily supports one primary HM-managed user per system config. Managing multiple users via HM on a single system config requires adjustments.)
-        Secondary User: To just create the user account on a system without full HM integration via the flake's primary mechanism, add them normally via users.users.<new_username> = { ... }; within that system's NixOS modules.
-    Rebuild:
-        Run sudo nixos-rebuild switch --flake .#<system_key> for the system(s) associated with the new user.
-        Run home-manager switch --flake .#<new_username> (e.g., .#admin) to activate their standalone config (run as the new user).
+4.  **Associate with System(s):** Decide which system(s) this user will primarily use.
+    - **New System:** If adding a new system for this user, pass their settings: `userSettings = userAdmin;` when calling `mkNixosSystem` for that system (as shown in "Adding a New System").
+    - **Existing System:** If adding this user as the _primary managed user_ for an existing system config (e.g., you want `hp-server` managed for `admin` instead of `henhal`), change the `userSettings = userHenhal;` line to `userSettings = userAdmin;` for the `hp-server` entry in `nixosConfigurations`. _(Note: The current `mkNixosSystem` easily supports one primary HM-managed user per system config. Managing multiple users via HM on a single system config requires adjustments.)_
+    - **Secondary User:** To just _create_ the user account on a system without full HM integration via the flake's primary mechanism, add them normally via `users.users.<new_username> = { ... };` within that system's NixOS modules.
+5.  **Rebuild:**
+    - Run `sudo nixos-rebuild switch --flake .#<system_key>` for the system(s) associated with the new user.
+    - Run `home-manager switch --flake .#<new_username>` (e.g., `.#admin`) to activate their standalone config (run as the new user).
 
-Maintenance
-Updating Flake Inputs (Dependencies)
+## Maintenance
 
-To update nixpkgs, home-manager, etc., to the latest versions compatible with your specified branches/tags:
-Bash
+### Updating Flake Inputs (Dependencies)
 
+To update `nixpkgs`, `home-manager`, etc., to the latest versions compatible with your specified branches/tags:
+
+```bash
 cd ~/.dotfiles
 nix flake update
 # Then rebuild the desired system(s)
 sudo nixos-rebuild switch --flake .#<system_key>
+```
 
-Updating Neovim Packages
+### Updating Neovim Packages
 
 (This section looks okay - it uses Neovim's internal managers)
 
-    Update plugins:
-    Vim Script
-
-:Lazy update
-
-Update language servers and tools:
-Vim Script
-
+1.  Update plugins:
+    ```vim
+    :Lazy update
+    ```
+2.  Update language servers and tools:
+    ```vim
     :Mason update
+    ```
 
-How It Works (Tool Configuration)
+## How It Works (Tool Configuration)
 
 (This section describing npm/pip/cargo/go paths seems okay, assuming your Home Manager config still sets up those environment variables/configs)
-Core Development Tools
 
-Home Manager (./users/.../home.nix) installs core tools. Environment variables (e.g., NPM_CONFIG_PREFIX, CARGO_HOME, GOPATH) are typically set (often in session-variables.nix or similar) to direct where these tools install user-level packages, respecting the ~/.local/dev structure.
-Package Management Examples
+### Core Development Tools
+
+Home Manager (`./users/.../home.nix`) installs core tools. Environment variables (e.g., `NPM_CONFIG_PREFIX`, `CARGO_HOME`, `GOPATH`) are typically set (often in `session-variables.nix` or similar) to direct where these tools install user-level packages, respecting the `~/.local/dev` structure.
+
+### Package Management Examples
 
 (Examples seem okay, assuming the underlying HM config enables this)
 
-    NPM Global Packages: npm install -g typescript (Installs to ~/.local/dev/npm/global)
-    Python Packages: pip install --user black (Installs to ~/.local/dev/python)
-    Rust Packages: cargo install ripgrep (Installs to ~/.local/dev/cargo)
-    Go Packages: go install golang.org/x/tools/gopls@latest (Installs to ~/.local/dev/go)
+1.  NPM Global Packages: `npm install -g typescript` (Installs to `~/.local/dev/npm/global`)
+2.  Python Packages: `pip install --user black` (Installs to `~/.local/dev/python`)
+3.  Rust Packages: `cargo install ripgrep` (Installs to `~/.local/dev/cargo`)
+4.  Go Packages: `go install golang.org/x/tools/gopls@latest` (Installs to `~/.local/dev/go`)
 
-Adding New Tools
-Adding System Packages/Services
+## Adding New Tools
 
-    System-wide tools/services: Add to NixOS modules (e.g., environment.systemPackages in ./systems/<name>/configuration.nix or a common imported module). Then run sudo nixos-rebuild switch --flake .#<system_key>.
-    User-specific tools (via Nix): Add to home.packages in ./users/<name>/home.nix. Then run sudo nixos-rebuild switch --flake .#<system_key> OR home-manager switch --flake .#<username>.
+### Adding System Packages/Services
 
-Adding Neovim Plugins / Language Servers
+- **System-wide tools/services:** Add to NixOS modules (e.g., `environment.systemPackages` in `./systems/<name>/configuration.nix` or a common imported module). Then run `sudo nixos-rebuild switch --flake .#<system_key>`.
+- **User-specific tools (via Nix):** Add to `home.packages` in `./users/<name>/home.nix`. Then run `sudo nixos-rebuild switch --flake .#<system_key>` OR `home-manager switch --flake .#<username>`.
+
+### Adding Neovim Plugins / Language Servers
 
 (This section looks okay)
 
-Follow the existing instructions for modifying Neovim configuration and using :Lazy or :Mason.
-Troubleshooting / Customization / Design
+Follow the existing instructions for modifying Neovim configuration and using `:Lazy` or `:Mason`.
+
+## Troubleshooting / Customization / Design
 
 (These sections seem broadly applicable and likely don't need major changes unless specific issues arise from the flake structure).
 
-Remember to git add ., git commit -m "...", and git push your changes in ~/.dotfiles regularly!his design allows you to maintain a stable system while having the flexibility to experiment with development tools and configurations in your user space.
-```
+Remember to `git add .`, `git commit -m "..."`, and `git push` your changes in `~/.dotfiles` regularly!
