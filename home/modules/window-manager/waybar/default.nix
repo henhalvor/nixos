@@ -32,6 +32,44 @@ let
     mantle = "#181825";
     crust = "#11111b";
   };
+
+  # --- Nix-Managed Gammastep Scripts ---
+
+  # --- Nix-Managed Gammastep Scripts (with robust pgrep check) ---
+
+  gamma-toggle-script = pkgs.writeShellScriptBin "gamma-toggle" ''
+    #!${pkgs.bash}/bin/bash
+    set -e # Re-enable exit on error
+
+
+    STATE_HOME="''${XDG_STATE_HOME:-$HOME/.local/state}"
+    gammastepStateDir="$STATE_HOME/gammastep"
+    gammastepStateFile="$gammastepStateDir/default_temp.sh"
+    mkdir -p "$gammastepStateDir"
+    # Robust Check: Use pgrep -af and filter for the specific executable path
+    if ${pkgs.procps}/bin/pgrep -af gammastep | ${pkgs.gnugrep}/bin/grep -v 'grep\|nvim\|pkill\|pgrep\|gamma-' | ${pkgs.gnugrep}/bin/grep -q "${pkgs.gammastep}/bin/gammastep"; then
+      # Forcefully kill any process matching 'gammastep' in command line (-f)
+      pkill -f gammastep
+      pkill_exit_code=$?
+
+
+
+      # Check again after a short delay if the process is truly gone
+      sleep 0.5
+      if ${pkgs.procps}/bin/pgrep -af gammastep | ${pkgs.gnugrep}/bin/grep -v 'grep\|nvim\|pkill\|pgrep\|gamma-' | ${pkgs.gnugrep}/bin/grep -q "${pkgs.gammastep}/bin/gammastep"; then
+         ${pkgs.libnotify}/bin/notify-send --expire-time=4000 "ERROR: RedGlow process still detected after pkill!"
+      else
+         ${pkgs.libnotify}/bin/notify-send --expire-time=2000 "RedGlow Stopped."
+      fi
+    else
+      # Gammastep is NOT running -> Start it
+      if [ ! -f "$gammastepStateFile" ]; then echo "default_temp=3400" > "$gammastepStateFile"; fi
+      ${pkgs.gammastep}/bin/gammastep -O 3400 &
+      disown
+      ${pkgs.libnotify}/bin/notify-send --expire-time=1500 "RedGlow ON (3400K)"
+    fi
+  '';
+
 in {
   # 1. Add necessary packages
   home.packages = with pkgs; [
@@ -40,7 +78,13 @@ in {
     pavucontrol # GUI for PulseAudio control (for on-click)
     wlogout # Power menu (you already have this specified)
     blueman
-    # Ensure blueberry or blueman is installed via Sway config or here
+    # --- Dependencies for gammastep scripts ---
+    gammastep
+    bash # For running the scripts
+    procps # Provides pgrep
+    libnotify # Provides notify-send
+    # --- Add the generated scripts to the PATH ---
+    gamma-toggle-script
   ];
 
   # 2. Enable and configure Waybar
@@ -53,7 +97,7 @@ in {
     settings = [{
       layer = "top"; # Set to top layer
       position = "top"; # Bar position
-      height = 24; # Bar height
+      height = 27; # Bar height
       spacing = 4; # Spacing between modules
 
       # Define module placement
@@ -61,6 +105,7 @@ in {
       modules-center = [ "clock" ];
       modules-right = [
         "idle_inhibitor"
+        "custom/gammastep"
         "pulseaudio"
         # Bluetooth will likely show up in the tray via blueberry/blueman
         # "network"
@@ -78,7 +123,14 @@ in {
         disable-scroll = true;
         all-outputs = true;
         # format = "{icon}"; # Use icons only if desired
-        format = "{name}"; # Show workspace names/numbers
+        # format = "{name}"; # Show workspace names/numbers
+        format = "{icon}";
+        format-icons = {
+          "1" = "";
+          "2" = " ";
+          "3" = "";
+          "4" = "⌨";
+        };
         # format-icons = {
         #   "1" = "爵"; # Example Nerd Font icons
         #   "2" = "犯";
@@ -87,9 +139,9 @@ in {
         #   "focused" = "";
         #   "default" = "";
         # };
-        persistent-workspaces = {
-          "*" = 5; # Show at least 5 workspaces per monitor
-        };
+        # persistent-workspaces = {
+        #   "*" = 5; # Show at least 5 workspaces per monitor
+        # };
       };
 
       "clock" = {
@@ -214,6 +266,21 @@ in {
           "${pkgs.wlogout}/bin/wlogout -p layer-shell"; # Launch wlogout
       };
 
+      # --- Gammastep Module Config ---
+      "custom/gammastep" = {
+        # Static icon format
+        format = "{icon}";
+        # Define the icon. Make sure your font (Hack Nerd Font) has this!
+        # Original icon was: 
+        # Alternative icon suggestion (nf-md-theme_light_dark): 󰔎
+        # Alternative icon suggestion (nf-fa-adjust): 
+        format-icons = [ "󰔎" ]; # Choose one icon
+        # Set tooltip to false as we are not providing dynamic text
+        tooltip = true;
+        # Call the Nix-managed scripts on different clicks
+        on-click = "${gamma-toggle-script}/bin/gamma-toggle";
+      };
+      # --- End of Gammastep Module ---
     }];
 
     # 4. Styling with CSS
@@ -389,12 +456,18 @@ in {
         /* background-color: @red; */ /* Optional background for attention */
       }
 
-
-      #custom-exit {
+         #custom-exit {
         color: @red;
         padding: 0 10px; /* Slightly more padding for the exit button */
         margin-left: 6px; /* Extra space before exit */
       }
+
+
+      #custom-gammastep {
+        font-size: 14px; /* Slightly larger font size */
+      }
+
+
 
       /* Tooltip style */
       tooltip {

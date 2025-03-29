@@ -103,6 +103,7 @@
         # Example: Assign Firefox to workspace 3
         # "3" = [ { class = "firefox"; } ];
       };
+      defaultWorkspace = "1";
 
       modifier = "Mod4";
       floating.modifier = "Mod4";
@@ -155,6 +156,9 @@
         "${modifier}+Shift+o" = "clipman clear --all";
         "${modifier}+e" =
           "exec ${pkgs.kitty}/bin/kitty -e yazi, floating enable, resize set 1111 650";
+
+        # Keybind to fix workspace 10 launching on startup (home manager bug)
+        "${modifier}+0" = "exec ls";
 
         "XF86MonBrightnessUp" = "exec brightnessctl s +10%";
         "XF86MonBrightnessDown" = "exec brightnessctl s 10%-";
