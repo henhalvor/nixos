@@ -1,5 +1,4 @@
-
-{ config, pkgs, userSettings, systemSettings, ... }: {
+{ config, pkgs, userSettings, ... }: {
   # Enable SSH server
   services.openssh = {
     enable = true;
@@ -9,10 +8,10 @@
       PermitRootLogin = "no";
       # OpenFireWall = true # Bad config option error caused by this
       PubKeyAuthentication = true;
-      UsePAM = false;  # Disable PAM to ensure public key authentication is used
+      UsePAM = false; # Disable PAM to ensure public key authentication is used
       LogLevel = "VERBOSE";
 
-        # Performance tweaks
+      # Performance tweaks
       # UseDNS = "no";  # Speeds up connections by skipping reverse DNS lookups
       # Optimize ciphers and algorithms
       Ciphers = [
@@ -26,7 +25,7 @@
         "diffie-hellman-group-exchange-sha256"
       ];
       # MACs = "hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com";
-   
+
     };
     extraConfig = ''
       IPQoS lowdelay throughput
@@ -35,8 +34,6 @@
       ClientAliveCountMax 3
     '';
   };
-
-
 
   # SSH Key Config
   users.users.${userSettings.username} = {
@@ -51,19 +48,17 @@
     ];
   };
 
-
   # Add essential server packages
-  environment.systemPackages = with pkgs; [
-   fail2ban # Protection against brute force attacks
-  ];
-
-
+  environment.systemPackages = with pkgs;
+    [
+      fail2ban # Protection against brute force attacks
+    ];
 
   # Enable fail2ban for SSH protection
   services.fail2ban = {
     enable = true;
-    maxretry = 100;  # Number of attempts before ban
+    maxretry = 100; # Number of attempts before ban
     bantime = "24h";
-  };  
+  };
 
 }

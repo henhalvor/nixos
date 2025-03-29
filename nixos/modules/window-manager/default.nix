@@ -1,4 +1,4 @@
-{ config, pkgs, userSettings, systemSettings, ... }: {
+{ config, pkgs, userSettings, ... }: {
   # Enable the X11 windowing system (needed for XWayland and GDM)
   services.xserver.enable = true;
 
@@ -10,6 +10,9 @@
     enable = true;
     extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
   };
+
+  # Keep dconf for GTK settings
+  programs.dconf.enable = true;
 
   # Configure keymap in X11
   services.xserver.xkb = {

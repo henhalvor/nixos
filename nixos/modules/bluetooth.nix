@@ -1,6 +1,4 @@
-
-{ config, pkgs, userSettings, systemSettings, ... }:
-{
-hardware.bluetooth.enable = true;
-services.blueman.enable = true;
+{ config, pkgs, ... }: {
+  hardware.bluetooth.enable = true;
+  services.blueman.enable = true;
 }

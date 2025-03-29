@@ -1,4 +1,4 @@
-{ config, pkgs, userSettings, systemSettings, ... }:
+{ config, pkgs, windowManager, userSettings, ... }:
 
 {
   home.username = userSettings.username;
@@ -16,18 +16,18 @@
 
   imports =
     # Window manager (conditional import)
-    (if systemSettings.windowManager == "hyprland" then
+    (if windowManager == "hyprland" then
       [ ../../home/modules/window-manager/hyprland.nix ]
-    else if systemSettings.windowManager == "sway" then
+    else if windowManager == "sway" then
       [ ../../home/modules/window-manager/sway.nix ]
-    else if systemSettings.windowManager == "gnome" then
+    else if windowManager == "gnome" then
     # Need to add gnome specific home config
       [ ]
-    else if systemSettings.windowManager == "none" then
+    else if windowManager == "none" then
       [ ]
     else [
       throw
-      "Unsupported window manager in flake's systemSettings.windowManager: ${systemSettings.windowManager}"
+      "Unsupported window manager in flake's windowManager: ${windowManager}"
     ]) ++ [
       # Applications
       ../../home/modules/applications/zsh.nix

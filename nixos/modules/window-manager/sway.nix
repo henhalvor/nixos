@@ -1,10 +1,7 @@
 
 
-{ config, pkgs, userSettings, systemSettings, ... }:
-{
-  imports = [
-    ./wayland-session-variables.nix
-  ];
+{ config, pkgs, userSettings, ... }: {
+  imports = [ ./wayland-session-variables.nix ];
 
   programs.sway = {
     enable = true;
@@ -13,7 +10,6 @@
 
   # Nixos wiki says this has to be enabled to use sway: https://nixos.wiki/wiki/Sway
   security.polkit.enable = true;
-
 
   # Allow sway to use the video group for brightness and volume control
   users.users.${userSettings.username}.extraGroups = [ "video" ];
@@ -24,9 +20,8 @@
     description = "kanshi daemon";
     serviceConfig = {
       Type = "simple";
-      ExecStart = ''${pkgs.kanshi}/bin/kanshi -c ~/.config/kanshi/config'';
+      ExecStart = "${pkgs.kanshi}/bin/kanshi -c ~/.config/kanshi/config";
     };
   };
 
-  
 }

@@ -1,7 +1,7 @@
-{ config, pkgs, userSettings, systemSettings, ... }:
+{ config, pkgs, userSettings, ... }:
 
 {
-    # Enable the X11 windowing system (needed for XWayland and GDM)
+  # Enable the X11 windowing system (needed for XWayland and GDM)
   services.xserver.enable = true;
 
   # Enable Wayland compositor - Hyprland
@@ -24,13 +24,13 @@
     XDG_SESSION_TYPE = "wayland";
   };
 
-    # Enable display manager
+  # Enable display manager
   services.xserver.displayManager.gdm.enable = true;
 
   # enable gnome
   services.xserver.desktopManager.gnome.enable = true;
 
-    # XDG portal
+  # XDG portal
   xdg.portal = {
     enable = true;
     extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
@@ -42,4 +42,4 @@
     variant = "";
   };
 
-  }
+}

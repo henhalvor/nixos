@@ -1,27 +1,20 @@
-
-{ config, pkgs, userSettings, systemSettings, ... }:
-{
+{ config, pkgs, ... }: {
   # Bootloader configuration
   boot.loader = {
-    grub = {
-      enable = false;
-   };
+    grub = { enable = false; };
 
-   # Use systemd-boot instead of grub
+    # Use systemd-boot instead of grub
     systemd-boot = {
       enable = true;
       # This ensures systemd-boot can handle your generations
-      configurationLimit = 10;  # Adjust this number to control how many generations to keep
+      configurationLimit =
+        10; # Adjust this number to control how many generations to keep
     };
-    
+
     # EFI settings for UEFI systems
-    efi = {
-      canTouchEfiVariables = false;
-    };
+    efi = { canTouchEfiVariables = false; };
   };
 
-
-boot.supportedFilesystems = [ "ntfs" "ext4" "vfat" ];
-
+  boot.supportedFilesystems = [ "ntfs" "ext4" "vfat" ];
 
 }

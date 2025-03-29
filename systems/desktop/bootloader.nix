@@ -1,5 +1,4 @@
-{ config, pkgs, userSettings, systemSettings, ... }:
-{
+{ config, pkgs, userSettings, ... }: {
 
   # Bootloader configuration
   boot.loader = {

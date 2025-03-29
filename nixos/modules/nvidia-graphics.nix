@@ -1,17 +1,16 @@
-
-{ config, pkgs, userSettings, systemSettings, ... }:
-{
+{ config, pkgs, ... }: {
   environment.sessionVariables = {
     LIBVA_DRIVER_NAME = "nvidia";
     GBM_BACKEND = "nvidia-drm";
     __GLX_VENDOR_LIBRARY_NAME = "nvidia";
-    WLR_RENDERER = "egl"; # Use EGL rendering - NVIDIA - Need to check if this works with amd and without graphics card
+    WLR_RENDERER =
+      "egl"; # Use EGL rendering - NVIDIA - Need to check if this works with amd and without graphics card
     # Hardware acceleration
     VDPAU_DRIVER = "nvidia";
   };
 
   # Load nvidia driver for Xorg and Wayland
-  services.xserver.videoDrivers = ["nvidia"];
+  services.xserver.videoDrivers = [ "nvidia" ];
 
   # Graphics and Hardware Acceleration
   hardware = {
@@ -28,7 +27,7 @@
       ];
     };
 
-   # NVIDIA settings
+    # NVIDIA settings
     nvidia = {
       modesetting.enable = true;
       powerManagement.enable = true;
@@ -41,6 +40,5 @@
       package = config.boot.kernelPackages.nvidiaPackages.stable;
     };
   };
-
 
 }

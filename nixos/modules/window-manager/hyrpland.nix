@@ -1,10 +1,7 @@
 
 
-{ config, pkgs, userSettings, systemSettings, ... }:
-{
-  imports = [
-    ./wayland-session-variables.nix
-  ];
+{ config, pkgs, userSettings, ... }: {
+  imports = [ ./wayland-session-variables.nix ];
 
   # Enable Wayland compositor - Hyprland
   programs.hyprland = {

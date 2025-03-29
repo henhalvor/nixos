@@ -1,8 +1,6 @@
 
 
-
-{ config, pkgs, userSettings, systemSettings, ... }:
-{
+{ config, pkgs, userSettings, ... }: {
   environment.sessionVariables = {
     #  If your cursor becomes invisible
     WLR_NO_HARDWARE_CURSORS = "1";

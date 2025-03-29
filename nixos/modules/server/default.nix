@@ -1,14 +1,9 @@
 
 
-{ config, pkgs, userSettings, systemSettings, ... }: {
+{ config, pkgs, userSettings, ... }: {
   # Add essential server packages
-  environment.systemPackages = with pkgs; [
-    htop
-    iftop
-    iotop
-  ];
+  environment.systemPackages = with pkgs; [ htop iftop iotop ];
 
-  
   # System maintenance
   services.cron = {
     enable = true;

@@ -1,8 +1,8 @@
-{ config, pkgs, userSettings, systemSettings, ... }:
+{ config, pkgs, userSettings, ... }:
 
 {
   # Video drivers configuration
-  services.xserver.videoDrivers = [ "amdgpu" ];  # Only use amdgpu driver
+  services.xserver.videoDrivers = [ "amdgpu" ]; # Only use amdgpu driver
 
   # Remove any NVIDIA-related packages and modules
   hardware.nvidia.package = null;
@@ -11,75 +11,75 @@
   # Environment variables for AMD graphics
   environment.sessionVariables = {
     # Hardware acceleration API support
-    LIBVA_DRIVER_NAME = "radeonsi";  # For VA-API
-    VDPAU_DRIVER = "radeonsi";       # For VDPAU
-    
+    LIBVA_DRIVER_NAME = "radeonsi"; # For VA-API
+    VDPAU_DRIVER = "radeonsi"; # For VDPAU
+
     # Wayland-specific settings (if using Wayland)
-    WLR_RENDERER = "vulkan";         # Better performance on AMD
-    
+    WLR_RENDERER = "vulkan"; # Better performance on AMD
+
     # Force Mesa to ignore NVIDIA
     MESA_LOADER_DRIVER_OVERRIDE = "radeonsi";
-    
+
     # Optional: Use Vulkan by default for games
-    AMD_VULKAN_ICD = "RADV";         # Use RADV Vulkan driver
+    AMD_VULKAN_ICD = "RADV"; # Use RADV Vulkan driver
   };
 
   # Graphics and Hardware Acceleration
   hardware = {
     graphics = {
       enable = true;
-      
+
       # Add drivers for AMD and definitely exclude NVIDIA
       extraPackages = with pkgs; [
         # Vulkan support
         vulkan-loader
         vulkan-validation-layers
-        amdvlk                    # AMD's Vulkan implementation
-        
+        amdvlk # AMD's Vulkan implementation
+
         # OpenGL and VA-API support
-        mesa                      # Main OpenGL implementation
-        libva                     # Video Acceleration API
-        mesa.drivers              # Contains the VA-API drivers
-        libva-utils              
-        
+        mesa # Main OpenGL implementation
+        libva # Video Acceleration API
+        mesa.drivers # Contains the VA-API drivers
+        libva-utils
+
         # VDPAU support
-        vaapiVdpau               # VDPAU backend for VA-API
-        libvdpau-va-gl           # OpenGL backend for VDPAU
-        
+        vaapiVdpau # VDPAU backend for VA-API
+        libvdpau-va-gl # OpenGL backend for VDPAU
+
         # ROCm (compute) support if needed
-        rocmPackages.clr         # OpenCL runtime
+        rocmPackages.clr # OpenCL runtime
       ];
-      
+
       # 32-bit support (for Steam and other gaming applications)
       extraPackages32 = with pkgs.pkgsi686Linux; [
         # Vulkan 32-bit support
         vulkan-loader
-        
+
         # OpenGL 32-bit support
         mesa
-        mesa.drivers             # 32-bit drivers
-        
+        mesa.drivers # 32-bit drivers
+
         # Video acceleration 32-bit support
         libva
         vaapiVdpau
       ];
     };
-    
+
     # Enable firmware for amdgpu if needed
     firmware = [ pkgs.linux-firmware ];
-    
+
   };
 
   # Optional: For better performance with AMDGPU
   boot.kernelParams = [
-    "amdgpu.ppfeaturemask=0xffffffff"  # Enables all power management features
-    "radeon.si_support=0"              # Disable Southern Islands support
-    "radeon.cik_support=0"             # Disable Sea Islands support
-    "amdgpu.si_support=1"              # Enable Southern Islands support in amdgpu
-    "amdgpu.cik_support=1"             # Enable Sea Islands support in amdgpu
+    "amdgpu.ppfeaturemask=0xffffffff" # Enables all power management features
+    "radeon.si_support=0" # Disable Southern Islands support
+    "radeon.cik_support=0" # Disable Sea Islands support
+    "amdgpu.si_support=1" # Enable Southern Islands support in amdgpu
+    "amdgpu.cik_support=1" # Enable Sea Islands support in amdgpu
     "module_blacklist=nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm" # Blacklist NVIDIA modules
   ];
-  
+
   # XDG Desktop Portal for proper application integrations
   xdg.portal = {
     enable = true;
@@ -89,6 +89,5 @@
     ];
     config.common.default = "*";
   };
-  
 
 }
