@@ -52,8 +52,8 @@ in {
     # 3. Configure Waybar Settings
     settings = [{
       layer = "top"; # Set to top layer
-      position = "top"; # Bar position
-      height = 32; # Bar height
+      position = "bottom"; # Bar position
+      height = 24; # Bar height
       spacing = 4; # Spacing between modules
 
       # Define module placement
