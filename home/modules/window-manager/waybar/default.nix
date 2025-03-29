@@ -52,7 +52,7 @@ in {
     # 3. Configure Waybar Settings
     settings = [{
       layer = "top"; # Set to top layer
-      position = "bottom"; # Bar position
+      position = "top"; # Bar position
       height = 24; # Bar height
       spacing = 4; # Spacing between modules
 
@@ -202,7 +202,7 @@ in {
       };
 
       "tray" = {
-        icon-size = 14;
+        icon-size = 13;
         spacing = 10; # Spacing between tray icons
       };
 

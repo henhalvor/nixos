@@ -125,7 +125,9 @@
             {
               # Pass arguments accessible inside home.nix via 'specialArgs'
               home-manager.extraSpecialArgs = {
-                inherit system userSettings unstablePkgs zen-browser hyprpanel;
+                inherit system userSettings zen-browser hyprpanel;
+                unstable =
+                  unstablePkgs; # Explicitly pass unstablePkgs AS unstable
                 inherit hostname windowManager systemName; # Pass system context
                 inputs = {
                   inherit hyprpanel zen-browser;
@@ -162,7 +164,7 @@
           systemName = "desktop"; # Assuming ./systems/desktop/ exists
           hostname = "desktop-pc";
           userSettings = userHenhal;
-          windowManager = "gnome";
+          windowManager = "hyprland";
         };
 
         hp-server = mkNixosSystem {
@@ -170,7 +172,7 @@
           hostname = "nixos-server";
           userSettings =
             userHenhal; # Or userAdmin if defined and preferred for server
-          windowManager = "none";
+          windowManager = "hyprland";
           extraModules = [
             vscode-server.nixosModules.default
             ({ config, pkgs, ... }: { services.vscode-server.enable = true; })
@@ -221,6 +223,7 @@
             }; # Pass inputs structured if needed
             # Note: System context like hostname, windowManager is typically NOT passed here,
             # unless home.nix has logic specifically for standalone mode based on them.
+            windowManager = "sway";
           };
         };
 
