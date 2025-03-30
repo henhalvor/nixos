@@ -52,8 +52,25 @@
     enable = true;
     # Add extraConfig here to inject raw Sway commands
     extraConfig = ''
-         # Disable default title bars and borders for new windows
+      # Disable default title bars and borders for new windows
       for_window [class=".*"] border none
+
+      # Disable laptop screen when lid is closed
+      bindswitch --reload --locked lid:on output "eDP-1" disable
+      bindswitch --reload --locked lid:off output "eDP-1" enable
+
+       # Workspace assignments for multi-monitor setup
+      # Samsung monitor (main display) "Samsung Electric Company Odyssey G52A HNMWC00587"
+      workspace 2 output DP-9
+      workspace 3 output DP-9
+
+      # ASUS monitor (portrait mode) "Unknown ASUS VG24V 0x00003EBC"
+      workspace 1 output DP-8
+
+      # Fallback for when laptop screen is active
+      workspace 1 output eDP-1
+      workspace 2 output eDP-1
+      workspace 3 output eDP-1
     '';
     config = {
       # --- Disable Sway's built-in bar ---
@@ -83,6 +100,17 @@
         "eDP-1" = {
           scale = "1.6";
           mode = "2560x1600@90Hz";
+        };
+        "DP-9" = {
+          scale = "1";
+          mode = "2560x1440@144Hz";
+          position = "1080,0";
+        };
+        "DP-8" = {
+          scale = "1";
+          mode = "1920x1080";
+          transform = "270";
+          position = "0,-180";
         };
       };
 
