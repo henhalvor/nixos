@@ -16,7 +16,7 @@ return {
     },
     opts = {
       ---@alias Provider "claude" | "openai" | "azure" | "gemini" | "cohere" | "copilot" | string
-      provider = 'claude', -- Recommend using Claude
+      provider = 'gemini', -- Recommend using Claude
       -- WARNING: Since auto-suggestions are a high-frequency operation and therefore expensive,
       -- currently designating it as `copilot` provider is dangerous because: https://github.com/yetone/avante.nvim/issues/1048
       -- Of course, you can reduce the request frequency by increasing `suggestion.debounce`.
@@ -30,7 +30,7 @@ return {
 
       gemini = {
         -- @see https://ai.google.dev/gemini-api/docs/models/gemini
-        model = 'gemini-2.0-flash', -- your desired model (or use gpt-4o, etc.)
+        model = 'gemini-2.5-pro-exp-03-25', -- your desired model (or use gpt-4o, etc.)
         timeout = 30000, -- timeout in milliseconds
         temperature = 0, -- adjust if needed
         max_tokens = 8192,

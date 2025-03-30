@@ -1,6 +1,6 @@
 return {
   'saghen/blink.cmp',
-  dependencies = { 'rafamadriz/friendly-snippets' },
+  dependencies = { 'rafamadriz/friendly-snippets', 'Kaiser-Yang/blink-cmp-avante' },
   version = '*',
 
   opts = {
@@ -38,9 +38,18 @@ return {
     },
 
     sources = {
-      default = { 'lsp', 'path', 'snippets', 'buffer' },
       -- Lower the minimum keyword length to trigger sources
       min_keyword_length = 1,
+      default = { 'avante', 'lsp', 'path', 'snippets', 'buffer' },
+      providers = {
+        avante = {
+          module = 'blink-cmp-avante',
+          name = 'Avante',
+          opts = {
+            -- options for blink-cmp-avante
+          },
+        },
+      },
     },
 
     fuzzy = { implementation = 'prefer_rust_with_warning' },
