@@ -71,6 +71,20 @@
       workspace 1 output eDP-1
       workspace 2 output eDP-1
       workspace 3 output eDP-1
+
+      # yazi floating window
+      for_window [app_id="kitty-yazi"] floating enable, resize set 1111 px 650 px, move position center, border pixel 2
+
+      # Rule for Picture-in-Picture windows (based on title)
+      for_window [title="^Picture-in-Picture$"] floating enable, resize set 480 px 270 px, move position 100 ppt 100 ppt, move left 500 px, move up 290 px, sticky enable, border pixel 0
+
+      # Optional: More specific rule targeting Firefox PiP windows (if the above is too broad)
+      # You can uncomment this if needed. The (?i) makes the class match case-insensitive.
+      # for_window [class="^(?i)firefox$" title="^Picture-in-Picture$"] floating enable, resize set 480 px 270 px, move position 100 ppt 100 ppt, move left 500 px, move up 290 px, sticky enable, border pixel 0
+
+      # Optional: Rule targeting Zen browser specifically (if it uses a distinct class or app_id)
+      # Adjust the class or use app_id if necessary.
+      # for_window [class="^(?i)zen$" title="^Picture-in-Picture$"] floating enable, resize set 480 px 270 px, move position 100 ppt 100 ppt, move left 500 px, move up 290 px, sticky enable, border pixel 0
     '';
     config = {
       # --- Disable Sway's built-in bar ---
@@ -170,7 +184,6 @@
           command = "blueman-applet";
         }
       ];
-
       menu = "${pkgs.rofi}/bin/rofi -show drun";
 
       keybindings = let
@@ -184,7 +197,7 @@
         "${modifier}+o" = "exec clipman pick -t rofi";
         "${modifier}+Shift+o" = "exec clipman clear --all";
         "${modifier}+e" =
-          "exec ${pkgs.kitty}/bin/kitty -e yazi, floating enable, resize set 1111 650";
+          "exec ${pkgs.kitty}/bin/kitty --class=kitty-yazi -o background_opacity=1.0 -e yazi";
 
         # Keybind to fix workspace 10 launching on startup (home manager bug)
         "${modifier}+0" = "exec ls";
