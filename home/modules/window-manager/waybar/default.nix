@@ -500,7 +500,7 @@ in {
   services.mako = {
     enable = true;
     # Customize Mako appearance and behavior
-    font = "JetBrainsMono Nerd Font 10";
+    font = "Hack Nerd Font 10";
     padding = "10";
     margin = "10";
     borderSize = 1;
