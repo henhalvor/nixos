@@ -1,10 +1,12 @@
 { config, pkgs, userSettings, ... }: {
-  programs.rofi = {
-    enable = true;
-    terminal = "${userSettings.term}";
-    theme = ./theme.rasi;
-  };
+  home.packages = with pkgs; [ rofi-wayland ];
 
+  # programs.rofi = {
+  #   enable = true;
+  #   terminal = "${userSettings.term}";
+  #   theme = ./theme.rasi;
+  # };
+  #
   home.file.".config/rofi/theme.rasi".text = ''
 
     /*****----- Configuration -----*****/

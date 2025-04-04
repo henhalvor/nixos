@@ -184,7 +184,8 @@
           command = "blueman-applet";
         }
       ];
-      menu = "${pkgs.rofi}/bin/rofi -show drun";
+      menu =
+        "${pkgs.rofi-wayland}/bin/rofi -show drun -theme ${config.home.homeDirectory}/.config/rofi/theme.rasi";
 
       keybindings = let
         modifier = config.wayland.windowManager.sway.config.modifier;
@@ -194,7 +195,8 @@
         "${modifier}+Shift+q" = "kill";
         "${modifier}+d" = "exec ${menu}";
         "${modifier}+Shift+c" = "exec reload";
-        "${modifier}+o" = "exec clipman pick -t rofi";
+        "${modifier}+o" =
+          "exec clipman pick -t rofi -T'-theme ${config.home.homeDirectory}/.config/rofi/theme.rasi'";
         "${modifier}+Shift+o" = "exec clipman clear --all";
         "${modifier}+e" =
           "exec ${pkgs.kitty}/bin/kitty --class=kitty-yazi -o background_opacity=1.0 -e yazi";

@@ -12,17 +12,15 @@
     ./kanshi
   ];
 
-
-
   home.packages = with pkgs; [
     hyprland
     # Wayland essentials
-    wl-clipboard # Clipboard 
+    wl-clipboard # Clipboard
     clipman # Clipboard management
     # slurp           # Screen region selector
-    brightnessctl   # For screen brightness control
-    pamixer         # For volume control
-    playerctl       # You already have this for media controls
+    brightnessctl # For screen brightness control
+    pamixer # For volume control
+    playerctl # You already have this for media controls
     # nm-applet # Network manager applet (optional)
     ddcutil # External monitor brightness control
     bluez # bluetooth
@@ -43,17 +41,17 @@
         #
         # "nm-applet &"
         # "poweralertd &"
-        "wl-paste --type text --watch clipman store &"    # Store text entries
-        "wl-paste --type image --watch clipman store &"   # Store images
+        "wl-paste --type text --watch clipman store &" # Store text entries
+        "wl-paste --type image --watch clipman store &" # Store images
         "hyprpanel &"
         "hyprpaper &"
-        "hypridle &" 
+        "hypridle &"
 
         #   "swaync &"
         #   "hyprctl setcursor Bibata-Modern-Ice 24 &"
         #   "swww-daemon &"
         #
-          # "hyprlock"
+        # "hyprlock"
       ];
 
       input = {
@@ -64,9 +62,7 @@
         float_switch_override_focus = 0;
         mouse_refocus = 0;
         sensitivity = 0;
-        touchpad = {
-          natural_scroll = true;
-        };
+        touchpad = { natural_scroll = true; };
       };
 
       general = {
@@ -79,11 +75,11 @@
         "col.inactive_border" = "0x00000000";
         border_part_of_window = false;
         no_border_on_floating = false;
-       # Allow dragging with left mouse button
+        # Allow dragging with left mouse button
         resize_on_border = true;
         extend_border_grab_area = 15;
         hover_icon_on_border = true;
-            };
+      };
 
       misc = {
         disable_autoreload = true;
@@ -118,8 +114,8 @@
         rounding = 10;
 
         # Opacity
-        active_opacity = 1.0;    # Opacity for focused windows (100%)
-        inactive_opacity = 0.95;  # Opacity for unfocused windows (95%)
+        active_opacity = 1.0; # Opacity for focused windows (100%)
+        inactive_opacity = 0.95; # Opacity for unfocused windows (95%)
         fullscreen_opacity = 1.0; # Opacity for fullscreen (100%)
 
         blur = {
@@ -185,20 +181,18 @@
         "$mainMod SHIFT, Q, killactive,"
         "$mainMod, F, fullscreen, 0"
         "$mainMod, Space, exec, toggle_float"
-        "$mainMod, D, exec, rofi -show drun || pkill rofi"
-        "$mainMod, O, exec, clipman pick -t rofi"
+        "$mainMod, D, exec, ${pkgs.rofi-wayland}/bin/rofi -show drun -theme ${config.home.homeDirectory}/.config/rofi/theme.rasi"
+        "$mainMod, O, exec, clipman pick -t rofi -T'-theme ${config.home.homeDirectory}/.config/rofi/theme.rasi'"
         "$mainMod SHIFT, O, exec, clipman clear --all"
         "$mainMod, X, togglesplit,"
-         "$mainMod, E, exec, hyprctl dispatch exec '[float; size 1111 650] kitty -e yazi'"
+        "$mainMod, E, exec, hyprctl dispatch exec '[float; size 1111 650] kitty -e yazi'"
         # "$mainMod SHIFT, B, exec, toggle_waybar"
 
         # Lock screen
         "$mainMod SHIFT, L, exec, hyprlock"
 
-
         "$mainMod SHIFT, D, exec, ~/.local/bin/toggle-laptop-display"
         "$mainMod SHIFT, M, exec, hyprctl dispatch dpms on && notify-send 'All displays forced on'"
-
 
         # screenshot
         ",Print, exec, screenshot --copy"
@@ -302,24 +296,24 @@
         "$mainMod, V, exec, cliphist list | rofi -dmenu -theme-str 'window {width: 50%;} listview {columns: 1;}' | cliphist decode | wl-copy"
       ];
 
-       # binds active in lockscreen
-       bindl = [
+      # binds active in lockscreen
+      bindl = [
         # Brightness
         # Control all displays together
         # Normal press: Small adjustments (5%)
         ",XF86MonBrightnessUp, exec, brightnessctl set 5%+ && ${config.home.homeDirectory}/.local/bin/monitor-brightness up all"
         ",XF86MonBrightnessDown, exec, brightnessctl set 5%- && ${config.home.homeDirectory}/.local/bin/monitor-brightness down all"
-        
+
         # With Super key: Large adjustments
         "$mainMod, XF86MonBrightnessUp, exec, brightnessctl set 100%+ && ${config.home.homeDirectory}/.local/bin/monitor-brightness up all && ${config.home.homeDirectory}/.local/bin/monitor-brightness up all && ${config.home.homeDirectory}/.local/bin/monitor-brightness up all"
         "$mainMod, XF86MonBrightnessDown, exec, brightnessctl set 100%- && ${config.home.homeDirectory}/.local/bin/monitor-brightness down all && ${config.home.homeDirectory}/.local/bin/monitor-brightness down all && ${config.home.homeDirectory}/.local/bin/monitor-brightness down all"
-             ];
+      ];
 
-       # binds that repeat when held
-       binde = [
-         ",XF86AudioRaiseVolume,exec, pamixer -i 2"
-         ",XF86AudioLowerVolume,exec, pamixer -d 2"
-       ];
+      # binds that repeat when held
+      binde = [
+        ",XF86AudioRaiseVolume,exec, pamixer -i 2"
+        ",XF86AudioLowerVolume,exec, pamixer -d 2"
+      ];
 
       # mouse binding
       bindm = [
@@ -346,29 +340,29 @@
       windowrulev2 = [
         # Firefox/Zen Picture-in-Picture rules
         "float, title:^(Picture-in-Picture)$"
-        "size 480 270, title:^(Picture-in-Picture)$"  # 16:9 aspect ratio at reasonable size
-        "move 68% 70%, title:^(Picture-in-Picture)$"  # Position farther from right edge (68% instead of 75%)
+        "size 480 270, title:^(Picture-in-Picture)$" # 16:9 aspect ratio at reasonable size
+        "move 68% 70%, title:^(Picture-in-Picture)$" # Position farther from right edge (68% instead of 75%)
         "opacity 1.0 override 1.0 override, title:^(Picture-in-Picture)$"
         "noborder, title:^(Picture-in-Picture)$"
         "rounding 6, title:^(Picture-in-Picture)$"
         "keepaspectratio, title:^(Picture-in-Picture)$"
-        "minsize 320 180, title:^(Picture-in-Picture)$"  # Minimum size (16:9)
-        "maxsize 960 540, title:^(Picture-in-Picture)$"  # Maximum size (16:9)
+        "minsize 320 180, title:^(Picture-in-Picture)$" # Minimum size (16:9)
+        "maxsize 960 540, title:^(Picture-in-Picture)$" # Maximum size (16:9)
 
         # More generic PiP rules (for other applications)
         "float, title:.*Picture.?in.?Picture.*"
         "size 480 270, title:.*Picture.?in.?Picture.*"
-        "move 68% 70%, title:.*Picture.?in.?Picture.*"  # Adjusted position
+        "move 68% 70%, title:.*Picture.?in.?Picture.*" # Adjusted position
 
         # More rules for Firefox specifically
         "float, class:^(firefox)$, title:^(Picture-in-Picture)$"
         "size 480 270, class:^(firefox)$, title:^(Picture-in-Picture)$"
-        "move 68% 70%, class:^(firefox)$, title:^(Picture-in-Picture)$"  # Adjusted position
+        "move 68% 70%, class:^(firefox)$, title:^(Picture-in-Picture)$" # Adjusted position
 
         # More specific rules for Zen browser if needed
         "float, class:^(zen)$, title:^(Picture-in-Picture)$"
         "size 480 270, class:^(zen)$, title:^(Picture-in-Picture)$"
-        "move 68% 70%, class:^(zen)$, title:^(Picture-in-Picture)$"  # Adjusted position       
+        "move 68% 70%, class:^(zen)$, title:^(Picture-in-Picture)$" # Adjusted position
 
         # Add these rules to your configuration
         # "unset, pin, title:^(Picture-in-Picture)$"
@@ -376,7 +370,7 @@
         "pin, title:^(Picture-in-Picture)$"
         # "forceinput, title:^(Picture-in-Picture)$"
 
-          # Opacity for specific windows
+        # Opacity for specific windows
         "opacity 1.0 override 1.0 override, title:^(.*imv.*)$"
         "opacity 1.0 override 1.0 override, title:^(.*mpv.*)$"
         "opacity 1.0 override 1.0 override, class:(zen)"
@@ -429,8 +423,8 @@
         "noshadow,class:^()$,title:^()$"
         "noblur,class:^()$,title:^()$"
 
-       # Basic Kitty styling that applies always
-        "rounding 10, class:^(kitty)$"   # Rounded corners for all Kitty windows
+        # Basic Kitty styling that applies always
+        "rounding 10, class:^(kitty)$" # Rounded corners for all Kitty windows
       ];
 
       # No gaps when only
@@ -441,52 +435,8 @@
       ];
     };
 
-
-    extraConfig = "
- 
-  # Clear any previous monitor settings and set defaults
-  monitor=,preferred,auto,1
-  
-  # Define specific monitor configurations
-  # Laptop built-in display
-  monitor=eDP-1,2560x1600@90,0x0,1.6
-  
-  # Samsung Odyssey (DP-9) - Center screen with native resolution
-  monitor=DP-9,2560x1440@144,0x0,1
-  
-  # ASUS monitor (DP-8) - Position in portrait to the left of Samsung
-  monitor=DP-8,1920x1080@144,-1080x240,1,transform,1
-  
-  # Better startup sequence to ensure monitors turn on
-  exec-once = sleep 1 && hyprctl dispatch dpms on
-  
-    # Suspend and resume fix
-    exec-once = ${pkgs.bash}/bin/bash -c 'echo 'systemctl --user restart hyprpaper.service hyprpanel.service' > /tmp/hypr-resume-fix && systemd-inhibit --what=handle-lid-switch sleep infinity'
-
-      xwayland {
-        force_zero_scaling = true
-      }
-
-      env = QT_QPA_PLATFORM,wayland
-      env = SDL_VIDEODRIVER,wayland
-      env = CLUTTER_BACKEND,wayland
-      env = XDG_SESSION_TYPE,wayland
-      env = WLR_RENDERER,vulkan
-      env = MOZ_ENABLE_WAYLAND,1
-      env = WLR_NO_HARDWARE_CURSORS,0
-      env = XCURSOR_SIZE,24
- 
-      # # env = __GLX_VENDOR_LIBRARY_NAME,nvidia
-      # # env = GBM_BACKEND,nvidia-drm
-      # env = __GL_GSYNC_ALLOWED,0
-      # env = __GL_VRR_ALLOWED,0
-      # # env = LIBVA_DRIVER_NAME,nvidia
-      # env = NVD_BACKEND,direct
-      #
-
-      source = ~/.config/hypr/colorscheme.conf
-    ";
-
+    extraConfig =
+      "\n \n  # Clear any previous monitor settings and set defaults\n  monitor=,preferred,auto,1\n  \n  # Define specific monitor configurations\n  # Laptop built-in display\n  monitor=eDP-1,2560x1600@90,0x0,1.6\n  \n  # Samsung Odyssey (DP-9) - Center screen with native resolution\n  monitor=DP-9,2560x1440@144,0x0,1\n  \n  # ASUS monitor (DP-8) - Position in portrait to the left of Samsung\n  monitor=DP-8,1920x1080@144,-1080x240,1,transform,1\n  \n  # Better startup sequence to ensure monitors turn on\n  exec-once = sleep 1 && hyprctl dispatch dpms on\n  \n    # Suspend and resume fix\n    exec-once = ${pkgs.bash}/bin/bash -c 'echo 'systemctl --user restart hyprpaper.service hyprpanel.service' > /tmp/hypr-resume-fix && systemd-inhibit --what=handle-lid-switch sleep infinity'\n\n      xwayland {\n        force_zero_scaling = true\n      }\n\n      env = QT_QPA_PLATFORM,wayland\n      env = SDL_VIDEODRIVER,wayland\n      env = CLUTTER_BACKEND,wayland\n      env = XDG_SESSION_TYPE,wayland\n      env = WLR_RENDERER,vulkan\n      env = MOZ_ENABLE_WAYLAND,1\n      env = WLR_NO_HARDWARE_CURSORS,0\n      env = XCURSOR_SIZE,24\n \n      # # env = __GLX_VENDOR_LIBRARY_NAME,nvidia\n      # # env = GBM_BACKEND,nvidia-drm\n      # env = __GL_GSYNC_ALLOWED,0\n      # env = __GL_VRR_ALLOWED,0\n      # # env = LIBVA_DRIVER_NAME,nvidia\n      # env = NVD_BACKEND,direct\n      #\n\n      source = ~/.config/hypr/colorscheme.conf\n    ";
 
   };
 
@@ -516,12 +466,12 @@
       #!/bin/sh
       # Usage: monitor-brightness up|down [monitor]
       # monitor can be: samsung, asus, or all (default)
-      
+
       SAMSUNG_BUS=4
       ASUS_BUS=5
       STEP=30
       MAX_BRIGHTNESS=255  # Maximum possible DDC/CI brightness value
-      
+
       adjust_brightness() {
         local bus=$1
         local direction=$2
@@ -556,10 +506,10 @@
         echo "Adjusting monitor on bus $bus: Current=$current New=$new_value"
         ddcutil --bus=$bus setvcp 10 $new_value
       }
-      
+
       direction=$1
       monitor=''${2:-all}
-      
+
       case "$monitor" in
         "samsung")
           adjust_brightness $SAMSUNG_BUS "$direction"
@@ -580,5 +530,4 @@
   };
 
 }
-
 
