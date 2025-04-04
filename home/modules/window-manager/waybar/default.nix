@@ -243,7 +243,8 @@ in {
         format = " {usage}%"; # CPU icon + usage
         tooltip = true;
         tooltip-format = "CPU Usage: {usage}%";
-        interval = 2; # Update every 2 seconds
+        interval = 5; # Update every 2 seconds
+        on-click = "${pkgs.mission-center}/bin/missioncenter";
       };
 
       "memory" = {
@@ -251,6 +252,7 @@ in {
         tooltip = true;
         tooltip-format = "Memory: {used:0.1f} GiB / {total:0.1f} GiB ({perc}%)";
         interval = 5; # Update every 5 seconds
+        on-click = "${pkgs.mission-center}/bin/missioncenter";
       };
 
       "tray" = {
