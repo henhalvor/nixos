@@ -50,6 +50,7 @@
 
   wayland.windowManager.sway = {
     enable = true;
+    wrapperFeatures.gtk = true;
     # Add extraConfig here to inject raw Sway commands
     extraConfig = ''
       # Disable default title bars and borders for new windows
