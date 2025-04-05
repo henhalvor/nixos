@@ -154,7 +154,7 @@
       floating.border = 0;
       window.border = 0;
       focus.forceWrapping = false;
-      focus.followMouse = false;
+      focus.followMouse = true;
       # fonts = {
       #   names = [ "RobotoMono" ];
       #   size = 9.0;
