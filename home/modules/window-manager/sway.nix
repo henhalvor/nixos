@@ -107,6 +107,7 @@
           natural_scroll = "enabled";
           middle_emulation = "enabled";
         };
+        "5426:64:Razer_Razer_Naga_2014" = { natural_scroll = "disabled"; };
 
       };
 
