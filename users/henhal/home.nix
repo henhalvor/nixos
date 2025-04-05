@@ -44,6 +44,7 @@
       ../../home/modules/applications/vscode.nix
       ../../home/modules/applications/cursor.nix
       ../../home/modules/applications/mission-center.nix
+      ../../home/modules/applications/google-chrome.nix
 
       # Environment
       ../../home/modules/environment/dev-tools.nix
