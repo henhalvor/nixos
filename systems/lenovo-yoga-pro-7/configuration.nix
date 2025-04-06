@@ -26,4 +26,8 @@
       # window-manager
       ../../nixos/modules/window-manager/default.nix
     ];
+
+  # logitect wireless dongle
+  hardware.logitech.wireless.enable = true;
+  hardware.logitech.wireless.enableGraphical = true;
 }
