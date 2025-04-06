@@ -6,7 +6,7 @@
     matchBlocks = {
       "server" = {
         hostname = "10.0.0.120";
-        user = "henhal";
+        user = "henhal-dev";
         extraOptions = {
           RequestTTY = "yes";
           RemoteCommand = "tmux new-session -A -s ssh";
