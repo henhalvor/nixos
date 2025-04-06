@@ -115,6 +115,7 @@
               users.users.${userSettings.username} = {
                 isNormalUser = true;
                 description = userSettings.name;
+                initialPassword = "password";
                 extraGroups =
                   [ "networkmanager" "wheel" "i2c" "docker" "video" ];
                 shell = pkgsForNixOS.zsh; # Use pkgs set defined for NixOS
