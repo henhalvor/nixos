@@ -1,14 +1,18 @@
 { config, pkgs, userSettings, windowManager, ... }: {
   imports =
     # Window manager (conditional import)
-    (if windowManager == "hyprland" then
-      [ ../../nixos/modules/window-manager/hyrpland.nix ]
-    else if windowManager == "sway" then
-      [ ../../nixos/modules/window-manager/sway.nix ]
-    else if windowManager == "gnome" then
+    (if windowManager == "hyprland" then [
+      ../../nixos/modules/window-manager/hyrpland.nix
+      ../../nixos/modules/window-manager/default.nix
+    ] else if windowManager == "sway" then [
+      ../../nixos/modules/window-manager/sway.nix
+      ../../nixos/modules/window-manager/default.nix
+    ] else if windowManager == "gnome" then
     # Need to add gnome specific home config
-      [ ../../nixos/modules/window-manager/gnome.nix ]
-    else if windowManager == "none" then
+    [
+      ../../nixos/modules/window-manager/gnome.nix
+      ../../nixos/modules/window-manager/default.nix
+    ] else if windowManager == "none" then
       [ ]
     else [
       throw
@@ -30,7 +34,5 @@
       ../../nixos/modules/server/server-monitoring.nix
       # ../../nixos/modules/server/cockpit.nix
 
-      # window-manager
-      ../../nixos/modules/window-manager/default.nix
     ];
 }

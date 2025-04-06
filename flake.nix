@@ -61,6 +61,15 @@
         # Add any other settings specific to henhal that home.nix might need
       };
 
+      userHenhalDev = rec {
+        username = "henhal-dev";
+        name = "Henrik";
+        email = "henhalvor@gmail.com";
+        homeDirectory = "/home/${username}"; # Standard home directory path
+        stateVersion = "24.11";
+        # Add any other settings specific to henhal that home.nix might need
+      };
+
       # Add other user settings here if needed, e.g.:
       # userAdmin = rec { username = "admin"; ... };
 
@@ -171,8 +180,8 @@
           systemName = "hp-server";
           hostname = "hp-server";
           userSettings =
-            userHenhal; # Or userAdmin if defined and preferred for server
-          windowManager = "hyprland";
+            userHenhalDev; # Or userAdmin if defined and preferred for server
+          windowManager = "none";
           extraModules = [
             vscode-server.nixosModules.default
             ({ config, pkgs, ... }: { services.vscode-server.enable = true; })
@@ -229,6 +238,36 @@
 
         # Add standalone config for 'admin' if you defined userAdmin above
         # admin = home-manager.lib.homeManagerConfiguration { ... };
+
+        # Standalone config for user 'serverAdmin'
+        henhal-dev = home-manager.lib.homeManagerConfiguration {
+          # Define pkgs specifically for this standalone build
+          pkgs = import nixpkgs {
+            inherit system;
+            config.allowUnfree =
+              true; # Allow unfree packages if needed by home.nix
+            overlays = [
+              hyprpanel.overlay
+              # Add unstable overlay for standalone build if needed directly in home.nix pkgs
+              (final: prev: { unstable = unstablePkgs; })
+            ];
+          };
+          modules =
+            [ ./users/henhal-dev/home.nix ]; # Path to the home configuration
+          # Pass arguments needed by home.nix when built standalone
+          extraSpecialArgs = {
+            inherit system;
+            userSettings = userHenhalDev; # Pass the correct user settings block
+            unstable = unstablePkgs; # Pass unstable package set
+            inherit zen-browser hyprpanel; # Pass inputs needed by home.nix
+            inputs = {
+              inherit hyprpanel zen-browser;
+            }; # Pass inputs structured if needed
+            # Note: System context like hostname, windowManager is typically NOT passed here,
+            # unless home.nix has logic specifically for standalone mode based on them.
+            windowManager = "none";
+          };
+        };
 
       }; # End of homeConfigurations
 
