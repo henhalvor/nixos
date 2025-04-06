@@ -36,6 +36,7 @@
       ../../home/modules/applications/aider-chat.nix
       ../../home/modules/applications/claude-code.nix
       ../../home/modules/applications/tmux.nix
+      ../../home/modules/applications/kitty.nix
       # Environment
       ../../home/modules/environment/dev-tools.nix
       ../../home/modules/environment/session-variables.nix

@@ -36,4 +36,5 @@
       # ../../nixos/modules/server/cockpit.nix
 
     ];
+programs.dconf.enable = true;
 }
