@@ -4,6 +4,6 @@ return {
   event = 'VeryLazy',
   opts = {
     -- your options here
-    grace_period = 60 * 5, -- 5 minutes
+    grace_period = 60 * 120, -- 120 minutes
   },
 }
