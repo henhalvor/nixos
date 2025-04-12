@@ -3,7 +3,10 @@
     "ags": {
       "inputs": {
         "astal": "astal",
-        "nixpkgs": ["hyprpanel", "nixpkgs"]
+        "nixpkgs": [
+          "hyprpanel",
+          "nixpkgs"
+        ]
       },
       "locked": {
         "lastModified": 1736090999,
@@ -21,7 +24,11 @@
     },
     "astal": {
       "inputs": {
-        "nixpkgs": ["hyprpanel", "ags", "nixpkgs"]
+        "nixpkgs": [
+          "hyprpanel",
+          "ags",
+          "nixpkgs"
+        ]
       },
       "locked": {
         "lastModified": 1735172721,
@@ -57,7 +64,9 @@
     },
     "home-manager": {
       "inputs": {
-        "nixpkgs": ["nixpkgs"]
+        "nixpkgs": [
+          "nixpkgs"
+        ]
       },
       "locked": {
         "lastModified": 1742234739,
@@ -77,7 +86,9 @@
     "hyprpanel": {
       "inputs": {
         "ags": "ags",
-        "nixpkgs": ["nixpkgs"]
+        "nixpkgs": [
+          "nixpkgs"
+        ]
       },
       "locked": {
         "lastModified": 1742402033,
@@ -111,11 +122,11 @@
     },
     "nixpkgs-unstable": {
       "locked": {
-        "lastModified": 1742422364,
-        "narHash": "sha256-mNqIplmEohk5jRkqYqG19GA8MbQ/D4gQSK0Mu4LvfRQ=",
+        "lastModified": 1744232761,
+        "narHash": "sha256-gbl9hE39nQRpZaLjhWKmEu5ejtQsgI5TWYrIVVJn30U=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "a84ebe20c6bc2ecbcfb000a50776219f48d134cc",
+        "rev": "f675531bc7e6657c10a18b565cfebd8aa9e24c14",
         "type": "github"
       },
       "original": {
