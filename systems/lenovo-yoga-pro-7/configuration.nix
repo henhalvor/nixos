@@ -25,6 +25,9 @@
       ../../nixos/modules/systemd-loginhd.nix
       # window-manager
       ../../nixos/modules/window-manager/default.nix
+
+      # Server connectivity
+      ../../nixos/modules/server/tailscale.nix
     ];
 
   # logitect wireless dongle
