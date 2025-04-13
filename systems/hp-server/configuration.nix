@@ -33,6 +33,7 @@
       ../../nixos/modules/server/ssh.nix
       ../../nixos/modules/server/laptop-server.nix
       ../../nixos/modules/server/server-monitoring.nix
+      ../../nixos/modules/server/tailscale.nix
       # ../../nixos/modules/server/cockpit.nix
 
     ];
