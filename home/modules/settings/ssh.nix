@@ -5,7 +5,8 @@
     enable = true;
     matchBlocks = {
       "server" = {
-        hostname = "10.0.0.120";
+        # hostname = "10.0.0.120"; # WIFI connection to server
+        hostname = "10.0.0.2";  # LAN connection to server
         user = "henhal-dev";
         extraOptions = {
           RequestTTY = "yes";
