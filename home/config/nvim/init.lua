@@ -67,18 +67,45 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   end,
 })
 
+--
+-- QuickFix list
+--
+
+-- Toggle quickfix list with <leader>q
+vim.keymap.set('n', '<leader>q', function()
+  local is_open = false
+  for _, win in ipairs(vim.fn.getwininfo()) do
+    if win.quickfix == 1 then
+      is_open = true
+      break
+    end
+  end
+  if is_open then
+    vim.cmd 'cclose'
+  else
+    vim.cmd 'copen'
+  end
+end, { desc = 'Toggle quickfix list' })
+
+-- Navigate quickfix list
+vim.keymap.set('n', ']q', ':cnext<CR>', { desc = 'Next quickfix item' })
+vim.keymap.set('n', '[q', ':cprev<CR>', { desc = 'Prev quickfix item' })
+vim.keymap.set('n', 'qc', ":lua vim.fn.setqflist({}, 'f')", { desc = '[Q]uickfix [C]lear' })
+
+--
+--
+--
+
 vim.api.nvim_create_autocmd({ 'FocusGained', 'BufEnter', 'CursorHold' }, {
   pattern = '*',
   command = 'silent! checktime',
 })
 
-
 -- [[ Install `lazy.nvim` plugin manager ]]
 -- Define base directories at the start of init.lua
-vim.g.package_home = vim.fn.expand('~/.local/share/nvim')
-vim.g.mason_home = vim.fn.expand('~/.local/share/nvim/mason')
-vim.g.lazy_home = vim.fn.expand('~/.local/share/nvim/lazy')
-
+vim.g.package_home = vim.fn.expand '~/.local/share/nvim'
+vim.g.mason_home = vim.fn.expand '~/.local/share/nvim/mason'
+vim.g.lazy_home = vim.fn.expand '~/.local/share/nvim/lazy'
 
 -- Update lazy.nvim path
 local lazypath = vim.g.lazy_home .. '/lazy.nvim'
@@ -91,7 +118,7 @@ vim.opt.rtp:prepend(lazypath)
 -- [[ Configure and install plugins ]]
 require('lazy').setup {
   root = vim.g.lazy_home,
-  lockfile = vim.fn.expand('~/.local/state/nvim/lazy-lock.json'), -- Store lock file in state directory
+  lockfile = vim.fn.expand '~/.local/state/nvim/lazy-lock.json', -- Store lock file in state directory
 
   -- importing core plugins from "./lua/core""
   { import = 'core' },
