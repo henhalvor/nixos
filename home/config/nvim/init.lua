@@ -90,7 +90,7 @@ end, { desc = 'Toggle quickfix list' })
 -- Navigate quickfix list
 vim.keymap.set('n', ']q', ':cnext<CR>', { desc = 'Next quickfix item' })
 vim.keymap.set('n', '[q', ':cprev<CR>', { desc = 'Prev quickfix item' })
-vim.keymap.set('n', 'qc', ":lua vim.fn.setqflist({}, 'f')", { desc = '[Q]uickfix [C]lear' })
+vim.keymap.set('n', '<leader>qc', ":lua vim.fn.setqflist({}, 'f')<CR>", { desc = '[Q]uickfix [C]lear' })
 
 --
 --
