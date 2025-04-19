@@ -33,4 +33,7 @@
   # logitect wireless dongle
   hardware.logitech.wireless.enable = true;
   hardware.logitech.wireless.enableGraphical = true;
+
+  # Drivers for usb-c to ethernet adapter
+  boot.kernelModules = [ "ax88179_178a" ];
 }
