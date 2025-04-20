@@ -200,40 +200,40 @@ return {
       },
     }
 
-    -- Set up rust_analyzer separately
-    require('lspconfig').rust_analyzer.setup {
-      -- Start with base capabilities
-      -- capabilities = vim.tbl_deep_extend('force', {}, base_capabilities, folding_capabilities),
-      -- Then add blink.cmp capabilities
-      capabilities = require('blink.cmp').get_lsp_capabilities(vim.tbl_deep_extend('force', {}, base_capabilities, folding_capabilities)),
-      handlers = handlers,
-      settings = {
-        ['rust-analyzer'] = {
-          diagnostics = {
-            enable = true,
-            enableExperimental = true,
-          },
-          check = {
-            command = 'clippy',
-            extraArgs = {},
-            features = 'all',
-            invocationStrategy = 'immediate',
-          },
-          files = {
-            watcher = 'client',
-          },
-          cargo = {
-            allFeatures = true,
-            buildScripts = {
-              enable = true,
-            },
-          },
-          procMacro = {
-            enable = true,
-          },
-        },
-      },
-    }
+    -- -- Set up rust_analyzer separately
+    -- require('lspconfig').rust_analyzer.setup {
+    --   -- Start with base capabilities
+    --   -- capabilities = vim.tbl_deep_extend('force', {}, base_capabilities, folding_capabilities),
+    --   -- Then add blink.cmp capabilities
+    --   capabilities = require('blink.cmp').get_lsp_capabilities(vim.tbl_deep_extend('force', {}, base_capabilities, folding_capabilities)),
+    --   handlers = handlers,
+    --   settings = {
+    --     ['rust-analyzer'] = {
+    --       diagnostics = {
+    --         enable = true,
+    --         enableExperimental = true,
+    --       },
+    --       check = {
+    --         command = 'clippy',
+    --         extraArgs = {},
+    --         features = 'all',
+    --         invocationStrategy = 'immediate',
+    --       },
+    --       files = {
+    --         watcher = 'client',
+    --       },
+    --       cargo = {
+    --         allFeatures = true,
+    --         buildScripts = {
+    --           enable = true,
+    --         },
+    --       },
+    --       procMacro = {
+    --         enable = true,
+    --       },
+    --     },
+    --   },
+    -- }
 
     -- Set up diagnostics
     local function setup_lsp_diags()

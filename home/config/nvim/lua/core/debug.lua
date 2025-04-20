@@ -14,6 +14,8 @@ local js_based_languages = {
   'svelte',
 }
 
+local rust_languages = { 'rust' }
+
 return {
   'mfussenegger/nvim-dap',
   lazy = true,
@@ -167,6 +169,7 @@ return {
         'chrome-debug-adapter',
         'js-debug-adapter',
         'node-debug2-adapter',
+        'codelldb', -- Rust
       },
     }
 
@@ -180,6 +183,7 @@ return {
       vim.fn.sign_define('Dap' .. name, { text = sign[1], texthl = sign[2] or 'DiagnosticInfo', linehl = sign[3], numhl = sign[3] })
     end ]]
 
+    -- Js languages setup
     for _, language in ipairs(js_based_languages) do
       dap.configurations[language] = {
         -- Debug single nodejs files
@@ -254,6 +258,26 @@ return {
         },
       }
     end
+
+    -- Rust setup
+    dap.configurations.rust = {
+      {
+        name = 'Launch Rust executable',
+        type = 'codelldb',
+        request = 'launch',
+        program = function()
+          return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/target/debug/', 'file')
+        end,
+        cwd = '${workspaceFolder}',
+        stopOnEntry = false,
+        args = {},
+        runInTerminal = false,
+      },
+    }
+    -- Specific keymap for rust debuggables
+    vim.keymap.set('n', '<leader>dr', function()
+      vim.cmd.RustLsp 'debuggables'
+    end, { desc = '[D]ebug [R]ust: Pick Debuggable' })
 
     -- Run DAP-UI
     local dapui = require 'dapui'
