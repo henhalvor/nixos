@@ -29,7 +29,6 @@
           sdkPkgs.ndk-27-1-12297006
         ]);
 
-
       packages.x86_64-linux.createAndEmulateExpoApp =
         pkgs.writeScriptBin "create-and-emulate-expo-app" ''
           #!/usr/bin/env sh
@@ -65,6 +64,8 @@
           pkgs.watchman
           pkgs.corretto17
           pkgs.aapt
+          pkgs.awscli2
+          pkgs.direnv
           self.packages.x86_64-linux.createAndEmulateExpoApp
           self.packages.x86_64-linux.android-sdk
         ];
