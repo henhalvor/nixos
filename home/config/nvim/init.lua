@@ -70,6 +70,29 @@ vim.api.nvim_create_autocmd('TextYankPost', {
 --
 -- QuickFix list
 --
+local del_qf_item = function()
+  local items = vim.fn.getqflist()
+  local cursor = vim.api.nvim_win_get_cursor(0)
+  local line = cursor[1]
+
+  -- Remove the selected quickfix entry
+  table.remove(items, line)
+
+  -- Replace the quickfix list
+  vim.fn.setqflist({}, 'r', { items = items })
+
+  -- Move the cursor back to the same line (or previous if at end)
+  local new_line = math.min(line, #items)
+  vim.api.nvim_win_set_cursor(0, { new_line, 0 })
+end
+
+-- Only define the mappings when you're in the quickfix window
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = 'qf',
+  callback = function()
+    vim.keymap.set('n', 'dd', del_qf_item, { buffer = true, desc = 'Remove QF item' })
+  end,
+})
 
 -- Toggle quickfix list with <leader>q
 vim.keymap.set('n', '<leader>q', function()

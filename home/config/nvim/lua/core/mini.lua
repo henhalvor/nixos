@@ -104,6 +104,24 @@ return {
         },
       }
 
+      require('mini.map').setup {
+        symbols = {
+          encode = require('mini.map').gen_encode_symbols.dot '4x2',
+        },
+        integrations = {
+          require('mini.map').gen_integration.builtin_search(),
+          require('mini.map').gen_integration.diagnostic(),
+          require('mini.map').gen_integration.gitsigns(),
+        },
+        window = {
+          side = 'right', -- or 'left'
+          width = 20,
+          show_integration_count = false,
+        },
+
+        vim.keymap.set('n', '<leader>m', '<CMD>lua MiniMap.toggle()<CR>', { desc = 'Toggle minimap' }),
+      }
+
       -- Better Around/Inside textobjects
       --
       -- Examples:

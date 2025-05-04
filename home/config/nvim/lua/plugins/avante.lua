@@ -1,22 +1,121 @@
+-- Define templates in a table for easier access
+
+local avante_templates = {
+  { name = 'Grammar Correction', prompt = 'Correct the text to standard English, but keep any code blocks inside intact.' },
+  { name = 'Extract Keywords', prompt = 'Extract the main keywords from the following text' },
+  {
+    name = 'Code Readability Analysis',
+    prompt = [[
+  You must identify any readability issues in the code snippet.
+  Some readability issues to consider:
+  - Unclear naming
+  - Unclear purpose
+  - Redundant or obvious comments
+  - Lack of comments
+  - Long or complex one liners
+  - Too much nesting
+  - Long variable names
+  - Inconsistent naming and code style.
+  - Code repetition
+  You may identify additional problems. The user submits a small section of code from a larger file.
+  Only list lines with readability issues, in the format <line_num>|<issue and proposed solution>
+  If there's no issues with code respond with only: <OK>
+]],
+  },
+  { name = 'Optimize Code', prompt = 'Optimize the following code' },
+  { name = 'Summarize Text', prompt = 'Summarize the following text' },
+  {
+    name = 'Reword',
+    prompt = 'Improve the wording of the following text. Aim for clarity, conciseness, and better flow, while preserving the original meaning.',
+  },
+  { name = 'Explain Code', prompt = 'Explain the following code' },
+  { name = 'Complete Code', prompt = 'Complete the following codes written in ' .. vim.bo.filetype }, -- Note: filetype might be dynamic here, consider how to handle this
+  { name = 'Add Docstring', prompt = 'Add docstring to the following codes' },
+  { name = 'Fix Bugs', prompt = 'Fix the bugs inside the following codes if any' },
+  { name = 'Add Tests', prompt = 'Implement tests for the following code' },
+}
+
+-- Helper function to show the Telescope picker
+local function show_avante_template_picker()
+  local pickers = require 'telescope.pickers'
+  local finders = require 'telescope.finders'
+  local actions = require 'telescope.actions'
+  local action_state = require 'telescope.actions.state'
+  local conf = require('telescope.config').values -- Get telescope config values
+  local results = {}
+
+  for _, template in ipairs(avante_templates) do
+    -- Special handling for dynamic filetype in 'Complete Code'
+    local prompt = template.prompt
+    if template.name == 'Complete Code' then
+      -- Get current buffer filetype when the picker is opened
+      local current_ft = vim.bo.filetype
+      prompt = 'Complete the following codes written in ' .. current_ft
+    end
+
+    table.insert(results, {
+      display = template.name, -- Show the friendly name
+      value = prompt, -- Store the actual prompt string
+      ordinal = template.name, -- Use name for sorting/searching
+    })
+  end
+
+  pickers
+    .new({
+      prompt_title = 'Avante Templates',
+      finder = finders.new_table {
+        results = results,
+        entry_maker = function(entry)
+          return {
+            value = entry.value,
+            display = entry.display,
+            ordinal = entry.ordinal,
+          }
+        end,
+      },
+
+      sorter = conf.generic_sorter {}, -- Use conf instead of requiring again
+
+      -- Add layout configuration to make the picker smaller
+      layout_strategy = 'vertical',
+      layout_config = {
+        height = 0.25, -- 40% of editor height
+        width = 0.35, -- 60% of editor width
+        -- You could also use absolute values like height = 15, width = 80
+      },
+
+      attach_mappings = function(prompt_bufnr, map)
+        actions.select_default:replace(function()
+          actions.close(prompt_bufnr)
+          local selection = action_state.get_selected_entry()
+          if selection then
+            -- Use avante.api.ask for direct prompting on selection/buffer
+            require('avante.api').ask { question = selection.value }
+          end
+        end)
+        return true
+      end,
+    })
+    :find()
+end
+
 return {
   {
     'yetone/avante.nvim',
     event = 'VeryLazy',
     lazy = false,
     version = false, -- set this if you want to always pull the latest change
-    --[[     config = function()
-      require('avante_lib').load()
-      require('avante').setup {}
-    end,
- ]]
     keys = {
-
+      -- Your existing keymaps
       { '<leader>ae', '<cmd>AvanteEdit<cr>', mode = { 'n', 'v' }, desc = 'Avante Edit' },
       { '<leader>aa', '<cmd>AvanteChat<cr>', mode = { 'n', 'v' }, desc = 'Avante Chat' },
+      -- New keymap for the template picker
+      { '<leader>ap', show_avante_template_picker, mode = { 'n', 'v' }, desc = 'Avante Prompt Templates' },
     },
+
     opts = {
       ---@alias Provider "claude" | "openai" | "azure" | "gemini" | "cohere" | "copilot" | string
-      provider = 'gemini', -- Recommend using Claude
+      provider = 'copilot', -- Recommend using Claude
       -- WARNING: Since auto-suggestions are a high-frequency operation and therefore expensive,
       -- currently designating it as `copilot` provider is dangerous because: https://github.com/yetone/avante.nvim/issues/1048
       -- Of course, you can reduce the request frequency by increasing `suggestion.debounce`.
@@ -29,6 +128,10 @@ return {
         max_tokens = 4096,
       },
 
+      copilot = {
+        model = 'claude-3.7-sonnet',
+      },
+
       gemini = {
         -- @see https://ai.google.dev/gemini-api/docs/models/gemini
         model = 'gemini-2.5-pro-exp-03-25', -- your desired model (or use gpt-4o, etc.)
@@ -36,6 +139,7 @@ return {
         temperature = 0, -- adjust if needed
         max_tokens = 8192,
       },
+
       ---Specify the special dual_boost mode
       ---1. enabled: Whether to enable dual_boost mode. Default to false.
       ---2. first_provider: The first provider to generate response. Default to "openai".
@@ -45,7 +149,7 @@ return {
       ---How it works:
       --- When dual_boost is enabled, avante will generate two responses from the first_provider and second_provider respectively. Then use the response from the first_provider as provider1_output and the response from the second_provider as provider2_output. Finally, avante will generate a response based on the prompt and the two reference outputs, with the default Provider as normal.
       ---Note: This is an experimental feature and may not work as expected.
-      cursor_applying_provider = 'gemini',
+      cursor_applying_provider = 'copilot',
       dual_boost = {
         enabled = false,
         first_provider = 'gemini',
@@ -53,9 +157,8 @@ return {
         prompt = 'Based on the two reference outputs below, generate a response that incorporates elements from both but reflects your own judgment and unique perspective. Do not provide any explanation, just give the response directly. Reference Output 1: [{{provider1_output}}], Reference Output 2: [{{provider2_output}}]',
         timeout = 60000, -- Timeout in milliseconds
       },
-
       behaviour = {
-        auto_suggestions = true, -- Experimental stage
+        auto_suggestions = false, -- Experimental stage
         auto_set_highlight_group = true,
         auto_set_keymaps = true,
         auto_apply_diff_after_generation = false,
@@ -64,6 +167,7 @@ return {
         enable_token_counting = true, -- Whether to enable token counting. Default to true.
         enable_cursor_planning_mode = true, -- enable cursor planning mode!
       },
+
       rag_service = {
         enabled = false, -- Enables the RAG service
         host_mount = os.getenv 'HOME', -- Host mount path for the rag service
@@ -72,6 +176,7 @@ return {
         embed_model = '', -- The embedding model to use for RAG service
         endpoint = 'https://api.openai.com/v1', -- The API endpoint for RAG service
       },
+
       mappings = {
         --- @class AvanteConflictMappings
         diff = {
@@ -83,20 +188,24 @@ return {
           next = ']x',
           prev = '[x',
         },
+
         suggestion = {
           accept = '<A-y>',
           next = '<A-]>',
           prev = '<A-[>',
           dismiss = '<A-d>',
         },
+
         jump = {
           next = ']]',
           prev = '[[',
         },
+
         submit = {
           normal = '<CR>',
           insert = '<C-s>',
         },
+
         sidebar = {
           apply_all = 'A',
           apply_cursor = 'a',
@@ -104,25 +213,30 @@ return {
           reverse_switch_windows = '<S-Tab>',
         },
       },
+
       hints = { enabled = true },
+
       windows = {
         ---@type "right" | "left" | "top" | "bottom"
         position = 'right', -- the position of the sidebar
         wrap = true, -- similar to vim.o.wrap
         width = 35, -- default % based on available width
         sidebar_header = {
-          enabled = false, -- true, false to enable/disable the header
+          enabled = true, -- true, false to enable/disable the header
           align = 'center', -- left, center, right for title
           rounded = true,
         },
+
         input = {
           prefix = '> ',
           height = 8, -- Height of the input window in vertical layout
         },
+
         edit = {
           border = 'rounded',
           start_insert = true, -- Start insert mode when opening the edit window
         },
+
         ask = {
           floating = false, -- Open the 'AvanteAsk' prompt in a floating window
           start_insert = true, -- Start insert mode when opening the ask window
@@ -131,6 +245,7 @@ return {
           focus_on_apply = 'ours', -- which diff to focus after applying
         },
       },
+
       highlights = {
         ---@type AvanteConflictHighlights
         diff = {
@@ -138,7 +253,9 @@ return {
           incoming = 'DiffAdd',
         },
       },
+
       --- @class AvanteConflictUserConfig
+
       diff = {
         autojump = true,
         ---@type string | fun(): any
@@ -148,11 +265,13 @@ return {
         --- Disable by setting to -1.
         override_timeoutlen = 500,
       },
+
       suggestion = {
         debounce = 600,
         throttle = 600,
       },
     },
+
     build = 'make',
     -- build = "powershell -ExecutionPolicy Bypass -File Build.ps1 -BuildFromSource false", -- for windows
     dependencies = {
@@ -175,6 +294,7 @@ return {
           },
         },
       },
+
       {
         'MeanderingProgrammer/render-markdown.nvim',
         opts = {
@@ -182,6 +302,8 @@ return {
         },
         ft = { 'markdown', 'Avante' },
       },
+      -- Ensure Telescope is listed as a dependency if not already loaded elsewhere
+      'nvim-telescope/telescope.nvim',
     },
   },
 }
