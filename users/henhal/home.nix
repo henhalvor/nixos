@@ -45,6 +45,7 @@
       ../../home/modules/applications/cursor.nix
       ../../home/modules/applications/mission-center.nix
       ../../home/modules/applications/google-chrome.nix
+      ../../home/modules/applications/gimp.nix
 
       # Environment
       ../../home/modules/environment/dev-tools.nix
