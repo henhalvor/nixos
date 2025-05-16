@@ -130,6 +130,7 @@ return {
 
       copilot = {
         model = 'claude-3.7-sonnet',
+        -- model = 'gpt-4o',
       },
 
       gemini = {
