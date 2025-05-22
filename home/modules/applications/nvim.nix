@@ -5,16 +5,25 @@
   # Neovim configuration
   #
 
-  programs.neovim = {
-    enable = true;
-    # This automatically sets EDITOR and VISUAL to nvim
-    defaultEditor = true;
+  # programs.neovim = {
+  #   enable = true;
+  #   # This automatically sets EDITOR and VISUAL to nvim
+  #   defaultEditor = true;
+  #
+  #   # You can add other Neovim-specific configurations here
+  #   # For example:
+  #   # vimAlias = true; # Creates vim alias to nvim
+  #   # extraPackages = with pkgs; [ ripgrep fd ]; # Make packages available to Neovim
+  # };
+  #
 
-    # You can add other Neovim-specific configurations here
-    # For example:
-    # vimAlias = true; # Creates vim alias to nvim
-    # extraPackages = with pkgs; [ ripgrep fd ]; # Make packages available to Neovim
-  };
+  home.packages = with pkgs;
+    [
+      # Your existing packages...
+
+      # Use aider-chat from unstable channel for latest version
+      unstable.neovim
+    ];
 
   # Create writable directories for Neovim
   home.activation.createNeovimDirs = ''

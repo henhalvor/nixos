@@ -4,7 +4,7 @@ return {
   event = 'InsertEnter',
   config = function()
     -- Set up Copilot
-    require('copilot').setup {}
+    -- require('copilot').setup {}
 
     -- Disable default tab mapping
     vim.g.copilot_no_tab_map = true
