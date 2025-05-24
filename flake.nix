@@ -14,10 +14,21 @@
     };
     zen-browser.url = "github:0xc000022070/zen-browser-flake";
     vscode-server.url = "github:nix-community/nixos-vscode-server";
+    nvf = {
+      url = "github:notashelf/nvf";
+      # You can override the input nixpkgs to follow your system's
+      # instance of nixpkgs. This is safe to do as nvf does not depend
+      # on a binary cache.
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
+      # Optionally, you can also override individual plugins
+      # for example:
+      # inputs.obsidian-nvim.follows =
+      #   "obsidian-nvim"; # <- this will use the obsidian-nvim from your inputs
+    };
   };
 
   outputs = { self, nixpkgs, nixpkgs-unstable, home-manager, hyprpanel
-    , zen-browser, vscode-server, ... }:
+    , zen-browser, vscode-server, nvf, ... }:
     let
       # Common system architecture
       system = "x86_64-linux";
@@ -135,12 +146,12 @@
             {
               # Pass arguments accessible inside home.nix via 'specialArgs'
               home-manager.extraSpecialArgs = {
-                inherit system userSettings zen-browser hyprpanel;
+                inherit system userSettings zen-browser hyprpanel nvf;
                 unstable =
                   unstablePkgs; # Explicitly pass unstablePkgs AS unstable
                 inherit hostname windowManager systemName; # Pass system context
                 inputs = {
-                  inherit hyprpanel zen-browser;
+                  inherit hyprpanel zen-browser nvf;
                 }; # Pass specific inputs
               };
               home-manager.useGlobalPkgs =
@@ -224,12 +235,12 @@
             [ ./users/henhal/home.nix ]; # Path to the home configuration
           # Pass arguments needed by home.nix when built standalone
           extraSpecialArgs = {
-            inherit system;
+            inherit system nvf;
             userSettings = userHenhal; # Pass the correct user settings block
             unstable = unstablePkgs; # Pass unstable package set
             inherit zen-browser hyprpanel; # Pass inputs needed by home.nix
             inputs = {
-              inherit hyprpanel zen-browser;
+              inherit hyprpanel zen-browser nvf;
             }; # Pass inputs structured if needed
             # Note: System context like hostname, windowManager is typically NOT passed here,
             # unless home.nix has logic specifically for standalone mode based on them.

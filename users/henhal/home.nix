@@ -32,7 +32,6 @@
       # Applications
       ../../home/modules/applications/zsh.nix
       ../../home/modules/applications/${userSettings.term}.nix
-      ../../home/modules/applications/nvim.nix
       ../../home/modules/applications/${userSettings.browser}.nix
       ../../home/modules/applications/yazi.nix
       ../../home/modules/applications/aider-chat.nix
@@ -46,6 +45,8 @@
       ../../home/modules/applications/mission-center.nix
       ../../home/modules/applications/google-chrome.nix
       ../../home/modules/applications/gimp.nix
+      # ../../home/modules/applications/nvim.nix
+      ../../home/modules/applications/nvf.nix
 
       # Environment
       ../../home/modules/environment/dev-tools.nix
