@@ -685,25 +685,25 @@ in
             {
               key = "<C-h>";
               mode = "n";
-              action = "<C-w><C-h>";
+              action = "<cmd>TmuxNavigateLeft<cr>";
               desc = "Move focus to the left window";
             }
             {
               key = "<C-l>";
               mode = "n";
-              action = "<C-w><C-l>";
+              action = "<cmd>TmuxNavigateRight<cr>";
               desc = "Move focus to the right window";
             }
             {
               key = "<C-j>";
               mode = "n";
-              action = "<C-w><C-j>";
+              action = "<cmd>TmuxNavigateDown<cr>";
               desc = "Move focus to the lower window";
             }
             {
               key = "<C-k>";
               mode = "n";
-              action = "<C-w><C-k>";
+              action = "<cmd>TmuxNavigateUp<cr>";
               desc = "Move focus to the upper window";
             }
             {
@@ -999,6 +999,7 @@ in
           # Additional Lua configuration for advanced setups
           luaConfigRC = {
             # Base neovim config
+
             highlight-yank-autocmd = ''
               vim.api.nvim_create_autocmd('TextYankPost', {
                 desc = 'Highlight when yanking (copying) text',
@@ -1249,6 +1250,13 @@ in
             blink-compat = {
               package = unstable.vimPlugins.blink-compat;
             };
+            vim-tmux-navigator = {
+              package = pkgs.vimPlugins.vim-tmux-navigator;
+              setup = ''
+                -- Plugin setup handled in luaConfigRC or keymaps
+              '';
+              # No setup needed - loaded via luaConfigRC
+            };
           };
 
           # Extra packages needed
@@ -1258,6 +1266,7 @@ in
             unstable.vimPlugins.blink-compat
             vimPlugins.telescope-ui-select-nvim
             vimPlugins.telescope-live-grep-args-nvim # ADD THIS - it was missing
+            vimPlugins.vim-tmux-navigator
             # Add any additional packages you might need
           ];
         };
