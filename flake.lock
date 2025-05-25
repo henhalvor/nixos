@@ -197,6 +197,22 @@
         "type": "github"
       }
     },
+    "nixpkgs-24-11": {
+      "locked": {
+        "lastModified": 1748037224,
+        "narHash": "sha256-92vihpZr6dwEMV6g98M5kHZIttrWahb9iRPBm1atcPk=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "f09dede81861f3a83f7f06641ead34f02f37597f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixos-24.11",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "nixpkgs-lib": {
       "locked": {
         "lastModified": 1743296961,
@@ -288,6 +304,7 @@
         "home-manager": "home-manager",
         "hyprpanel": "hyprpanel",
         "nixpkgs": "nixpkgs",
+        "nixpkgs-24-11": "nixpkgs-24-11",
         "nixpkgs-unstable": "nixpkgs-unstable",
         "nvf": "nvf",
         "vscode-server": "vscode-server",

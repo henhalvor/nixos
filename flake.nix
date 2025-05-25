@@ -8,6 +8,7 @@
       url = "github:nix-community/home-manager/release-25.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    nixpkgs-24-11.url = "github:nixos/nixpkgs/nixos-24.11";
     hyprpanel = {
       url = "github:jas-singhfsu/hyprpanel";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -24,6 +25,7 @@
     nixpkgs,
     nixpkgs-unstable,
     home-manager,
+    nixpkgs-24-11,
     hyprpanel,
     zen-browser,
     vscode-server,
@@ -37,12 +39,21 @@
       config.allowUnfree = true;
     };
 
+    # Add nixpkgs 24.11 package set
+    pkgs24-11 = import nixpkgs-24-11 {
+      inherit system;
+      config.allowUnfree = true;
+    };
+
     pkgsForNixOS = import nixpkgs {
       inherit system;
       config.allowUnfree = true;
       overlays = [
         hyprpanel.overlay
-        (final: prev: {unstable = unstablePkgs;})
+        (final: prev: {
+          unstable = unstablePkgs;
+          pkgs24-11 = pkgs24-11;
+        })
       ];
     };
 
@@ -79,6 +90,7 @@
           {
             inherit userSettings;
             unstable = unstablePkgs;
+            pkgs24-11 = pkgs24-11;
             inherit zen-browser hyprpanel;
             inherit hostname windowManager systemName;
           }
@@ -119,6 +131,7 @@
               home-manager.extraSpecialArgs = {
                 inherit system userSettings zen-browser hyprpanel nvf;
                 unstable = unstablePkgs;
+                pkgs24-11 = pkgs24-11;
                 inherit hostname windowManager systemName;
                 inputs = {
                   inherit hyprpanel zen-browser nvf;
@@ -179,6 +192,7 @@
           inherit system nvf;
           userSettings = userHenhal;
           unstable = unstablePkgs;
+          pkgs24-11 = pkgs24-11;
           inherit zen-browser hyprpanel;
           inputs = {
             inherit hyprpanel zen-browser nvf;
@@ -201,6 +215,7 @@
           inherit system;
           userSettings = userHenhalDev;
           unstable = unstablePkgs;
+          pkgs24-11 = pkgs24-11;
           inherit zen-browser hyprpanel;
           inputs = {
             inherit hyprpanel zen-browser;
