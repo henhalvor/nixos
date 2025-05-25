@@ -732,6 +732,32 @@ in
             }
             # { key = "<Esc>"; mode = "n"; action = "<cmd>nohlsearch<CR>"; desc = "Clear search highlight"; silent = true; } # Overrides previous global <Esc> mapping if any
 
+            # Window resizing keymaps
+            {
+              mode = "n";
+              key = "<A-k>";
+              action = ":resize +5<CR>";
+              desc = "Increase window height";
+            }
+            {
+              mode = "n";
+              key = "<A-j";
+              action = ":resize -5<CR>";
+              desc = "Decrease window height";
+            }
+            {
+              mode = "n";
+              key = "<A-h";
+              action = ":vertical resize -5<CR>";
+              desc = "Decrease window width";
+            }
+            {
+              mode = "n";
+              key = "<A-l>";
+              action = ":vertical resize +5<CR>";
+              desc = "Increase window width";
+            }
+
             #
             # Plugin keymaps
             #
