@@ -238,11 +238,6 @@ in
                     };
                   };
                 };
-                # FIX: Enable auto-show for all contexts, not just trigger characters
-                menu = {
-                  auto_show = true;
-                  auto_show_delay_ms = 500;
-                };
               };
               sources = {
                 per_filetype = {
