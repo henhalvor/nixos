@@ -103,15 +103,42 @@ in
             enableFormat = true;
 
             # Enabled languages
-            rust.enable = true;
-            nix.enable = true;
-            ts.enable = true;
-            html.enable = true;
-            css.enable = true;
-            lua.enable = true;
-            go.enable = true;
-            python.enable = true;
-            clang.enable = true;
+            rust = {
+              enable = true;
+              treesitter.enable = true;
+            };
+            nix = {
+              enable = true;
+              treesitter.enable = true;
+            };
+            ts = {
+              enable = true;
+              treesitter.enable = true;
+            };
+            html = {
+              enable = true;
+              treesitter.enable = true;
+            };
+            css = {
+              enable = true;
+              treesitter.enable = true;
+            };
+            lua = {
+              enable = true;
+              treesitter.enable = true;
+            };
+            go = {
+              enable = true;
+              treesitter.enable = true;
+            };
+            python = {
+              enable = true;
+              treesitter.enable = true;
+            };
+            clang = {
+              enable = true;
+              treesitter.enable = true;
+            };
             markdown = {
               extensions.render-markdown-nvim.enable = true;
               enable = true;
@@ -202,10 +229,16 @@ in
                     };
                   };
                 };
+                # FIX: Enable auto-show for all contexts, not just trigger characters
+                menu = {
+                  auto_show = true;
+                  auto_show_delay_ms = 500;
+                };
               };
               sources = {
+                # FIX: Properly configure per-filetype sources for codecompanion
                 per_filetype = {
-                  codecompanion = ["codecompanion"]; # This source is provided by codecompanion.nvim
+                  codecompanion = ["codecompanion" "buffer" "ripgrep"]; # Include all desired sources
                 };
               };
             };
@@ -312,7 +345,7 @@ in
                 };
               };
 
-              # Extensions (mcphub)
+              # Extensions (mcphub) - FIXED: Proper configuration
               extensions = {
                 mcphub = {
                   callback = "mcphub.extensions.codecompanion";
@@ -320,6 +353,8 @@ in
                     show_result_in_chat = true;
                     make_vars = true;
                     make_slash_commands = true;
+                    # FIX: Enable MCP server integration
+                    auto_register_servers = true;
                   };
                 };
               };
@@ -1096,6 +1131,9 @@ in
             telescope-live-grep-args = {
               package = pkgs.vimPlugins.telescope-live-grep-args-nvim;
               # No setup needed - loaded via luaConfigRC
+            };
+            blink-compat = {
+              package = pkgs.unstable.vimPlugins.blink-compat;
             };
           };
 
