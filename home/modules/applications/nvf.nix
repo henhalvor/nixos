@@ -73,7 +73,7 @@ in
           theme = {
             enable = true;
             name = "catppuccin";
-            style = "macchiato"; # This is the "machiato" you mentioned
+            style = "mocha"; # This is the "machiato" you mentioned
             transparent = true; # Enable transparent background
           };
 
@@ -91,6 +91,15 @@ in
             enable = true;
             highlight.enable = true;
             indent.enable = true;
+            context = {
+              enable = true;
+              setupOpts = {
+                max_lines = 3;
+                multiline_threshold = 1;
+                separator = null;
+                line_numbers = true;
+              };
+            };
           };
 
           lsp = {
@@ -236,9 +245,8 @@ in
                 };
               };
               sources = {
-                # FIX: Properly configure per-filetype sources for codecompanion
                 per_filetype = {
-                  codecompanion = ["codecompanion" "buffer" "ripgrep"]; # Include all desired sources
+                  codecompanion = ["codecompanion" "buffer"]; # Include all desired sources
                 };
               };
             };
@@ -345,7 +353,7 @@ in
                 };
               };
 
-              # Extensions (mcphub) - FIXED: Proper configuration
+              # Extensions (mcphub)
               extensions = {
                 mcphub = {
                   callback = "mcphub.extensions.codecompanion";
@@ -543,6 +551,69 @@ in
               defaults = {
                 save_on_toggle = true; # Example from your commented Lua
                 sync_on_ui_close = true; # Example from your commented Lua
+              };
+            };
+          };
+
+          # Add this to your main configuration
+          visuals.fidget-nvim = {
+            enable = true;
+            setupOpts = {
+              progress = {
+                poll_rate = 100; # Poll every 100ms for updates
+                suppress_on_insert = true; # Don't show during insert mode
+                ignore_done_already = false;
+                ignore_empty_message = false;
+                notification_group = {
+                  _type = "lua-inline";
+                  expr = ''
+                    function(msg)
+                      return msg.lsp_client.name
+                    end
+                  '';
+                };
+                ignore = ["copilot"]; # Hide copilot LSP progress
+                display = {
+                  render_limit = 16;
+                  done_ttl = 3; # How long completed messages persist
+                  done_icon = "✓";
+                  done_style = "Constant";
+                  progress_ttl = 99999; # Keep progress messages visible
+                  progress_icon = {
+                    pattern = "dots";
+                    period = 1;
+                  };
+                  progress_style = "WarningMsg";
+                  group_style = "Title";
+                  icon_style = "Question";
+                  priority = 30;
+                  skip_history = true;
+                  format_message = {
+                    _type = "lua-inline";
+                    expr = ''
+                      function(msg)
+                        local title = msg.title or ""
+                        local message = msg.message or ""
+                        local percentage = msg.percentage and string.format(" (%s%%)", msg.percentage) or ""
+                        return string.format("%s%s%s", title, message and (#message > 0 and ": " .. message or ""), percentage)
+                      end
+                    '';
+                  };
+                };
+              };
+              notification = {
+                window = {
+                  normal_hl = "Comment";
+                  winblend = 100;
+                  border = "none";
+                  zindex = 45;
+                  max_width = 0;
+                  max_height = 0;
+                  x_padding = 1;
+                  y_padding = 0;
+                  align = "bottom";
+                  relative = "editor";
+                };
               };
             };
           };
