@@ -79,8 +79,8 @@ in
           theme = {
             enable = true;
             name = "catppuccin";
-            style = "mocha"; # This is the "machiato" you mentioned
-            transparent = false; # Enable transparent background
+            style = "macchiato"; # This is the "machiato" you mentioned
+            transparent = true; # Enable transparent background
           };
 
           # Statusline using mini.statusline
@@ -446,6 +446,8 @@ in
                 };
               };
             };
+
+            colors.enable = true; # Enable mini.colors
 
             # Mini.surround - Surround text objects
             surround = {
