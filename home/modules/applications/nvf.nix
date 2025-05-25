@@ -78,9 +78,9 @@ in
           # Theme Configuration - Catppuccin Macchiato with transparency
           theme = {
             enable = true;
-            name = "rose-pine";
-            style = "moon"; # This is the "machiato" you mentioned
-            transparent = true; # Enable transparent background
+            name = "catppuccin";
+            style = "mocha"; # This is the "machiato" you mentioned
+            transparent = false; # Enable transparent background
           };
 
           # Statusline using mini.statusline
@@ -256,12 +256,52 @@ in
           # GitHub Copilot Configuration
           assistant.copilot = {
             enable = true;
-            # cmp.enable = false; # Default, keep if you don't use nvim-cmp for Copilot
+            cmp.enable = false; # Keep this false since you're using blink-cmp
+
+            # Explicitly enable suggestions in setupOpts
+            setupOpts = {
+              suggestion = {
+                enabled = true;
+                auto_trigger = true;
+                debounce = 75;
+                keymap = {
+                  accept = false; # Let nvf handle keymaps
+                  accept_word = false;
+                  accept_line = false;
+                  next = false;
+                  prev = false;
+                  dismiss = false;
+                };
+              };
+              panel = {
+                enabled = true;
+                auto_refresh = false;
+                keymap = {
+                  jump_prev = false;
+                  jump_next = false;
+                  accept = false;
+                  refresh = false;
+                  open = false;
+                };
+              };
+            };
+
             mappings = {
               suggestion = {
                 accept = "<A-y>";
                 next = "<A-n>";
                 prev = "<A-p>";
+
+                dismiss = "<A-d>";
+                acceptWord = "<A-w>";
+                acceptLine = "<A-l>";
+              };
+              panel = {
+                open = "<A-CR>";
+                accept = "<CR>";
+                jumpNext = "]]";
+                jumpPrev = "[[";
+                refresh = "gr";
               };
             };
           };
@@ -573,7 +613,7 @@ in
                     end
                   '';
                 };
-                ignore = ["copilot"]; # Hide copilot LSP progress
+                # ignore = ["copilot"]; # Hide copilot LSP progress
                 display = {
                   render_limit = 16;
                   done_ttl = 3; # How long completed messages persist
