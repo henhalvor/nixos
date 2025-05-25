@@ -1,7 +1,11 @@
-{ config, pkgs, ... }: {
+{
+  config,
+  pkgs,
+  ...
+}: {
   # Bootloader configuration
   boot.loader = {
-    grub = { enable = false; };
+    grub = {enable = false;};
 
     # Use systemd-boot instead of grub
     systemd-boot = {
@@ -12,9 +16,8 @@
     };
 
     # EFI settings for UEFI systems
-    efi = { canTouchEfiVariables = false; };
+    efi = {canTouchEfiVariables = true;};
   };
 
-  boot.supportedFilesystems = [ "ntfs" "ext4" "vfat" ];
-
+  boot.supportedFilesystems = ["ntfs" "ext4" "vfat"];
 }

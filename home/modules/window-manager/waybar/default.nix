@@ -1,6 +1,9 @@
-{ config, pkgs, lib, ... }:
-
-let
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}: let
   # Define colors (e.g., Catppuccin Mocha) - makes styling easier
   theme = {
     rosewater = "#f5e0dc";
@@ -69,7 +72,6 @@ let
       ${pkgs.libnotify}/bin/notify-send --expire-time=1500 "RedGlow ON (3400K)"
     fi
   '';
-
 in {
   # 1. Add necessary packages
   home.packages = with pkgs; [
@@ -94,196 +96,191 @@ in {
     systemd.enable = false;
 
     # 3. Configure Waybar Settings
-    settings = [{
-      layer = "top"; # Set to top layer
-      position = "top"; # Bar position
-      height = 27; # Bar height
-      spacing = 4; # Spacing between modules
+    settings = [
+      {
+        layer = "top"; # Set to top layer
+        position = "top"; # Bar position
+        height = 27; # Bar height
+        spacing = 4; # Spacing between modules
 
-      # Define module placement
-      modules-left = [ "sway/workspaces" ];
-      modules-center = [ "clock" ];
-      modules-right = [
-        "idle_inhibitor"
-        "custom/gammastep"
-        "pulseaudio"
-        # Bluetooth will likely show up in the tray via blueberry/blueman
-        # "network"
-        "mako" # Mako notification indicator
-        "battery"
-        "cpu"
-        "memory"
-        "tray" # System tray (for Bluetooth, etc.)
-        "custom/exit"
-      ];
+        # Define module placement
+        modules-left = ["sway/workspaces"];
+        modules-center = ["clock"];
+        modules-right = [
+          "idle_inhibitor"
+          "custom/gammastep"
+          "pulseaudio"
+          # Bluetooth will likely show up in the tray via blueberry/blueman
+          # "network"
+          "mako" # Mako notification indicator
+          "battery"
+          "cpu"
+          "memory"
+          "tray" # System tray (for Bluetooth, etc.)
+          "custom/exit"
+        ];
 
-      # --- Module Configurations ---
+        # --- Module Configurations ---
 
-      "sway/workspaces" = {
-        disable-scroll = true;
-        all-outputs = true;
-        # format = "{icon}"; # Use icons only if desired
-        # format = "{name}"; # Show workspace names/numbers
-        format = "{icon}";
-        format-icons = {
-          "1" = "";
-          "2" = " ";
-          "3" = "";
-          "4" = "⌨";
+        "sway/workspaces" = {
+          disable-scroll = true;
+          all-outputs = true;
+          # format = "{icon}"; # Use icons only if desired
+          # format = "{name}"; # Show workspace names/numbers
+          format = "{icon}";
+          format-icons = {
+            "1" = "";
+            "2" = " ";
+            "3" = "";
+            "4" = "⌨";
+          };
+          # format-icons = {
+          #   "1" = "爵"; # Example Nerd Font icons
+          #   "2" = "犯";
+          #   "3" = "猪";
+          #   "urgent" = "";
+          #   "focused" = "";
+          #   "default" = "";
+          # };
+          # persistent-workspaces = {
+          #   "*" = 5; # Show at least 5 workspaces per monitor
+          # };
         };
-        # format-icons = {
-        #   "1" = "爵"; # Example Nerd Font icons
-        #   "2" = "犯";
-        #   "3" = "猪";
-        #   "urgent" = "";
-        #   "focused" = "";
-        #   "default" = "";
-        # };
-        # persistent-workspaces = {
-        #   "*" = 5; # Show at least 5 workspaces per monitor
-        # };
-      };
 
-      "clock" = {
-        format = " {:%H:%M}"; # Time
-        format-alt = " {:%Y-%m-%d}"; # Date on alternate click/scroll
-        tooltip-format = ''
-          <big>{:%Y %B}</big>
-          <tt>{calendar}</tt>''; # Calendar tooltip
-        calendar = {
-          mode = "year";
-          mode-mon-col = 3;
-          on-scroll = 1;
-          on-click-right = "mode";
-          format = {
-            months = "<span color='${theme.blue}'><b>{}</b></span>";
-            days = "<span color='${theme.subtext1}'><b>{}</b></span>";
-            weeks = "<span color='${theme.yellow}'><b>W{}</b></span>";
-            weekdays = "<span color='${theme.peach}'><b>{}</b></span>";
-            today = "<span color='${theme.rosewater}'><b><u>{}</u></b></span>";
+        "clock" = {
+          format = " {:%H:%M}"; # Time
+          format-alt = " {:%Y-%m-%d}"; # Date on alternate click/scroll
+          tooltip-format = ''
+            <big>{:%Y %B}</big>
+            <tt>{calendar}</tt>''; # Calendar tooltip
+          calendar = {
+            mode = "year";
+            mode-mon-col = 3;
+            on-scroll = 1;
+            on-click-right = "mode";
+            format = {
+              months = "<span color='${theme.blue}'><b>{}</b></span>";
+              days = "<span color='${theme.subtext1}'><b>{}</b></span>";
+              weeks = "<span color='${theme.yellow}'><b>W{}</b></span>";
+              weekdays = "<span color='${theme.peach}'><b>{}</b></span>";
+              today = "<span color='${theme.rosewater}'><b><u>{}</u></b></span>";
+            };
+          };
+          actions = {
+            "on-click-right" = "mode"; # Switch between normal/alternative format
+            "on-scroll-up" = "shift_up"; # Go forward in calendar view
+            "on-scroll-down" = "shift_down"; # Go backward in calendar view
           };
         };
-        actions = {
-          "on-click-right" = "mode"; # Switch between normal/alternative format
-          "on-scroll-up" = "shift_up"; # Go forward in calendar view
-          "on-scroll-down" = "shift_down"; # Go backward in calendar view
+
+        "idle_inhibitor" = {
+          format = "{icon}";
+          format-icons = {
+            activated = ""; # Eye icon when active (inhibiting idle)
+            deactivated = ""; # Different icon (e.g., zzz) when inactive
+          };
+          tooltip = true;
+          tooltip-format-activated = "Idle Inhibitor Active";
+          tooltip-format-deactivated = "Idle Inhibitor Inactive";
         };
-      };
 
-      "idle_inhibitor" = {
-        format = "{icon}";
-        format-icons = {
-          activated = ""; # Eye icon when active (inhibiting idle)
-          deactivated = ""; # Different icon (e.g., zzz) when inactive
+        "pulseaudio" = {
+          format = "{volume}% {icon}"; # {format_source} # Add source if needed
+          format-muted = " Muted"; # Muted icon + text
+          # format-source = " {volume}%";
+          # format-source-muted = " Muted";
+          format-icons = {
+            default = ["" "" ""]; # Icons for different volume levels
+            headphones = "";
+            headset = "";
+          };
+          scroll-step = 5; # % change per scroll
+          on-click = "${pkgs.pavucontrol}/bin/pavucontrol"; # Open pavucontrol on click
+          tooltip = true;
+          tooltip-format = "{volume}%";
         };
-        tooltip = true;
-        tooltip-format-activated = "Idle Inhibitor Active";
-        tooltip-format-deactivated = "Idle Inhibitor Inactive";
-      };
 
-      "pulseaudio" = {
-        format = "{volume}% {icon}"; # {format_source} # Add source if needed
-        format-muted = " Muted"; # Muted icon + text
-        # format-source = " {volume}%";
-        # format-source-muted = " Muted";
-        format-icons = {
-          default = [ "" "" "" ]; # Icons for different volume levels
-          headphones = "";
-          headset = "";
-
+        "network" = {
+          format-wifi = " {essid} ({signalStrength}%)";
+          format-ethernet = "󰈀 Connected"; # Ethernet icon
+          format-disconnected = "󰖪 Disconnected"; # Disconnected icon
+          format-alt = "{ifname}: {ipaddr}/{cidr}";
+          tooltip = true;
+          tooltip-format-wifi = "{essid} ({signalStrength}%) - {ipaddr}";
+          tooltip-format-ethernet = "{ifname} - {ipaddr}";
+          tooltip-format-disconnected = "Disconnected";
+          on-click = ""; # Add command if you want to launch network manager GUI
         };
-        scroll-step = 5; # % change per scroll
-        on-click =
-          "${pkgs.pavucontrol}/bin/pavucontrol"; # Open pavucontrol on click
-        tooltip = true;
-        tooltip-format = "{volume}%";
-      };
 
-      "network" = {
-        format-wifi = " {essid} ({signalStrength}%)";
-        format-ethernet = "󰈀 Connected"; # Ethernet icon
-        format-disconnected = "󰖪 Disconnected"; # Disconnected icon
-        format-alt = "{ifname}: {ipaddr}/{cidr}";
-        tooltip = true;
-        tooltip-format-wifi = "{essid} ({signalStrength}%) - {ipaddr}";
-        tooltip-format-ethernet = "{ifname} - {ipaddr}";
-        tooltip-format-disconnected = "Disconnected";
-        on-click = ""; # Add command if you want to launch network manager GUI
-      };
-
-      "mako" = {
-        format = "{count} "; # Notification count + icon
-        format-actions = "{count} "; # Same format when actions available
-        format-dismissed = ""; # Icon only when no notifications
-        # format-urgent = "{count} "; # Different format/icon for urgent
-        max-visible = 5;
-        tooltip = true;
-        on-click =
-          "${pkgs.mako}/bin/makoctl menu dmenu"; # Use makoctl for menu on click
-        on-click-right =
-          "${pkgs.mako}/bin/makoctl dismiss --all"; # Dismiss all on right click
-        # default-timeout = 5000; # Handled by mako config itself
-      };
-
-      "battery" = {
-        states = {
-          warning = 30;
-          critical = 15;
+        "mako" = {
+          format = "{count} "; # Notification count + icon
+          format-actions = "{count} "; # Same format when actions available
+          format-dismissed = ""; # Icon only when no notifications
+          # format-urgent = "{count} "; # Different format/icon for urgent
+          max-visible = 5;
+          tooltip = true;
+          on-click = "${pkgs.mako}/bin/makoctl menu dmenu"; # Use makoctl for menu on click
+          on-click-right = "${pkgs.mako}/bin/makoctl dismiss --all"; # Dismiss all on right click
+          # default-timeout = 5000; # Handled by mako config itself
         };
-        format = "{capacity}% {icon}";
-        format-charging = "{capacity}% 󰂄"; # Charging icon
-        format-plugged =
-          "{capacity}% 󰂄"; # Plugged icon (often same as charging)
-        format-alt = "{time} {icon}"; # Show time remaining on alt
-        format-icons =
-          [ "󰁺" "󰁻" "󰁼" "󰁽" "󰁾" "󰁿" "󰂀" "󰂁" "󰂂" "󰁹" ]; # Battery icons
-      };
 
-      "cpu" = {
-        format = " {usage}%"; # CPU icon + usage
-        tooltip = true;
-        tooltip-format = "CPU Usage: {usage}%";
-        interval = 5; # Update every 2 seconds
-        on-click = "${pkgs.mission-center}/bin/missioncenter";
-      };
+        "battery" = {
+          states = {
+            warning = 30;
+            critical = 15;
+          };
+          format = "{capacity}% {icon}";
+          format-charging = "{capacity}% 󰂄"; # Charging icon
+          format-plugged = "{capacity}% 󰂄"; # Plugged icon (often same as charging)
+          format-alt = "{time} {icon}"; # Show time remaining on alt
+          format-icons = ["󰁺" "󰁻" "󰁼" "󰁽" "󰁾" "󰁿" "󰂀" "󰂁" "󰂂" "󰁹"]; # Battery icons
+        };
 
-      "memory" = {
-        format = "󰍛 {used:0.1f}G"; # Memory icon + Used/Total RAM in GiB
-        tooltip = true;
-        tooltip-format = "Memory: {used:0.1f} GiB / {total:0.1f} GiB ({perc}%)";
-        interval = 5; # Update every 5 seconds
-        on-click = "${pkgs.mission-center}/bin/missioncenter";
-      };
+        "cpu" = {
+          format = " {usage}%"; # CPU icon + usage
+          tooltip = true;
+          tooltip-format = "CPU Usage: {usage}%";
+          interval = 5; # Update every 2 seconds
+          on-click = "${pkgs.mission-center}/bin/missioncenter";
+        };
 
-      "tray" = {
-        icon-size = 13;
-        spacing = 10; # Spacing between tray icons
-      };
+        "memory" = {
+          format = "󰍛 {used:0.1f}G"; # Memory icon + Used/Total RAM in GiB
+          tooltip = true;
+          tooltip-format = "Memory: {used:0.1f} GiB / {total:0.1f} GiB ({perc}%)";
+          interval = 5; # Update every 5 seconds
+          on-click = "${pkgs.mission-center}/bin/missioncenter";
+        };
 
-      "custom/exit" = {
-        format = ""; # Power icon
-        tooltip = true;
-        tooltip-format = "Power Menu";
-        on-click =
-          "${pkgs.wlogout}/bin/wlogout -p layer-shell"; # Launch wlogout
-      };
+        "tray" = {
+          icon-size = 13;
+          spacing = 10; # Spacing between tray icons
+        };
 
-      # --- Gammastep Module Config ---
-      "custom/gammastep" = {
-        # Static icon format
-        format = "{icon}";
-        # Define the icon. Make sure your font (Hack Nerd Font) has this!
-        # Original icon was: 
-        # Alternative icon suggestion (nf-md-theme_light_dark): 󰔎
-        # Alternative icon suggestion (nf-fa-adjust): 
-        format-icons = [ "󰔎" ]; # Choose one icon
-        # Set tooltip to false as we are not providing dynamic text
-        tooltip = false;
-        # Call the Nix-managed scripts on different clicks
-        on-click = "${gamma-toggle-script}/bin/gamma-toggle";
-      };
-      # --- End of Gammastep Module ---
-    }];
+        "custom/exit" = {
+          format = ""; # Power icon
+          tooltip = true;
+          tooltip-format = "Power Menu";
+          on-click = "${pkgs.wlogout}/bin/wlogout -p layer-shell"; # Launch wlogout
+        };
+
+        # --- Gammastep Module Config ---
+        "custom/gammastep" = {
+          # Static icon format
+          format = "{icon}";
+          # Define the icon. Make sure your font (Hack Nerd Font) has this!
+          # Original icon was: 
+          # Alternative icon suggestion (nf-md-theme_light_dark): 󰔎
+          # Alternative icon suggestion (nf-fa-adjust): 
+          format-icons = ["󰔎"]; # Choose one icon
+          # Set tooltip to false as we are not providing dynamic text
+          tooltip = false;
+          # Call the Nix-managed scripts on different clicks
+          on-click = "${gamma-toggle-script}/bin/gamma-toggle";
+        };
+        # --- End of Gammastep Module ---
+      }
+    ];
 
     # 4. Styling with CSS
     style = ''
@@ -494,27 +491,28 @@ in {
     '';
   };
 
-  services.blueman-applet = { enable = true; };
+  services.blueman-applet = {enable = true;};
 
-  services.network-manager-applet = { enable = true; };
+  services.network-manager-applet = {enable = true;};
 
   # 5. Configure Mako (Optional but recommended)
   services.mako = {
     enable = true;
     # Customize Mako appearance and behavior
-    font = "Hack Nerd Font 10";
-    padding = "10";
-    margin = "10";
-    borderSize = 1;
-    borderRadius = 5;
-    defaultTimeout = 5000; # 5 seconds
-    layer = "overlay"; # Ensure it appears above everything
+    settings = {
+      font = "Hack Nerd Font 10";
+      padding = "10";
+      margin = "10";
+      borderSize = 1;
+      borderRadius = 5;
+      defaultTimeout = 5000; # 5 seconds
+      layer = "overlay"; # Ensure it appears above everything
 
-    # Colors matching Waybar theme
-    backgroundColor = "${theme.base}F0"; # Base with some transparency
-    textColor = theme.text;
-    borderColor = theme.surface1;
-
+      # Colors matching Waybar theme
+      backgroundColor = "${theme.base}F0"; # Base with some transparency
+      textColor = theme.text;
+      borderColor = theme.surface1;
+    };
     # # Different criteria can have different styles
     # criteria = [
     #   {

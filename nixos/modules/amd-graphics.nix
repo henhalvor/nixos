@@ -1,8 +1,11 @@
-{ config, pkgs, userSettings, ... }:
-
 {
+  config,
+  pkgs,
+  userSettings,
+  ...
+}: {
   # Video drivers configuration
-  services.xserver.videoDrivers = [ "amdgpu" ]; # Only use amdgpu driver
+  services.xserver.videoDrivers = ["amdgpu"]; # Only use amdgpu driver
 
   # Remove any NVIDIA-related packages and modules
   hardware.nvidia.package = null;
@@ -39,7 +42,6 @@
         # OpenGL and VA-API support
         mesa # Main OpenGL implementation
         libva # Video Acceleration API
-        mesa.drivers # Contains the VA-API drivers
         libva-utils
 
         # VDPAU support
@@ -57,7 +59,6 @@
 
         # OpenGL 32-bit support
         mesa
-        mesa.drivers # 32-bit drivers
 
         # Video acceleration 32-bit support
         libva
@@ -66,8 +67,7 @@
     };
 
     # Enable firmware for amdgpu if needed
-    firmware = [ pkgs.linux-firmware ];
-
+    firmware = [pkgs.linux-firmware];
   };
 
   # Optional: For better performance with AMDGPU
@@ -89,5 +89,4 @@
     ];
     config.common.default = "*";
   };
-
 }

@@ -1,6 +1,8 @@
-{ config, pkgs, ... }:
-
 {
+  config,
+  pkgs,
+  ...
+}: {
   home.packages = with pkgs; [
     # Core development tools
     lazygit
@@ -12,7 +14,6 @@
 
     # Node.js ecosystem
     nodejs_20
-    nodePackages.npm
 
     # Rust ecosystem
     rustc
@@ -39,8 +40,6 @@
     '';
   };
 
-
-
   # Configure npm to use our directory structure
   home.file.".npmrc".text = ''
     prefix=${config.home.homeDirectory}/.local/dev/npm/global
@@ -54,5 +53,4 @@
     user = true
     prefix = ${config.home.homeDirectory}/.local/dev/python
   '';
-
 }

@@ -1,10 +1,13 @@
-{ config, pkgs, ... }:
 {
+  config,
+  pkgs,
+  ...
+}: {
   programs.zsh = {
     enable = true;
     oh-my-zsh = {
       enable = true;
-      plugins = [ "git" ];
+      plugins = ["git"];
     };
     shellAliases = {
       v = "nvim";
@@ -20,91 +23,91 @@
         file = "share/zsh-powerlevel10k/powerlevel10k.zsh-theme";
       }
     ];
-    initExtra = ''
-      # First source the theme
-      source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme
-      # Then source your configuration
-      [[ -f ~/.p10k.zsh ]] && source ~/.p10k.zsh
+    initContent = ''
+            # First source the theme
+            source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme
+            # Then source your configuration
+            [[ -f ~/.p10k.zsh ]] && source ~/.p10k.zsh
 
- # Define a function to load secrets with better debugging
-      load_secrets() {
-        local secrets_file="$HOME/.dotfiles/home/modules/settings/secrets/secrets.env"
-        
-        #echo "Attempting to load secrets from: $secrets_file"
-        
-        # Check if file exists
-        if [[ ! -f "$secrets_file" ]]; then
-          echo "Error: Secrets file does not exist"
-          return 1
-        fi
+       # Define a function to load secrets with better debugging
+            load_secrets() {
+              local secrets_file="$HOME/.dotfiles/home/modules/settings/secrets/secrets.env"
 
-        # Check if file is readable
-        if [[ ! -r "$secrets_file" ]]; then
-          echo "Error: Secrets file is not readable"
-          return 1
-        fi
+              #echo "Attempting to load secrets from: $secrets_file"
 
-        # Check file permissions
-        local file_perms=$(stat -c %a "$secrets_file")
+              # Check if file exists
+              if [[ ! -f "$secrets_file" ]]; then
+                echo "Error: Secrets file does not exist"
+                return 1
+              fi
 
-        #echo "Current file permissions: $file_perms"
+              # Check if file is readable
+              if [[ ! -r "$secrets_file" ]]; then
+                echo "Error: Secrets file is not readable"
+                return 1
+              fi
 
-        if [[ "$file_perms" != "600" ]]; then
-          echo "Warning: Secrets file should have permissions 600"
-        fi
-        
-        # Read and process the file with debugging
+              # Check file permissions
+              local file_perms=$(stat -c %a "$secrets_file")
 
-        #echo "Reading secrets file..."
+              #echo "Current file permissions: $file_perms"
 
-        while IFS= read -r line || [[ -n "$line" ]]; do
-          # Skip empty lines and comments
-          if [[ "$line" =~ ^[[:space:]]*$ ]] || [[ "$line" =~ ^[[:space:]]*# ]]; then
-            echo "Skipping comment or empty line"
-            continue
-          fi
-          
-          # Debug: Show what we're about to export (but mask the actual value)
-          local key=$(echo "$line" | cut -d'=' -f1)
+              if [[ "$file_perms" != "600" ]]; then
+                echo "Warning: Secrets file should have permissions 600"
+              fi
 
-          # echo "Exporting: $key"
-          
-          # Export the variable
-          export "$line"
-        done < "$secrets_file"
+              # Read and process the file with debugging
 
-        # Verify the export worked
-        if [[ -n "$ANTHROPIC_API_KEY" ]]; then
+              #echo "Reading secrets file..."
 
-          # echo "ANTHROPIC_API_KEY was successfully loaded"
+              while IFS= read -r line || [[ -n "$line" ]]; do
+                # Skip empty lines and comments
+                if [[ "$line" =~ ^[[:space:]]*$ ]] || [[ "$line" =~ ^[[:space:]]*# ]]; then
+                  echo "Skipping comment or empty line"
+                  continue
+                fi
 
-        else
-          echo "Warning: ANTHROPIC_API_KEY was not found or is empty"
-        fi
+                # Debug: Show what we're about to export (but mask the actual value)
+                local key=$(echo "$line" | cut -d'=' -f1)
 
-        # echo "Secrets loading complete"
-      }
+                # echo "Exporting: $key"
 
-      # Create an alias for easier use
-      alias reload_secrets='load_secrets'
+                # Export the variable
+                export "$line"
+              done < "$secrets_file"
 
- # Set up a precmd hook that runs once after shell initialization
-      load_secrets_once() {
-        load_secrets
-        # Remove this function from precmd hooks after it runs
-        local hook_index
-        hook_index=''${precmd_functions[(i)load_secrets_once]}
-        if [[ $hook_index -le ''${#precmd_functions} ]]; then
-          unset "precmd_functions[$hook_index]"
-        fi
-      }
+              # Verify the export worked
+              if [[ -n "$ANTHROPIC_API_KEY" ]]; then
 
-      # Add our loading function to precmd hooks
-      precmd_functions+=( load_secrets_once )
+                # echo "ANTHROPIC_API_KEY was successfully loaded"
 
-# Disable forward incremental search (conflicts with tmux prefix keybind)
-  bindkey -r "^S"
-  bindkey -r "^R"
+              else
+                echo "Warning: ANTHROPIC_API_KEY was not found or is empty"
+              fi
+
+              # echo "Secrets loading complete"
+            }
+
+            # Create an alias for easier use
+            alias reload_secrets='load_secrets'
+
+       # Set up a precmd hook that runs once after shell initialization
+            load_secrets_once() {
+              load_secrets
+              # Remove this function from precmd hooks after it runs
+              local hook_index
+              hook_index=''${precmd_functions[(i)load_secrets_once]}
+              if [[ $hook_index -le ''${#precmd_functions} ]]; then
+                unset "precmd_functions[$hook_index]"
+              fi
+            }
+
+            # Add our loading function to precmd hooks
+            precmd_functions+=( load_secrets_once )
+
+      # Disable forward incremental search (conflicts with tmux prefix keybind)
+        bindkey -r "^S"
+        bindkey -r "^R"
     '';
     history = {
       size = 10000;
@@ -136,5 +139,3 @@
     '';
   };
 }
-
-

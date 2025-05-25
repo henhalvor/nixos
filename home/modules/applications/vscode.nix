@@ -1,147 +1,152 @@
-{ config, pkgs, lib, unstable, ... }:
-
 {
+  config,
+  pkgs,
+  lib,
+  unstable,
+  ...
+}: {
   programs.vscode = {
     enable = true;
-    package = pkgs.unstable.vscode;
-    
-    extensions = with pkgs.vscode-extensions; [
-      # TypeScript Development
-      # ms-vscode.vscode-typescript-next     # TypeScript Nightly
-      dbaeumer.vscode-eslint               # ESLint
-      esbenp.prettier-vscode               # Prettier
-      bradlc.vscode-tailwindcss            # Tailwind CSS IntelliSense
-      formulahendry.auto-rename-tag        # Auto Rename Tag
-      ms-vscode-remote.remote-ssh
-      ms-vscode-remote.vscode-remote-extensionpack
-      
-      # NeoVim
-      asvetliakov.vscode-neovim            # VSCode Neovim
-    ] ++ pkgs.vscode-utils.extensionsFromVscodeMarketplace [
-      # Additional TypeScript extensions that might not be in nixpkgs
-      # {
-      #   name = "typescript-hero";
-      #   publisher = "rbbit";
-      #   version = "3.0.0";
-      #   sha256 = "0bj3q4v3254g14kgkg4yx9q3miw3gyvp23zz0wzjrj7h2qpz315m"; # Replace with actual hash
-      # }
-      # {
-      #   name = "vscodeintellicode";
-      #   publisher = "VisualStudioExptTeam";
-      #   version = "1.2.30";
-      #   sha256 = "1fr48sgd0h0diw7amn99dad9l4m7v8ydvj5yzzj9yq53l1brz35i"; # Replace with actual hash
-      # }
-      # {
-      #   name = "path-intellisense";
-      #   publisher = "christian-kohler";
-      #   version = "2.8.4";
-      #   sha256 = "1wyp3k8nc5kf5dbpbvjpq8lxbe35r9zj2wjc0n9nq4rhg5c0hg3v"; # Replace with actual hash
-      # }
-    ];
+    package = unstable.vscode;
 
-    userSettings = {
-    # Theme settings - Fix for light title bar
-    "window.titleBarStyle" = "custom";
-    "window.autoDetectColorScheme" = false;
-    "workbench.colorTheme" = "Catppuccin Macchiato";
-    "workbench.preferredDarkColorTheme" = "Catppuccin Macchiato";
-    "workbench.colorCustomizations" = {
-      "titleBar.activeBackground" = "#24273a";
-      "titleBar.activeForeground" = "#cad3f5";
-      "titleBar.inactiveBackground" = "#1e2030";
-      "titleBar.inactiveForeground" = "#a5adcb";
-      "activityBar.background" = "#24273a";
-      "sideBar.background" = "#1e2030";
-    };
+    profiles.default = {
+      extensions = with pkgs.vscode-extensions;
+        [
+          # TypeScript Development
+          # ms-vscode.vscode-typescript-next     # TypeScript Nightly
+          dbaeumer.vscode-eslint # ESLint
+          esbenp.prettier-vscode # Prettier
+          bradlc.vscode-tailwindcss # Tailwind CSS IntelliSense
+          formulahendry.auto-rename-tag # Auto Rename Tag
+          ms-vscode-remote.remote-ssh
+          ms-vscode-remote.vscode-remote-extensionpack
 
-    # Force dark UI
-    "window.dialogStyle" = "custom";
-    "window.menuBarVisibility" = "toggle";
-    "workbench.startupEditor" = "newUntitledFile";
+          # NeoVim
+          asvetliakov.vscode-neovim # VSCode Neovim
+        ]
+        ++ pkgs.vscode-utils.extensionsFromVscodeMarketplace [
+          # Additional TypeScript extensions that might not be in nixpkgs
+          # {
+          #   name = "typescript-hero";
+          #   publisher = "rbbit";
+          #   version = "3.0.0";
+          #   sha256 = "0bj3q4v3254g14kgkg4yx9q3miw3gyvp23zz0wzjrj7h2qpz315m"; # Replace with actual hash
+          # }
+          # {
+          #   name = "vscodeintellicode";
+          #   publisher = "VisualStudioExptTeam";
+          #   version = "1.2.30";
+          #   sha256 = "1fr48sgd0h0diw7amn99dad9l4m7v8ydvj5yzzj9yq53l1brz35i"; # Replace with actual hash
+          # }
+          # {
+          #   name = "path-intellisense";
+          #   publisher = "christian-kohler";
+          #   version = "2.8.4";
+          #   sha256 = "1wyp3k8nc5kf5dbpbvjpq8lxbe35r9zj2wjc0n9nq4rhg5c0hg3v"; # Replace with actual hash
+          # }
+        ];
 
-    # TypeScript settings
-    "typescript.updateImportsOnFileMove.enabled" = "always";
-    "typescript.suggest.autoImports" = true;
-    "typescript.preferences.importModuleSpecifier" = "relative";
-    "[typescript]" = {
-      "editor.defaultFormatter" = "esbenp.prettier-vscode";
-      "editor.suggestSelection" = "first";
-    };
-    "[typescriptreact]" = {
-      "editor.defaultFormatter" = "esbenp.prettier-vscode";
-    };
+      userSettings = {
+        # Theme settings - Fix for light title bar
+        "window.titleBarStyle" = "custom";
+        "window.autoDetectColorScheme" = false;
+        "workbench.colorTheme" = "Catppuccin Macchiato";
+        "workbench.preferredDarkColorTheme" = "Catppuccin Macchiato";
+        "workbench.colorCustomizations" = {
+          "titleBar.activeBackground" = "#24273a";
+          "titleBar.activeForeground" = "#cad3f5";
+          "titleBar.inactiveBackground" = "#1e2030";
+          "titleBar.inactiveForeground" = "#a5adcb";
+          "activityBar.background" = "#24273a";
+          "sideBar.background" = "#1e2030";
+        };
 
-    # NeoVim settings
-    "vscode-neovim.neovimExecutablePaths.linux" = "${pkgs.neovim}/bin/nvim";
-    "vscode-neovim.neovimInitVimPaths.linux" = "$HOME/.config/vscode-neovim/init.lua";
-    "keyboard.dispatch" = "keyCode";
-    "vscode-neovim.NVIM_APPNAME" = "vscode-neovim";
+        # Force dark UI
+        "window.dialogStyle" = "custom";
+        "window.menuBarVisibility" = "toggle";
+        "workbench.startupEditor" = "newUntitledFile";
 
+        # TypeScript settings
+        "typescript.updateImportsOnFileMove.enabled" = "always";
+        "typescript.suggest.autoImports" = true;
+        "typescript.preferences.importModuleSpecifier" = "relative";
+        "[typescript]" = {
+          "editor.defaultFormatter" = "esbenp.prettier-vscode";
+          "editor.suggestSelection" = "first";
+        };
+        "[typescriptreact]" = {
+          "editor.defaultFormatter" = "esbenp.prettier-vscode";
+        };
 
-    # Enable NeoVim keybindings
-    "editor.lineNumbers" = "relative";
+        # NeoVim settings
+        "vscode-neovim.neovimExecutablePaths.linux" = "${pkgs.neovim}/bin/nvim";
+        "vscode-neovim.neovimInitVimPaths.linux" = "$HOME/.config/vscode-neovim/init.lua";
+        "keyboard.dispatch" = "keyCode";
+        "vscode-neovim.NVIM_APPNAME" = "vscode-neovim";
 
-    # Performance improvements for neovim
-    "extensions.experimental.affinity" = {
-      "asvetliakov.vscode-neovim" = 1;
-    };
- 
-    };
+        # Enable NeoVim keybindings
+        "editor.lineNumbers" = "relative";
 
-    keybindings = [
+        # Performance improvements for neovim
+        "extensions.experimental.affinity" = {
+          "asvetliakov.vscode-neovim" = 1;
+        };
+      };
+
+      keybindings = [
         {
-    key = "ctrl+y";
-    command = "-aichat.newfollowupaction";
-  }
-  {
-    key = "ctrl+y";
-    command = "-redo";
-  }
-  {
-    key = "ctrl+y";
-    command = "acceptSelectedSuggestion";
-    when = "suggestWidgetVisible && textInputFocus";
-  }
-  {
-    key = "alt+y";
-    command = "editor.action.inlineSuggest.commit";
-    when = "inlineSuggestionHasIndentationLessThanTabSize && inlineSuggestionVisible && !editorHoverFocused && !editorTabMovesFocus && !suggestWidgetVisible";
-  }
- # Close file sidebar
-  {
-    key = "q";
-    command = "runCommands";
-    args = {
-      commands = [
-        "workbench.action.toggleSidebarVisibility"
+          key = "ctrl+y";
+          command = "-aichat.newfollowupaction";
+        }
+        {
+          key = "ctrl+y";
+          command = "-redo";
+        }
+        {
+          key = "ctrl+y";
+          command = "acceptSelectedSuggestion";
+          when = "suggestWidgetVisible && textInputFocus";
+        }
+        {
+          key = "alt+y";
+          command = "editor.action.inlineSuggest.commit";
+          when = "inlineSuggestionHasIndentationLessThanTabSize && inlineSuggestionVisible && !editorHoverFocused && !editorTabMovesFocus && !suggestWidgetVisible";
+        }
+        # Close file sidebar
+        {
+          key = "q";
+          command = "runCommands";
+          args = {
+            commands = [
+              "workbench.action.toggleSidebarVisibility"
+            ];
+          };
+          when = "sideBarVisible";
+        }
+        # Close terminal
+        {
+          key = "q";
+          command = "runCommands";
+          args = {
+            commands = [
+              "workbench.action.terminal.toggleTerminal"
+            ];
+          };
+          when = "terminalFocus";
+        }
+        # Close Ai sidebar (secondary sidebar)
+        {
+          key = "q";
+          command = "runCommands";
+          args = {
+            commands = [
+              "workbench.action.toggleAuxiliaryBar"
+            ];
+          };
+          when = "auxiliaryBarFocus";
+        }
       ];
     };
-    when = "sideBarVisible";
-  }
-  # Close terminal
-  {
-    key = "q";
-    command = "runCommands";
-    args = {
-      commands = [
-        "workbench.action.terminal.toggleTerminal"
-      ];
-    };
-    when = "terminalFocus";
-  }
-    # Close Ai sidebar (secondary sidebar)
-  {
-    key = "q";
-    command = "runCommands";
-    args = {
-      commands = [
-        "workbench.action.toggleAuxiliaryBar"
-      ];
-    };
-    when = "auxiliaryBarFocus";
-  }
-
-    ];
   };
 
   # Create a separate directory for VSCode-specific NeoVim config
@@ -150,8 +155,6 @@
     $DRY_RUN_CMD mkdir -p $VERBOSE_ARG ${config.home.homeDirectory}/.local/share/vscode-neovim/lazy
     $DRY_RUN_CMD mkdir -p $VERBOSE_ARG ${config.home.homeDirectory}/.local/share/vscode-neovim/plugins
   '';
-
-
 
   # Create a VSCode-specific init.vim file
   home.file.".config/vscode-neovim/init.lua".text = ''
@@ -245,7 +248,7 @@
       vscode.call("workbench.files.action.focusFilesExplorer")
     end)
     -- Keymap for closing the file explorer (sidebar) is located in keybindings.json (nvim does not work when sideBarFocus is set)
- 
+     
     -- Git (version control)
     vim.keymap.set("n", "<leader>gg", function()
       vscode.call("workbench.scm.focus")
