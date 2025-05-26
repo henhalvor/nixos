@@ -134,6 +134,8 @@ in {
        set -g pane-active-border-style fg=#89b4fa
 
       # Theme: status
+
+      set -g status-position top
       set -g status-style bg=default,fg=black,bright
       set -g status-left ""
       set -g status-right "#[fg=black,bright]#S"
