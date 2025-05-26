@@ -312,13 +312,15 @@ in
             setupOpts = {
               adapters = {
                 _type = "lua-inline";
+
+                # Model list https://codecompanion.olimorris.dev/usage/chat-buffer/agents#compatibility
                 expr = ''
                   {
                     copilot = function()
                       return require('codecompanion.adapters').extend('copilot', {
                         schema = {
                           model = {
-                            default = 'gemini-2.5-pro',
+                            default = 'claude-sonnet-4',
                           },
                         },
                       })
