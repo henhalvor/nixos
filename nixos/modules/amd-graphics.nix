@@ -18,7 +18,9 @@
     VDPAU_DRIVER = "radeonsi"; # For VDPAU
 
     # Wayland-specific settings (if using Wayland)
-    WLR_RENDERER = "vulkan"; # Better performance on AMD
+    # WLR_RENDERER = "vulkan"; # Better performance on AMD
+  WLR_RENDERER = "gles2"; # Change "vulkan" to "gles2" to MINIMIZE screen artifact
+ WLR_NO_HARDWARE_CURSORS = "1"; # FIXES screen artifact in lower right corner
 
     # Force Mesa to ignore NVIDIA
     MESA_LOADER_DRIVER_OVERRIDE = "radeonsi";
