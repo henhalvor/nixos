@@ -10,16 +10,7 @@
     exec ${pkgs24-11.microsoft-edge}/bin/microsoft-edge \
       --ozone-platform=wayland \
       --ozone-platform-hint=auto \
-      --enable-features=UseOzonePlatform,VaapiVideoDecoder,CanvasOopRasterization,GpuScheduler \
-      --disable-features=UseChromeOSDirectVideoDecoder \
-      --use-gl=egl \
-      --enable-zero-copy \
-      --enable-gpu-rasterization \
-      --ignore-gpu-blocklist \
-      --enable-native-gpu-memory-buffers \
-      --disable-software-rasterizer \
-      --disable-features=TouchpadOverscrollHistoryNavigation \
-      --force-dark-mode \
+     --force-dark-mode \
       "$@"
   '';
 in {
