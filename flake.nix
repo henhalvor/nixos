@@ -19,6 +19,7 @@
       url = "github:notashelf/nvf";
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
+    nvim-nix.url = "github:henhalvor/nvim-nix";
   };
 
   outputs = {
@@ -30,6 +31,7 @@
     zen-browser,
     vscode-server,
     nvf,
+    nvim-nix,
     ...
   }: let
     system = "x86_64-linux";
@@ -129,12 +131,12 @@
             home-manager.nixosModules.home-manager
             {
               home-manager.extraSpecialArgs = {
-                inherit system userSettings zen-browser hyprpanel nvf;
+                inherit system userSettings zen-browser hyprpanel nvf nvim-nix;
                 unstable = unstablePkgs;
                 pkgs24-11 = pkgs24-11;
                 inherit hostname windowManager systemName;
                 inputs = {
-                  inherit hyprpanel zen-browser nvf;
+                  inherit hyprpanel zen-browser nvf nvim-nix;
                 };
               };
               home-manager.useGlobalPkgs = false; # NEEDS TO BE FALSE IN RECENT VERSION OF HOME MANAGER
@@ -189,13 +191,13 @@
         };
         modules = [./users/henhal/home.nix];
         extraSpecialArgs = {
-          inherit system nvf;
+          inherit system nvf nvim-nix;
           userSettings = userHenhal;
           unstable = unstablePkgs;
           pkgs24-11 = pkgs24-11;
           inherit zen-browser hyprpanel;
           inputs = {
-            inherit hyprpanel zen-browser nvf;
+            inherit hyprpanel zen-browser nvf nvim-nix;
           };
           windowManager = "sway";
         };

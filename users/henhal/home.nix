@@ -53,8 +53,8 @@
       # ../../home/modules/applications/google-chrome.nix
       ../../home/modules/applications/gimp.nix
       ../../home/modules/applications/microsoft-edge.nix
-      # ../../home/modules/applications/nvim.nix
-      ../../home/modules/applications/nvf.nix
+      ../../home/modules/applications/nvim.nix
+      # ../../home/modules/applications/nvf.nix
 
       # Environment
       ../../home/modules/environment/dev-tools.nix
