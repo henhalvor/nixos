@@ -1,10 +1,4 @@
-{
-  config,
-  pkgs,
-  userSettings,
-  lib,
-  ...
-}: {
+{ config, pkgs, userSettings, lib, ... }: {
   imports = [
     ./rofi
     ./waybar
@@ -36,7 +30,8 @@
     MOZ_USE_XINPUT2 = "1";
     XDG_SESSION_TYPE = "wayland";
     XDG_CURRENT_DESKTOP = "sway";
-    XKB_DEFAULT_OPTIONS = "terminate:ctrl_alt_bksp,caps:escape,altwin:swap_alt_win";
+    XKB_DEFAULT_OPTIONS =
+      "terminate:ctrl_alt_bksp,caps:escape,altwin:swap_alt_win";
     SDL_VIDEODRIVER = "wayland";
 
     # needs qt5.qtwayland in systemPackages
@@ -92,7 +87,7 @@
     '';
     config = {
       # --- Disable Sway's built-in bar ---
-      bars = []; # Set to an empty list to disable all swaybars
+      bars = [ ]; # Set to an empty list to disable all swaybars
 
       input = {
         "*" = {
@@ -109,7 +104,7 @@
           natural_scroll = "enabled";
           middle_emulation = "enabled";
         };
-        "5426:64:Razer_Razer_Naga_2014" = {natural_scroll = "disabled";};
+        "5426:64:Razer_Razer_Naga_2014" = { natural_scroll = "disabled"; };
       };
 
       # --- Output Configuration ---
@@ -169,10 +164,11 @@
         }
         # Set wallpaper
         {
-          command = "${pkgs.swaybg}/bin/swaybg -i ~/.dotfiles/home/modules/window-manager/hyprpaper/catpuccin_landscape.png -m fill";
+          command =
+            "${pkgs.swaybg}/bin/swaybg -i ~/.dotfiles/home/modules/window-manager/hyprpaper/catpuccin_landscape.png -m fill";
         }
         # { command = "waybar"; }
-        {command = "autotiling-rs";}
+        { command = "autotiling-rs"; }
         {
           # Store text entries
           command = "wl-paste --type text --watch clipman store &";
@@ -186,30 +182,35 @@
           command = "blueman-applet";
         }
       ];
-      menu = "${pkgs.rofi-wayland}/bin/rofi -show drun -theme ${config.home.homeDirectory}/.config/rofi/theme.rasi";
+      menu =
+        "${pkgs.rofi-wayland}/bin/rofi -show drun -theme ${config.home.homeDirectory}/.config/rofi/theme.rasi";
 
       keybindings = let
         modifier = config.wayland.windowManager.sway.config.modifier;
         menu = config.wayland.windowManager.sway.config.menu;
-      in
-        lib.mkOptionDefault {
-          "${modifier}+Return" = "exec ${pkgs.kitty}/bin/kitty";
-          "${modifier}+Shift+q" = "kill";
-          "${modifier}+d" = "exec ${menu}";
-          "${modifier}+Shift+c" = "exec reload";
-          "${modifier}+o" = "exec clipman pick -t rofi -T'-theme ${config.home.homeDirectory}/.config/rofi/theme.rasi'";
-          "${modifier}+Shift+o" = "exec clipman clear --all";
-          "${modifier}+e" = "exec ${pkgs.kitty}/bin/kitty --class=kitty-yazi -o background_opacity=1.0 -e yazi";
+      in lib.mkOptionDefault {
+        "${modifier}+Return" = "exec ${pkgs.kitty}/bin/kitty";
+        "${modifier}+Shift+q" = "kill";
+        "${modifier}+d" = "exec ${menu}";
+        "${modifier}+Shift+c" = "exec reload";
+        "${modifier}+o" =
+          "exec clipman pick -t rofi -T'-theme ${config.home.homeDirectory}/.config/rofi/theme.rasi'";
+        "${modifier}+Shift+o" = "exec clipman clear --all";
+        "${modifier}+e" =
+          "exec ${pkgs.kitty}/bin/kitty --class=kitty-yazi -o background_opacity=1.0 -e yazi";
+        "${modifier}+Shift+Return" = "exec ${pkgs.swaylock}/bin/swaylock";
 
-          # Keybind to fix workspace 10 launching on startup (home manager bug)
-          "${modifier}+0" = "exec ls";
+        # Keybind to fix workspace 10 launching on startup (home manager bug)
+        "${modifier}+0" = "exec ls";
 
-          "XF86MonBrightnessUp" = "exec brightnessctl s +10%";
-          "XF86MonBrightnessDown" = "exec brightnessctl s 10%-";
-          "XF86AudioRaiseVolume" = "exec pactl set-sink-volume @DEFAULT_SINK@ +10%";
-          "XF86AudioLowerVolume" = "exec pactl set-sink-volume @DEFAULT_SINK@ -10%";
-          "XF86AudioMute" = "exec pactl set-sink-mute @DEFAULT_SINK@ toggle";
-        };
+        "XF86MonBrightnessUp" = "exec brightnessctl s +10%";
+        "XF86MonBrightnessDown" = "exec brightnessctl s 10%-";
+        "XF86AudioRaiseVolume" =
+          "exec pactl set-sink-volume @DEFAULT_SINK@ +10%";
+        "XF86AudioLowerVolume" =
+          "exec pactl set-sink-volume @DEFAULT_SINK@ -10%";
+        "XF86AudioMute" = "exec pactl set-sink-mute @DEFAULT_SINK@ toggle";
+      };
     };
   };
 }
