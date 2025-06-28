@@ -321,11 +321,11 @@
         "unstable": "unstable"
       },
       "locked": {
-        "lastModified": 1748599762,
-        "narHash": "sha256-RDgW1UQv42XzqzJUq62aA8iWTvYDU+1XowFVusAp3WM=",
+        "lastModified": 1750272722,
+        "narHash": "sha256-n7vfjZaofP1Qp3+rG0G5gMYJmw0xmZWPAuWr4g/GEdM=",
         "owner": "henhalvor",
         "repo": "nvim-nix",
-        "rev": "db29ab44e6d4a4ff9701e8a02bac6d8bf768e911",
+        "rev": "0a9fdba6c9f8ab53b9999168dcb6d48ee38b1f9e",
         "type": "github"
       },
       "original": {
