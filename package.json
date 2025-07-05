@@ -1,0 +1,24 @@
+{
+  "name": "nixos-amplify-usage-reset",
+  "version": "1.0.0",
+  "description": "Server-side usage reset backup system using AWS Amplify Gen 2",
+  "main": "amplify/backend.ts",
+  "scripts": {
+    "build": "tsc --build",
+    "type-check": "tsc --noEmit",
+    "lint": "echo 'Linting would run here'",
+    "test": "echo 'Tests would run here'"
+  },
+  "dependencies": {
+    "aws-lambda": "^1.0.7"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "MIT"
+}
