@@ -11,6 +11,12 @@
     mkdir -p ${config.home.homeDirectory}/.local/share/nvim/{lazy,mason}
   '';
 
+  # Set Neovim as the default editor
+  home.sessionVariables = {
+    EDITOR = "nvim";
+    VISUAL = "nvim";
+  };
+
   # Ensure state directory exists for Lazy
   home.file.".local/state/nvim/.keep".text = "";
 
