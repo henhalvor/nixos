@@ -1,104 +1,130 @@
-{ inputs, ... }:
-{
-  imports = [ inputs.hyprpanel.homeManagerModules.hyprpanel ];
-
-  programs.hyprpanel = {
-
-    # Enable the module.
-    # Default: false
-    enable = true;
-
-    # Add '/nix/store/.../hyprpanel' to your
-    # Hyprland config 'exec-once'.
-    # Default: false
-    hyprland.enable = true;
-
-    # Fix the overwrite issue with HyprPanel.
-    # See below for more information.
-    # Default: false
-    overwrite.enable = true;
-
-    # Import a theme from './themes/*.json'.
-    # Default: ""
-    theme = "catppuccin_macchiato";
-
-    # Override the final config with an arbitrary set.
-    # Useful for overriding colors in your selected theme.
-    # Default: {}
-    override = {
-      theme.bar.menus.text = "#123ABC";
+{ pkgs, lib, config, systemName, ... }:
+let
+  # Define system-specific configurations
+  systemConfigs = {
+    workstation = {
+      configFile = ./workstation.json;
+      extraPackages = [ ];
     };
 
-    # Configure bar layouts for monitors.
-    # See 'https://hyprpanel.com/configuration/panel.html'.
-    # Default: null
-    layout = {
-      "bar.layouts" = {
-        "0" = {
-          left = [ "workspaces" ];
-          middle = [ "clock" ];
-          right = [ "hypridle" "hyprsunset" "volume" "media" "bluetooth" "network" "systray" "notifications" "battery" "dashboard" ];
-        };
-      };
-    };
-
-    # Configure and theme almost all options from the GUI.
-    # Options that require '{}' or '[]' are not yet implemented,
-    # except for the layout above.
-    # See 'https://hyprpanel.com/configuration/settings.html'.
-    # Default: <same as gui>
-    settings = {
-      bar.launcher.autoDetectIcon = true;
-      bar.workspaces.show_icons = true;
-      bar.clock.format = "%b %d  %H:%M";
-
-      # Disable labels for modules
-      bar.volume.label = false;
-      bar.media.show_label = false;
-      bar.bluetooth.label = false;
-      bar.network.label = false;
-      bar.notifications.show_total = false;
-
-      # Hyprsunset
-      bar.customModules.hyprsunset.label =  false;
-      bar.customModules.hyprsunset.offIcon = "󰛨";
-      bar.customModules.hyprsunset.onIcon =  "󱩌";
-      bar.customModules.hyprsunset.pollingInterval =  2000;
-      bar.customModules.hyprsunset.temperature =  "3500k";
-
-      # Hypridle
-bar.customModules.hypridle.label =  false;
-bar.customModules.hypridle.offIcon =  "";
-bar.customModules.hypridle.onIcon =  "";
-bar.customModules.hypridle.pollingInterval =  2000;
-
-      menus.clock = {
-        time = {
-          military = true;
-          hideSeconds = true;
-        };
-        weather.unit = "metric";
-      };
-
-      menus.dashboard.directories.enabled = false;
-      menus.dashboard.stats.enable_gpu = true;
-
-      theme.bar.transparent = true;
-
-      theme.font = {
-        name = "Hack Nerd Font";
-        size = "12px";
-      };
-      
-      # Wallpaper
-      #wallpaper.enable =  true;
-      #wallpaper.image =  "~/.dotfiles/home/modules/window-manager/hyprpanel/catpuccin_landscape.png";
-
-       # Scaling
-      scalingPriority =  "hyprland";
-
+    lenovo-yoga-pro-7 = {
+      configFile = ./lenovo-yoga-pro-7.json;
+      extraPackages = [ ];
     };
   };
+
+  # Fallback if unknown system
+  currentConfig =
+    systemConfigs.${systemName} or systemConfigs.lenovo-yoga-pro-7;
+
+  configTarget = "${config.home.homeDirectory}/.config/hyprpanel/config.json";
+in {
+
+  home.packages = with pkgs; [
+    grimblast # Screenshot tool for Hyprland
+    wf-recorder # Screen recorder
+  ];
+
+  programs.hyprpanel.enable = true;
+
+  home.activation.copyHyprpanelConfig =
+    lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      mkdir -p "$(dirname "${configTarget}")"
+      cp -f "${currentConfig.configFile}" "${configTarget}"
+    '';
+
 }
 
+# { inputs, ... }: {
+#
+#   programs.hyprpanel = {
+#
+#     # Enable the module.
+#     # Default: false
+#     enable = true;
+#
+#     # Configure and theme almost all options from the GUI.
+#     # Options that require '{}' or '[]' are not yet implemented,
+#     # except for the layout above.
+#     # See 'https://hyprpanel.com/configuration/settings.html'.
+#     # Default: <same as gui>
+#     settings = {
+#
+#       bar.layouts = {
+#         "*" = {
+#           left = [ "workspaces" ];
+#           middle = [ "clock" ];
+#           right = [
+#             "hypridle"
+#             "hyprsunset"
+#             "volume"
+#             "media"
+#             "bluetooth"
+#             "network"
+#             "systray"
+#             "notifications"
+#             "battery"
+#             "dashboard"
+#           ];
+#         };
+#       };
+#
+#       bar.autoDetectIcon = true;
+#       bar.map_app_icons = true;
+#       bar.map_to_icons = true;
+#
+#       bar.general.button_radius = 99;
+#
+#       bar.launcher.autoDetectIcon = true;
+#       bar.workspaces.show_icons = true;
+#       bar.clock.format = "%b %d  %H:%M";
+#
+#       # Disable labels for modules
+#       bar.volume.label = false;
+#       bar.media.show_label = false;
+#       bar.bluetooth.label = false;
+#       bar.network.label = false;
+#       bar.notifications.show_total = false;
+#
+#       # Hyprsunset
+#       bar.customModules.hyprsunset.label = false;
+#       bar.customModules.hyprsunset.offIcon = "󰛨";
+#       bar.customModules.hyprsunset.onIcon = "󱩌";
+#       bar.customModules.hyprsunset.pollingInterval = 2000;
+#       bar.customModules.hyprsunset.temperature = "3500k";
+#
+#       # Hypridle
+#       bar.customModules.hypridle.label = false;
+#       bar.customModules.hypridle.offIcon = "";
+#       bar.customModules.hypridle.onIcon = "";
+#       bar.customModules.hypridle.pollingInterval = 2000;
+#
+#       menus.clock = {
+#         time = {
+#           military = true;
+#           hideSeconds = true;
+#         };
+#         weather.unit = "metric";
+#       };
+#
+#       menus.dashboard.directories.enabled = false;
+#       menus.dashboard.stats.enable_gpu = true;
+#
+#       theme.bar.transparent = true;
+#
+#       theme.font = {
+#         name = "Hack Nerd Font";
+#         size = "12px";
+#       };
+#
+#       # Wallpaper
+#       #wallpaper.enable =  true;
+#       #wallpaper.image =  "~/.dotfiles/home/modules/window-manager/hyprpanel/catpuccin_landscape.png";
+#
+#       # Scaling
+#       scalingPriority = "hyprland";
+#
+#     };
+#   };
+# }
 

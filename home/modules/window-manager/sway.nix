@@ -1,4 +1,103 @@
-{ config, pkgs, userSettings, lib, ... }: {
+{ config, pkgs, userSettings, lib, systemName, ... }:
+let
+
+  # Import the script
+  toggleMonitorsWorkstation =
+    import ../scripts/toggle-monitors-workstation-sway.nix { inherit pkgs; };
+
+  # Define system-specific configurations
+  systemConfigs = {
+    lenovo-yoga-pro-7 = {
+      output = {
+        "eDP-1" = {
+          scale = "1.6";
+          mode = "2560x1600@90Hz";
+        };
+        "DP-9" = {
+          scale = "1";
+          mode = "2560x1440@144Hz";
+          position = "1080,0";
+        };
+        "DP-8" = {
+          scale = "1";
+          mode = "1920x1080";
+          transform = "270";
+          position = "0,-180";
+        };
+      };
+
+      extraConfig = ''
+
+        # Disable laptop screen when lid is closed
+        bindswitch --reload --locked lid:on output "eDP-1" disable
+        bindswitch --reload --locked lid:off output "eDP-1" enable
+
+         # Workspace assignments for multi-monitor setup
+        # Samsung monitor (main display) "Samsung Electric Company Odyssey G52A HNMWC00587"
+        workspace 2 output DP-9
+        workspace 3 output DP-9
+
+        # ASUS monitor (portrait mode) "Unknown ASUS VG24V 0x00003EBC"
+        workspace 1 output DP-8
+
+        # Fallback for when laptop screen is active
+        workspace 1 output eDP-1
+        workspace 2 output eDP-1
+        workspace 3 output eDP-1
+
+      '';
+
+      extraKeybindings = {
+        "XF86MonBrightnessUp" = "exec brightnessctl s +10%";
+        "XF86MonBrightnessDown" = "exec brightnessctl s 10%-";
+      };
+
+      extraInput = {
+        "1739:52992:SYNA2BA6:00 06CB:CF00 Touchpad" = {
+          tap = "enabled";
+          dwt = "enabled";
+          natural_scroll = "enabled";
+          middle_emulation = "enabled";
+        };
+      };
+
+      extraPackages = [ ];
+    };
+
+    workstation = {
+      output = {
+        "HDMI-A-1" = {
+          scale = "1";
+          mode = "2560x1440@144Hz";
+          position = "1080,0";
+        };
+        "DP-1" = {
+          scale = "1";
+          mode = "1920x1080";
+          transform = "270";
+          position = "0,-180";
+        };
+      };
+
+      extraConfig = ''
+        # Workstation-specific workspace assignments
+        workspace 1 output DP-1
+        workspace 2 output HDMI-A-1
+        workspace 3 output HDMI-A-1
+
+      '';
+
+      extraKeybindings = { "Mod4+m" = "exec toggle-monitors"; };
+
+      extraInput = { };
+
+      extraPackages = [ toggleMonitorsWorkstation ];
+    };
+  };
+
+  currentConfig = systemConfigs.${systemName} or systemConfigs.workstation;
+
+in {
   imports = [
     ./rofi
     ./waybar
@@ -9,21 +108,22 @@
     # ./kanshi
   ];
 
-  home.packages = with pkgs; [
-    hyprland
-    # Wayland essentials
-    wl-clipboard # Clipboard
-    clipman # Clipboard management
-    # slurp           # Screen region selector
-    brightnessctl # For screen brightness control
-    pamixer # For volume control
-    playerctl # You already have this for media controls
-    ddcutil # External monitor brightness control
-    bluez # bluetooth
-    blueberry
-    autotiling-rs
-    swaybg # Wallpaper setter
-  ];
+  home.packages = with pkgs;
+    [
+      hyprland
+      # Wayland essentials
+      wl-clipboard # Clipboard
+      clipman # Clipboard management
+      # slurp           # Screen region selector
+      brightnessctl # For screen brightness control
+      pamixer # For volume control
+      playerctl # You already have this for media controls
+      ddcutil # External monitor brightness control
+      bluez # bluetooth
+      blueberry
+      autotiling-rs
+      swaybg # Wallpaper setter
+    ] ++ currentConfig.extraPackages;
 
   home.sessionVariables = {
     MOZ_ENABLE_WAYLAND = "1";
@@ -51,25 +151,11 @@
     wrapperFeatures.gtk = true;
     # Add extraConfig here to inject raw Sway commands
     extraConfig = ''
+      # System specific config
+      ${currentConfig.extraConfig}
+
       # Disable default title bars and borders for new windows
       for_window [class=".*"] border none
-
-      # Disable laptop screen when lid is closed
-      bindswitch --reload --locked lid:on output "eDP-1" disable
-      bindswitch --reload --locked lid:off output "eDP-1" enable
-
-       # Workspace assignments for multi-monitor setup
-      # Samsung monitor (main display) "Samsung Electric Company Odyssey G52A HNMWC00587"
-      workspace 2 output DP-9
-      workspace 3 output DP-9
-
-      # ASUS monitor (portrait mode) "Unknown ASUS VG24V 0x00003EBC"
-      workspace 1 output DP-8
-
-      # Fallback for when laptop screen is active
-      workspace 1 output eDP-1
-      workspace 2 output eDP-1
-      workspace 3 output eDP-1
 
       # yazi floating window
       for_window [app_id="kitty-yazi"] floating enable, resize set 1111 px 650 px, move position center, border pixel 2
@@ -89,59 +175,29 @@
       # --- Disable Sway's built-in bar ---
       bars = [ ]; # Set to an empty list to disable all swaybars
 
-      input = {
-        "*" = {
-          xkb_layout = "no";
-          xkb_options = "caps:escape";
-          tap = "enabled";
-          dwt = "enabled";
-          natural_scroll = "enabled";
-          middle_emulation = "enabled";
-        };
-        "1739:52992:SYNA2BA6:00 06CB:CF00 Touchpad" = {
-          tap = "enabled";
-          dwt = "enabled";
-          natural_scroll = "enabled";
-          middle_emulation = "enabled";
-        };
-        "5426:64:Razer_Razer_Naga_2014" = { natural_scroll = "disabled"; };
-      };
+      input = let
+        # Base input configuration that applies to all systems
+        sharedInput = {
+          "*" = {
+            xkb_layout = "no";
+            xkb_options = "caps:escape";
+            tap = "enabled";
+            dwt = "enabled";
+            natural_scroll = "enabled";
+            middle_emulation = "enabled";
+          };
 
-      # --- Output Configuration ---
-      output = {
-        "eDP-1" = {
-          scale = "1.6";
-          mode = "2560x1600@90Hz";
+          "5426:64:Razer_Razer_Naga_2014" = { natural_scroll = "disabled"; };
         };
-        "DP-9" = {
-          scale = "1";
-          mode = "2560x1440@144Hz";
-          position = "1080,0";
-        };
-        "DP-8" = {
-          scale = "1";
-          mode = "1920x1080";
-          transform = "270";
-          position = "0,-180";
-        };
-      };
+      in sharedInput // currentConfig.extraInput;
+
+      output = currentConfig.output;
 
       # --- Assign applications to workspaces ---
       assigns = {
         # Workspace numbers are strings here
-        "1" = [
-          # Add criteria for zen browser here.
-          # Use app_id if available and reliable:
-          {
-            app_id = "zen";
-          }
-          # Or use class if app_id doesn't work or isn't suitable:
-          # { class = "Zen"; } # Replace "Zen" with the actual class name
-        ];
-        # Example: Assign kitty terminal to workspace 2
-        # "2" = [ { app_id = "kitty"; } ];
-        # Example: Assign Firefox to workspace 3
-        # "3" = [ { class = "firefox"; } ];
+        "1" = [{ app_id = "zen"; }];
+
       };
       defaultWorkspace = "1";
 
@@ -158,7 +214,7 @@
       terminal = "{userSettings.term}";
       startup = [
         # TODO change to userSettings.browser
-        # { command = "zen"; }
+        { command = "zen"; }
         {
           command = "waybar";
         }
@@ -188,29 +244,32 @@
       keybindings = let
         modifier = config.wayland.windowManager.sway.config.modifier;
         menu = config.wayland.windowManager.sway.config.menu;
-      in lib.mkOptionDefault {
-        "${modifier}+Return" = "exec ${pkgs.kitty}/bin/kitty";
-        "${modifier}+Shift+q" = "kill";
-        "${modifier}+d" = "exec ${menu}";
-        "${modifier}+Shift+c" = "exec reload";
-        "${modifier}+o" =
-          "exec clipman pick -t rofi -T'-theme ${config.home.homeDirectory}/.config/rofi/theme.rasi'";
-        "${modifier}+Shift+o" = "exec clipman clear --all";
-        "${modifier}+e" =
-          "exec ${pkgs.kitty}/bin/kitty --class=kitty-yazi -o background_opacity=1.0 -e yazi";
-        "${modifier}+Shift+Return" = "exec ${pkgs.swaylock}/bin/swaylock";
 
-        # Keybind to fix workspace 10 launching on startup (home manager bug)
-        "${modifier}+0" = "exec ls";
+        # Base keybindings (remove the monitor toggle from here)
+        baseKeybindings = {
+          "${modifier}+Return" = "exec ${pkgs.kitty}/bin/kitty";
+          "${modifier}+Shift+q" = "kill";
+          "${modifier}+d" = "exec ${menu}";
+          "${modifier}+Shift+c" = "exec reload";
+          "${modifier}+o" =
+            "exec clipman pick -t rofi -T'-theme ${config.home.homeDirectory}/.config/rofi/theme.rasi'";
+          "${modifier}+Shift+o" = "exec clipman clear --all";
+          "${modifier}+e" =
+            "exec ${pkgs.kitty}/bin/kitty --class=kitty-yazi -o background_opacity=1.0 -e yazi";
+          "${modifier}+Shift+Return" = "exec ${pkgs.swaylock}/bin/swaylock";
 
-        "XF86MonBrightnessUp" = "exec brightnessctl s +10%";
-        "XF86MonBrightnessDown" = "exec brightnessctl s 10%-";
-        "XF86AudioRaiseVolume" =
-          "exec pactl set-sink-volume @DEFAULT_SINK@ +10%";
-        "XF86AudioLowerVolume" =
-          "exec pactl set-sink-volume @DEFAULT_SINK@ -10%";
-        "XF86AudioMute" = "exec pactl set-sink-mute @DEFAULT_SINK@ toggle";
-      };
+          # Keybind to fix workspace 10 launching on startup (home manager bug)
+          "${modifier}+0" = "exec ls";
+
+          # Audio
+          "XF86AudioRaiseVolume" =
+            "exec pactl set-sink-volume @DEFAULT_SINK@ +10%";
+          "XF86AudioLowerVolume" =
+            "exec pactl set-sink-volume @DEFAULT_SINK@ -10%";
+          "XF86AudioMute" = "exec pactl set-sink-mute @DEFAULT_SINK@ toggle";
+        };
+      in lib.mkOptionDefault
+      (baseKeybindings // currentConfig.extraKeybindings);
     };
   };
 }

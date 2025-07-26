@@ -1,14 +1,10 @@
-{
-  config,
-  pkgs,
-  ...
-}: {
+{ config, pkgs, ... }: {
   home.packages = with pkgs; [
     # Core development tools
     lazygit
     lazydocker
-    ripgrep
-    tree-sitter
+    # ripgrep
+    # tree-sitter
     unzip
     neofetch
 

@@ -1,0 +1,143 @@
+{
+  "bar": {
+    "autoDetectIcon": true,
+    "bluetooth": {
+      "label": false
+    },
+    "clock": {
+      "format": "%b %d  %H:%M"
+    },
+    "general": {
+      "button_radius": 99
+    },
+    "launcher": {
+      "autoDetectIcon": true
+    },
+    "layouts": {
+      "*": {
+        "left": ["workspaces"],
+        "middle": ["clock"],
+        "right": [
+          "volume",
+          "bluetooth",
+          "network",
+          "systray",
+          "notifications",
+          "dashboard"
+        ]
+      }
+    },
+    "map_app_icons": true,
+    "map_to_icons": true,
+    "media": {
+      "show_label": false
+    },
+    "network": {
+      "label": false
+    },
+    "notifications": {
+      "show_total": false
+    },
+    "volume": {
+      "label": false
+    },
+    "workspaces": {
+      "show_icons": true
+    }
+  },
+  "menus": {
+    "clock": {
+      "time": {
+        "hideSeconds": true,
+        "military": true
+      },
+      "weather": {
+        "unit": "metric"
+      }
+    },
+    "dashboard": {
+      "directories": {
+        "enabled": false
+      },
+      "stats": {
+        "enable_gpu": true
+      }
+    }
+  },
+  "scalingPriority": "hyprland",
+  "theme": {
+    "bar": {
+      "transparent": true
+    },
+    "font": {
+      "name": "Hack Nerd Font",
+      "size": "12px"
+    }
+  },
+  "bar.customModules.storage.paths": ["/"],
+  "theme.bar.buttons.radius": "999em",
+  "bar.workspaces.show_icons": false,
+  "bar.workspaces.showWsIcons": true,
+  "bar.workspaces.showApplicationIcons": true,
+  "bar.workspaces.show_numbered": false,
+  "bar.battery.hideLabelWhenFull": true,
+  "bar.layouts": {
+    "*": {
+      "left": ["workspaces"],
+      "middle": ["clock"],
+      "right": [
+        "hyprsunset",
+        "volume",
+        "bluetooth",
+        "network",
+        "systray",
+        "notifications",
+        "dashboard"
+      ]
+    }
+  },
+  "bar.customModules.hyprsunset.label": false,
+  "bar.customModules.hyprsunset.offIcon": "󰛨",
+  "bar.customModules.hyprsunset.onIcon": "󱩌",
+  "bar.customModules.hyprsunset.pollingInterval": 2000,
+  "bar.customModules.hyprsunset.temperature": "3000k",
+  "bar.customModules.hypridle.label": false,
+  "bar.customModules.hypridle.offIcon": "",
+  "bar.customModules.hypridle.onIcon": "",
+  "bar.customModules.hypridle.pollingInterval": 2000,
+  "bar.customModules.ram.labelType": "used",
+  "theme.bar.buttons.modules.weather.enableBorder": false,
+  "menus.dashboard.shortcuts.left.shortcut1.command": "zen",
+  "menus.dashboard.shortcuts.left.shortcut1.tooltip": "Zen",
+  "menus.dashboard.shortcuts.left.shortcut1.icon": "󰇩",
+  "menus.dashboard.directories.enabled": true,
+  "menus.dashboard.shortcuts.left.shortcut3.icon": "󰄨",
+  "menus.dashboard.shortcuts.left.shortcut3.tooltip": "Mission Center",
+  "menus.dashboard.shortcuts.left.shortcut3.command": "missioncenter",
+  "menus.clock.time.hideSeconds": false,
+  "menus.clock.weather.location": "Bergen",
+  "menus.clock.weather.enabled": false,
+  "menus.media.displayTime": true,
+  "menus.media.displayTimeTooltip": true,
+  "menus.dashboard.powermenu.avatar.name": "Lenovo Yoga Pro 7",
+  "menus.dashboard.shortcuts.left.shortcut2.command": "spotify",
+  "menus.dashboard.shortcuts.left.shortcut4.command": "rofi -show drun -theme ~/.config/rofi/theme.rasi",
+  "theme.bar.floating": false,
+  "theme.bar.border.width": "0.15em",
+  "theme.bar.border_radius": "99em",
+  "theme.bar.outer_spacing": "0em",
+  "theme.bar.buttons.y_margins": "0.2em",
+  "theme.bar.layer": "overlay",
+  "bar.autoHide": "fullsreen",
+  "theme.bar.buttons.padding_x": "0.5rem",
+  "bar.volume.label": true,
+  "bar.network.showWifiInfo": true,
+  "bar.network.label": false,
+  "bar.bluetooth.label": false,
+  "bar.media.show_label": false,
+  "bar.media.show_active_only": true,
+  "bar.notifications.show_total": true,
+  "bar.notifications.hideCountWhenZero": true,
+  "menus.dashboard.stats.enabled": true,
+  "menus.dashboard.stats.enable_gpu": true
+}

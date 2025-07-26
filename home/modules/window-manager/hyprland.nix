@@ -1,9 +1,121 @@
-{ config, pkgs, userSettings, ... }:
+{ config, pkgs, userSettings, lib, systemName, ... }:
+let
 
-{
+  # Import the script
+  toggleMonitorsWorkstation =
+    import ../scripts/toggle-monitors-workstation-hyprland.nix {
+      inherit pkgs;
+    };
+
+  # Define system-specific configurations
+  systemConfigs = {
+    lenovo-yoga-pro-7 = {
+      monitors = ''
+        # Clear any previous monitor settings and set defaults
+        monitor=,preferred,auto,1
+
+        # Define specific monitor configurations
+        # Laptop built-in display
+        monitor=eDP-1,2560x1600@90,0x0,1.6
+
+        # Samsung Odyssey (DP-9) - Center screen with native resolution
+        monitor=DP-9,2560x1440@144,0x0,1
+
+        # ASUS monitor (DP-8) - Position in portrait to the left of Samsung
+        monitor=DP-8,1920x1080@144,-1080x240,1,transform,1
+      '';
+
+      extraBinds = [
+        # Laptop-specific brightness controls
+        ",XF86MonBrightnessUp,exec, brightnessctl s +10%"
+        ",XF86MonBrightnessDown,exec, brightnessctl s 10%-"
+
+      ];
+
+      extraInput = { touchpad = { natural_scroll = true; }; };
+
+      extraPackages = [ ];
+
+      extraWindowRules = [
+        # Laptop-specific window rules can go here
+      ];
+
+      extraExecOnce = [
+        # Better startup sequence to ensure monitors turn on
+        # "sleep 1 && hyprctl dispatch dpms on"
+      ];
+
+      workspaceRules = [
+        # Workspace assignments for multi-monitor setup
+        # Samsung monitor (main display) - DP-9
+        "2, monitor:DP-9"
+        "3, monitor:DP-9"
+
+        # ASUS monitor (portrait mode) - DP-8
+        "1, monitor:DP-8"
+
+        # Fallback for when laptop screen is active
+        "1, monitor:eDP-1"
+        "2, monitor:eDP-1"
+        "3, monitor:eDP-1"
+      ];
+    };
+
+    workstation = {
+      monitors = ''
+        # Clear any previous monitor settings and set defaults
+        monitor=,preferred,auto,1
+
+        # Define specific monitor configurations for workstation
+        # Samsung monitor (HDMI-A-1) - Main display
+        monitor=HDMI-A-1,2560x1440@144,1080x0,1
+
+        # ASUS monitor (DP-1) - Portrait mode to the left
+        monitor=DP-1,1920x1080@144,0x-180,1,transform,1
+      '';
+
+      extraBinds = [
+        # Workstation-specific monitor toggle
+        "$mainMod, M, exec, toggle-monitors"
+      ];
+
+      extraInput = {
+        # Workstation-specific input settings
+      };
+
+      extraPackages = [ toggleMonitorsWorkstation ];
+
+      extraWindowRules = [
+        # Workstation-specific workspace assignments
+        "workspace 1, class:^(zen)$"
+        "workspace 2, class:^(kitty)$"
+        "workspace 3, class:^(code)$"
+      ];
+
+      extraExecOnce = [
+        # Workstation-specific startup commands
+      ];
+
+      workspaceRules = [
+        # Workspace assignments for multi-monitor setup
+        # ASUS monitor (portrait mode) - DP-1
+        "1, monitor:DP-1"
+
+        # Samsung monitor (main display) - HDMI-A-1
+        "2, monitor:HDMI-A-1"
+        "3, monitor:HDMI-A-1"
+      ];
+    };
+  };
+
+  currentConfig =
+    systemConfigs.${systemName} or systemConfigs.lenovo-yoga-pro-7;
+
+in {
 
   imports = [
     ./hyprpanel
+    ./hyprsunset
     ./rofi
     ./hyprpaper
     ./hypridle
@@ -12,20 +124,21 @@
     ./kanshi
   ];
 
-  home.packages = with pkgs; [
-    hyprland
-    # Wayland essentials
-    wl-clipboard # Clipboard
-    clipman # Clipboard management
-    # slurp           # Screen region selector
-    brightnessctl # For screen brightness control
-    pamixer # For volume control
-    playerctl # You already have this for media controls
-    # nm-applet # Network manager applet (optional)
-    ddcutil # External monitor brightness control
-    bluez # bluetooth
-    blueberry
-  ];
+  home.packages = with pkgs;
+    [
+      hyprland
+      # Wayland essentials
+      wl-clipboard # Clipboard
+      clipman # Clipboard management
+      # slurp           # Screen region selector
+      brightnessctl # For screen brightness control
+      pamixer # For volume control
+      playerctl # You already have this for media controls
+      # nm-applet # Network manager applet (optional)
+      ddcutil # External monitor brightness control
+      bluez # bluetooth
+      blueberry
+    ] ++ currentConfig.extraPackages;
 
   wayland.windowManager.hyprland = {
     enable = true;
@@ -34,36 +147,41 @@
     # Define Hyprland configuration
     settings = {
       # autostart
-      exec-once = [
-        # "hash dbus-update-activation-environment 2>/dev/null"
-        # "dbus-update-activation-environment --all --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP"
-        # "systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP"
-        #
-        # "nm-applet &"
-        # "poweralertd &"
-        "wl-paste --type text --watch clipman store &" # Store text entries
-        "wl-paste --type image --watch clipman store &" # Store images
-        "hyprpanel &"
-        "hyprpaper &"
-        "hypridle &"
+      exec-once = let
+        # Base startup commands that apply to all systems
+        baseExecOnce = [
+          # "hash dbus-update-activation-environment 2>/dev/null"
+          # "dbus-update-activation-environment --all --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP"
+          # "systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP"
+          #
+          # "nm-applet &"
+          # "poweralertd &"
+          "wl-paste --type text --watch clipman store &" # Store text entries
+          "wl-paste --type image --watch clipman store &" # Store images
+          # "hyprpanel &"    # Dont manually start hyprpanel, it is started by systemd service
+          "hyprpaper &"
+          "hypridle &"
 
-        #   "swaync &"
-        #   "hyprctl setcursor Bibata-Modern-Ice 24 &"
-        #   "swww-daemon &"
-        #
-        # "hyprlock"
-      ];
+          #   "swaync &"
+          #   "hyprctl setcursor Bibata-Modern-Ice 24 &"
+          #   "swww-daemon &"
+          #
+          # "hyprlock"
+        ];
+      in baseExecOnce ++ currentConfig.extraExecOnce;
 
-      input = {
-        kb_layout = "no";
-        kb_options = "grp:alt_caps_toggle";
-        numlock_by_default = true;
-        follow_mouse = 1;
-        float_switch_override_focus = 0;
-        mouse_refocus = 0;
-        sensitivity = 0;
-        touchpad = { natural_scroll = true; };
-      };
+      input = let
+        # Base input configuration that applies to all systems
+        baseInput = {
+          kb_layout = "no";
+          kb_options = "grp:alt_caps_toggle";
+          numlock_by_default = true;
+          follow_mouse = 1;
+          float_switch_override_focus = 0;
+          mouse_refocus = 0;
+          sensitivity = 0;
+        };
+      in baseInput // currentConfig.extraInput;
 
       general = {
         "$mainMod" = "SUPER";
@@ -73,7 +191,6 @@
         border_size = 2;
         "col.active_border" = "rgb(98971A) rgb(CC241D) 45deg";
         "col.inactive_border" = "0x00000000";
-        border_part_of_window = false;
         no_border_on_floating = false;
         # Allow dragging with left mouse button
         resize_on_border = true;
@@ -115,7 +232,7 @@
 
         # Opacity
         active_opacity = 1.0; # Opacity for focused windows (100%)
-        inactive_opacity = 0.95; # Opacity for unfocused windows (95%)
+        inactive_opacity = 1.0; # Opacity for unfocused windows (95%)
         fullscreen_opacity = 1.0; # Opacity for fullscreen (100%)
 
         blur = {
@@ -171,142 +288,116 @@
         ];
       };
 
-      bind = [
-        # show keybinds list
-        # "$mainMod, F1, exec, show-keybinds"
+      bind = let
+        # Base keybindings that apply to all systems
+        baseBinds = [
+          # show keybinds list
+          # "$mainMod, F1, exec, show-keybinds"
 
-        # keybindings
-        "$mainMod, Return, exec, ${userSettings.term}"
-        "$mainMod SHIFT, C, exec, hyprctl reload"
-        "$mainMod SHIFT, Q, killactive,"
-        "$mainMod, F, fullscreen, 0"
-        "$mainMod, Space, exec, toggle_float"
-        "$mainMod, D, exec, ${pkgs.rofi-wayland}/bin/rofi -show drun -theme ${config.home.homeDirectory}/.config/rofi/theme.rasi"
-        "$mainMod, O, exec, clipman pick -t rofi -T'-theme ${config.home.homeDirectory}/.config/rofi/theme.rasi'"
-        "$mainMod SHIFT, O, exec, clipman clear --all"
-        "$mainMod, X, togglesplit,"
-        "$mainMod, E, exec, hyprctl dispatch exec '[float; size 1111 650] kitty -e yazi'"
-        # "$mainMod SHIFT, B, exec, toggle_waybar"
+          # keybindings
+          "$mainMod, Return, exec, ${userSettings.term}"
+          "$mainMod SHIFT, C, exec, hyprctl reload"
+          "$mainMod SHIFT, Q, killactive,"
+          "$mainMod, F, fullscreen, 0"
+          "$mainMod, Space, exec, toggle_float"
+          "$mainMod, D, exec, ${pkgs.rofi-wayland}/bin/rofi -show drun -theme ${config.home.homeDirectory}/.config/rofi/theme.rasi"
+          "$mainMod, O, exec, clipman pick -t rofi -T'-theme ${config.home.homeDirectory}/.config/rofi/theme.rasi'"
+          "$mainMod SHIFT, O, exec, clipman clear --all"
+          "$mainMod, X, togglesplit,"
+          "$mainMod, E, exec, hyprctl dispatch exec '[float; size 1111 650] kitty -e yazi'"
+          "$mainMod, L, exec, ${pkgs.hyprlock}/bin/hyprlock"
+          # "$mainMod SHIFT, B, exec, toggle_waybar"
 
-        # Lock screen
-        "$mainMod SHIFT, L, exec, hyprlock"
+          # Lock screen
+          "$mainMod SHIFT, L, exec, hyprlock"
 
-        "$mainMod SHIFT, D, exec, ~/.local/bin/toggle-laptop-display"
-        "$mainMod SHIFT, M, exec, hyprctl dispatch dpms on && notify-send 'All displays forced on'"
+          # "$mainMod SHIFT, M, exec, hyprctl dispatch dpms on && notify-send 'All displays forced on'"
 
-        # screenshot
-        ",Print, exec, screenshot --copy"
-        "$mainMod, Print, exec, screenshot --save"
-        "$mainMod SHIFT, Print, exec, screenshot --swappy"
+          # screenshot
+          ",Print, exec, screenshot --copy"
+          "$mainMod, Print, exec, screenshot --save"
+          "$mainMod SHIFT, Print, exec, screenshot --swappy"
 
-        # External monitor brightness
-        # Both monitors
-        # "$mainMod, N, exec, ${config.home.homeDirectory}/.local/bin/monitor-brightness up all"
-        # "$mainMod, M, exec, ${config.home.homeDirectory}/.local/bin/monitor-brightness down all"
-        #
-        # # Samsung monitor only (HDMI)
-        # "$mainMod SHIFT, N, exec, ${config.home.homeDirectory}/.local/bin/monitor-brightness up samsung"
-        # "$mainMod SHIFT, M, exec, ${config.home.homeDirectory}/.local/bin/monitor-brightness down samsung"
-        #
-        # # ASUS monitor only (DP)
-        # "$mainMod ALT, N, exec, ${config.home.homeDirectory}/.local/bin/monitor-brightness up asus"
-        # "$mainMod ALT, M, exec, ${config.home.homeDirectory}/.local/bin/monitor-brightness down asus"
-        #
-        # Laptop display
-        # Enable built-in display
-        # "$mainMod SHIFT, F, exec, hyprctl keyword monitor 'eDP-1,  2560x1600@90, 0x0, 1.6'"
-        "$mainMod SHIFT, F, exec, hyprctl keyword monitor 'eDP-1, enable'"
-        # Disable built-in display
-        "$mainMod ALT, F, exec, hyprctl keyword monitor 'eDP-1, disable'"
+          #switch focus
+          "$mainMod, left, movefocus, l"
+          "$mainMod, right, movefocus, r"
+          "$mainMod, up, movefocus, u"
+          "$mainMod, down, movefocus, d"
+          "$mainMod, h, movefocus, l"
+          "$mainMod, j, movefocus, d"
+          "$mainMod, k, movefocus, u"
+          "$mainMod, l, movefocus, r"
 
-        #switch focus
-        "$mainMod, left, movefocus, l"
-        "$mainMod, right, movefocus, r"
-        "$mainMod, up, movefocus, u"
-        "$mainMod, down, movefocus, d"
-        "$mainMod, h, movefocus, l"
-        "$mainMod, j, movefocus, d"
-        "$mainMod, k, movefocus, u"
-        "$mainMod, l, movefocus, r"
+          # switch workspace
+          "$mainMod, 1, workspace, 1"
+          "$mainMod, 2, workspace, 2"
+          "$mainMod, 3, workspace, 3"
+          "$mainMod, 4, workspace, 4"
+          "$mainMod, 5, workspace, 5"
+          "$mainMod, 6, workspace, 6"
+          "$mainMod, 7, workspace, 7"
+          "$mainMod, 8, workspace, 8"
+          "$mainMod, 9, workspace, 9"
+          "$mainMod, 0, workspace, 10"
 
-        # switch workspace
-        "$mainMod, 1, workspace, 1"
-        "$mainMod, 2, workspace, 2"
-        "$mainMod, 3, workspace, 3"
-        "$mainMod, 4, workspace, 4"
-        "$mainMod, 5, workspace, 5"
-        "$mainMod, 6, workspace, 6"
-        "$mainMod, 7, workspace, 7"
-        "$mainMod, 8, workspace, 8"
-        "$mainMod, 9, workspace, 9"
-        "$mainMod, 0, workspace, 10"
+          # same as above, but switch to the workspace
+          "$mainMod SHIFT, 1, movetoworkspacesilent, 1" # movetoworkspacesilent
+          "$mainMod SHIFT, 2, movetoworkspacesilent, 2"
+          "$mainMod SHIFT, 3, movetoworkspacesilent, 3"
+          "$mainMod SHIFT, 4, movetoworkspacesilent, 4"
+          "$mainMod SHIFT, 5, movetoworkspacesilent, 5"
+          "$mainMod SHIFT, 6, movetoworkspacesilent, 6"
+          "$mainMod SHIFT, 7, movetoworkspacesilent, 7"
+          "$mainMod SHIFT, 8, movetoworkspacesilent, 8"
+          "$mainMod SHIFT, 9, movetoworkspacesilent, 9"
+          "$mainMod SHIFT, 0, movetoworkspacesilent, 10"
+          "$mainMod CTRL, c, movetoworkspace, empty"
 
-        # same as above, but switch to the workspace
-        "$mainMod SHIFT, 1, movetoworkspacesilent, 1" # movetoworkspacesilent
-        "$mainMod SHIFT, 2, movetoworkspacesilent, 2"
-        "$mainMod SHIFT, 3, movetoworkspacesilent, 3"
-        "$mainMod SHIFT, 4, movetoworkspacesilent, 4"
-        "$mainMod SHIFT, 5, movetoworkspacesilent, 5"
-        "$mainMod SHIFT, 6, movetoworkspacesilent, 6"
-        "$mainMod SHIFT, 7, movetoworkspacesilent, 7"
-        "$mainMod SHIFT, 8, movetoworkspacesilent, 8"
-        "$mainMod SHIFT, 9, movetoworkspacesilent, 9"
-        "$mainMod SHIFT, 0, movetoworkspacesilent, 10"
-        "$mainMod CTRL, c, movetoworkspace, empty"
+          # window control
+          "$mainMod SHIFT, left, movewindow, l"
+          "$mainMod SHIFT, right, movewindow, r"
+          "$mainMod SHIFT, up, movewindow, u"
+          "$mainMod SHIFT, down, movewindow, d"
+          "$mainMod SHIFT, h, movewindow, l"
+          "$mainMod SHIFT, j, movewindow, d"
+          "$mainMod SHIFT, k, movewindow, u"
+          "$mainMod SHIFT, l, movewindow, r"
 
-        # window control
-        "$mainMod SHIFT, left, movewindow, l"
-        "$mainMod SHIFT, right, movewindow, r"
-        "$mainMod SHIFT, up, movewindow, u"
-        "$mainMod SHIFT, down, movewindow, d"
-        "$mainMod SHIFT, h, movewindow, l"
-        "$mainMod SHIFT, j, movewindow, d"
-        "$mainMod SHIFT, k, movewindow, u"
-        "$mainMod SHIFT, l, movewindow, r"
+          "$mainMod CTRL, left, resizeactive, -80 0"
+          "$mainMod CTRL, right, resizeactive, 80 0"
+          "$mainMod CTRL, up, resizeactive, 0 -80"
+          "$mainMod CTRL, down, resizeactive, 0 80"
+          "$mainMod CTRL, h, resizeactive, -80 0"
+          "$mainMod CTRL, j, resizeactive, 0 80"
+          "$mainMod CTRL, k, resizeactive, 0 -80"
+          "$mainMod CTRL, l, resizeactive, 80 0"
 
-        "$mainMod CTRL, left, resizeactive, -80 0"
-        "$mainMod CTRL, right, resizeactive, 80 0"
-        "$mainMod CTRL, up, resizeactive, 0 -80"
-        "$mainMod CTRL, down, resizeactive, 0 80"
-        "$mainMod CTRL, h, resizeactive, -80 0"
-        "$mainMod CTRL, j, resizeactive, 0 80"
-        "$mainMod CTRL, k, resizeactive, 0 -80"
-        "$mainMod CTRL, l, resizeactive, 80 0"
+          "$mainMod ALT, left, moveactive,  -80 0"
+          "$mainMod ALT, right, moveactive, 80 0"
+          "$mainMod ALT, up, moveactive, 0 -80"
+          "$mainMod ALT, down, moveactive, 0 80"
+          "$mainMod ALT, h, moveactive,  -80 0"
+          "$mainMod ALT, j, moveactive, 0 80"
+          "$mainMod ALT, k, moveactive, 0 -80"
+          "$mainMod ALT, l, moveactive, 80 0"
 
-        "$mainMod ALT, left, moveactive,  -80 0"
-        "$mainMod ALT, right, moveactive, 80 0"
-        "$mainMod ALT, up, moveactive, 0 -80"
-        "$mainMod ALT, down, moveactive, 0 80"
-        "$mainMod ALT, h, moveactive,  -80 0"
-        "$mainMod ALT, j, moveactive, 0 80"
-        "$mainMod ALT, k, moveactive, 0 -80"
-        "$mainMod ALT, l, moveactive, 80 0"
+          # media and volume controls
+          # ",XF86AudioMute,exec, pamixer -t"
+          ",XF86AudioPlay,exec, playerctl play-pause"
+          ",XF86AudioNext,exec, playerctl next"
+          ",XF86AudioPrev,exec, playerctl previous"
+          ",XF86AudioStop,exec, playerctl stop"
 
-        # media and volume controls
-        # ",XF86AudioMute,exec, pamixer -t"
-        ",XF86AudioPlay,exec, playerctl play-pause"
-        ",XF86AudioNext,exec, playerctl next"
-        ",XF86AudioPrev,exec, playerctl previous"
-        ",XF86AudioStop,exec, playerctl stop"
+          "$mainMod, mouse_down, workspace, e-1"
+          "$mainMod, mouse_up, workspace, e+1"
 
-        "$mainMod, mouse_down, workspace, e-1"
-        "$mainMod, mouse_up, workspace, e+1"
-
-        # clipboard manager
-        "$mainMod, V, exec, cliphist list | rofi -dmenu -theme-str 'window {width: 50%;} listview {columns: 1;}' | cliphist decode | wl-copy"
-      ];
+        ];
+      in baseBinds ++ currentConfig.extraBinds;
 
       # binds active in lockscreen
       bindl = [
         # Brightness
-        # Control all displays together
-        # Normal press: Small adjustments (5%)
-        ",XF86MonBrightnessUp, exec, brightnessctl set 5%+ && ${config.home.homeDirectory}/.local/bin/monitor-brightness up all"
-        ",XF86MonBrightnessDown, exec, brightnessctl set 5%- && ${config.home.homeDirectory}/.local/bin/monitor-brightness down all"
 
-        # With Super key: Large adjustments
-        "$mainMod, XF86MonBrightnessUp, exec, brightnessctl set 100%+ && ${config.home.homeDirectory}/.local/bin/monitor-brightness up all && ${config.home.homeDirectory}/.local/bin/monitor-brightness up all && ${config.home.homeDirectory}/.local/bin/monitor-brightness up all"
-        "$mainMod, XF86MonBrightnessDown, exec, brightnessctl set 100%- && ${config.home.homeDirectory}/.local/bin/monitor-brightness down all && ${config.home.homeDirectory}/.local/bin/monitor-brightness down all && ${config.home.homeDirectory}/.local/bin/monitor-brightness down all"
       ];
 
       # binds that repeat when held
@@ -323,11 +414,6 @@
 
       # windowrule
       windowrule = [
-        "float,imv"
-        "float,mpv"
-        "tile,Aseprite"
-        "pin,rofi"
-        "idleinhibit focus,mpv"
         "float,title:^(Transmission)$"
         "float,title:^(Volume Control)$"
         "float,title:^(Firefox — Sharing Indicator)$"
@@ -337,107 +423,150 @@
       ];
 
       # windowrulev2
-      windowrulev2 = [
-        # Firefox/Zen Picture-in-Picture rules
-        "float, title:^(Picture-in-Picture)$"
-        "size 480 270, title:^(Picture-in-Picture)$" # 16:9 aspect ratio at reasonable size
-        "move 68% 70%, title:^(Picture-in-Picture)$" # Position farther from right edge (68% instead of 75%)
-        "opacity 1.0 override 1.0 override, title:^(Picture-in-Picture)$"
-        "noborder, title:^(Picture-in-Picture)$"
-        "rounding 6, title:^(Picture-in-Picture)$"
-        "keepaspectratio, title:^(Picture-in-Picture)$"
-        "minsize 320 180, title:^(Picture-in-Picture)$" # Minimum size (16:9)
-        "maxsize 960 540, title:^(Picture-in-Picture)$" # Maximum size (16:9)
+      windowrulev2 = let
+        # Base window rules that apply to all systems
+        baseWindowRules = [
+          # Basic application rules
+          # "float, class:^(imv)$"  #Floating image viewer
+          # "float, class:^(mpv)$"  # Floating media player
+          "tile, class:^(Aseprite)$"
+          "pin, class:^(rofi)$"
+          "idleinhibit focus, class:^(mpv)$"
 
-        # More generic PiP rules (for other applications)
-        "float, title:.*Picture.?in.?Picture.*"
-        "size 480 270, title:.*Picture.?in.?Picture.*"
-        "move 68% 70%, title:.*Picture.?in.?Picture.*" # Adjusted position
+          # Top and bottom margin for floating file manager launched by browser etc..
+          # "float, center, size 90% 90%, margins 0 0 40 10, class:^(nautilus)$"
 
-        # More rules for Firefox specifically
-        "float, class:^(firefox)$, title:^(Picture-in-Picture)$"
-        "size 480 270, class:^(firefox)$, title:^(Picture-in-Picture)$"
-        "move 68% 70%, class:^(firefox)$, title:^(Picture-in-Picture)$" # Adjusted position
+          # Firefox/Zen Picture-in-Picture rules
+          "float, title:^(Picture-in-Picture)$"
+          "size 480 270, title:^(Picture-in-Picture)$" # 16:9 aspect ratio at reasonable size
+          "move 68% 70%, title:^(Picture-in-Picture)$" # Position farther from right edge (68% instead of 75%)
+          "opacity 1.0 override 1.0 override, title:^(Picture-in-Picture)$"
+          "noborder, title:^(Picture-in-Picture)$"
+          "rounding 6, title:^(Picture-in-Picture)$"
+          "keepaspectratio, title:^(Picture-in-Picture)$"
+          "minsize 320 180, title:^(Picture-in-Picture)$" # Minimum size (16:9)
+          "maxsize 960 540, title:^(Picture-in-Picture)$" # Maximum size (16:9)
 
-        # More specific rules for Zen browser if needed
-        "float, class:^(zen)$, title:^(Picture-in-Picture)$"
-        "size 480 270, class:^(zen)$, title:^(Picture-in-Picture)$"
-        "move 68% 70%, class:^(zen)$, title:^(Picture-in-Picture)$" # Adjusted position
+          # More generic PiP rules (for other applications)
+          "float, title:.*Picture.?in.?Picture.*"
+          "size 480 270, title:.*Picture.?in.?Picture.*"
+          "move 68% 70%, title:.*Picture.?in.?Picture.*" # Adjusted position
 
-        # Add these rules to your configuration
-        # "unset, pin, title:^(Picture-in-Picture)$"
+          # More rules for Firefox specifically
+          "float, class:^(firefox)$, title:^(Picture-in-Picture)$"
+          "size 480 270, class:^(firefox)$, title:^(Picture-in-Picture)$"
+          "move 68% 70%, class:^(firefox)$, title:^(Picture-in-Picture)$" # Adjusted position
 
-        "pin, title:^(Picture-in-Picture)$"
-        # "forceinput, title:^(Picture-in-Picture)$"
+          # More specific rules for Zen browser if needed
+          "float, class:^(zen)$, title:^(Picture-in-Picture)$"
+          "size 480 270, class:^(zen)$, title:^(Picture-in-Picture)$"
+          "move 68% 70%, class:^(zen)$, title:^(Picture-in-Picture)$" # Adjusted position
 
-        # Opacity for specific windows
-        "opacity 1.0 override 1.0 override, title:^(.*imv.*)$"
-        "opacity 1.0 override 1.0 override, title:^(.*mpv.*)$"
-        "opacity 1.0 override 1.0 override, class:(zen)"
-        "workspace 1, class:^(zen)$"
+          # Add these rules to your configuration
+          # "unset, pin, title:^(Picture-in-Picture)$"
 
-        # Idle inhibit
-        "idleinhibit focus, class:^(mpv)$"
-        "idleinhibit fullscreen, class:^(firefox)$"
-        "idleinhibit focus, class:^(firefox)$"
-        "idleinhibit fullscreen, class:^(zen)$"
-        "idleinhibit focus, class:^(zen)$"
+          "pin, title:^(Picture-in-Picture)$"
+          # "forceinput, title:^(Picture-in-Picture)$"
 
-        "float,class:^(org.gnome.Calculator)$"
-        "float,class:^(org.gnome.FileRoller)$"
-        "float,class:^(pavucontrol)$"
-        "float,class:^(SoundWireServer)$"
-        "float,class:^(.sameboy-wrapped)$"
-        "float,class:^(file_progress)$"
-        "float,class:^(confirm)$"
-        "float,class:^(dialog)$"
-        "float,class:^(download)$"
-        "float,class:^(notification)$"
-        "float,class:^(error)$"
-        "float,class:^(confirmreset)$"
-        "float,title:^(Open File)$"
-        "float,title:^(File Upload)$"
-        "float,title:^(branchdialog)$"
-        "float,title:^(Confirm to replace files)$"
-        "float,title:^(File Operation Progress)$"
+          # Opacity for specific windows
+          "opacity 1.0 override 1.0 override, title:^(.*imv.*)$"
+          "opacity 1.0 override 1.0 override, title:^(.*mpv.*)$"
+          "opacity 1.0 override 1.0 override, class:(zen)"
+          "workspace 1, class:^(zen)$"
 
-        "opacity 0.0 override,class:^(xwaylandvideobridge)$"
-        "noanim,class:^(xwaylandvideobridge)$"
-        "noinitialfocus,class:^(xwaylandvideobridge)$"
-        "maxsize 1 1,class:^(xwaylandvideobridge)$"
-        "noblur,class:^(xwaylandvideobridge)$"
+          # Idle inhibit
+          "idleinhibit focus, class:^(mpv)$"
+          "idleinhibit fullscreen, class:^(firefox)$"
+          "idleinhibit focus, class:^(firefox)$"
+          "idleinhibit fullscreen, class:^(zen)$"
+          "idleinhibit focus, class:^(zen)$"
 
-        # No gaps when only
-        "bordersize 0, floating:0, onworkspace:w[t1]"
-        "rounding 0, floating:0, onworkspace:w[t1]"
-        "bordersize 0, floating:0, onworkspace:w[tg1]"
-        "rounding 0, floating:0, onworkspace:w[tg1]"
-        "bordersize 0, floating:0, onworkspace:f[1]"
-        "rounding 0, floating:0, onworkspace:f[1]"
+          "float,class:^(org.gnome.Calculator)$"
+          "float,class:^(org.gnome.FileRoller)$"
+          "float,class:^(pavucontrol)$"
+          "float,class:^(SoundWireServer)$"
+          "float,class:^(.sameboy-wrapped)$"
+          "float,class:^(file_progress)$"
+          "float,class:^(confirm)$"
+          "float,class:^(dialog)$"
+          "float,class:^(download)$"
+          "float,class:^(notification)$"
+          "float,class:^(error)$"
+          "float,class:^(confirmreset)$"
+          "float,title:^(Open File)$"
+          "float,title:^(File Upload)$"
+          "float,title:^(branchdialog)$"
+          "float,title:^(Confirm to replace files)$"
+          "float,title:^(File Operation Progress)$"
 
-        # "maxsize 1111 700, floating: 1"
-        # "center, floating: 1"
+          "opacity 0.0 override,class:^(xwaylandvideobridge)$"
+          "noanim,class:^(xwaylandvideobridge)$"
+          "noinitialfocus,class:^(xwaylandvideobridge)$"
+          "maxsize 1 1,class:^(xwaylandvideobridge)$"
+          "noblur,class:^(xwaylandvideobridge)$"
 
-        # Remove context menu transparency in chromium based apps
-        "opaque,class:^()$,title:^()$"
-        "noshadow,class:^()$,title:^()$"
-        "noblur,class:^()$,title:^()$"
+          # No gaps when only
+          "bordersize 0, floating:0, onworkspace:w[t1]"
+          "rounding 0, floating:0, onworkspace:w[t1]"
+          "bordersize 0, floating:0, onworkspace:w[tg1]"
+          "rounding 0, floating:0, onworkspace:w[tg1]"
+          "bordersize 0, floating:0, onworkspace:f[1]"
+          "rounding 0, floating:0, onworkspace:f[1]"
 
-        # Basic Kitty styling that applies always
-        "rounding 10, class:^(kitty)$" # Rounded corners for all Kitty windows
-      ];
+          # "maxsize 1111 700, floating: 1"
+          # "center, floating: 1"
+
+          # Remove context menu transparency in chromium based apps
+          "opaque,class:^()$,title:^()$"
+          "noshadow,class:^()$,title:^()$"
+          "noblur,class:^()$,title:^()$"
+
+          # Basic Kitty styling that applies always
+          "rounding 10, class:^(kitty)$" # Rounded corners for all Kitty windows
+        ];
+      in baseWindowRules ++ currentConfig.extraWindowRules;
 
       # No gaps when only
-      workspace = [
-        "w[t1], gapsout:0, gapsin:0"
-        "w[tg1], gapsout:0, gapsin:0"
-        "f[1], gapsout:0, gapsin:0"
-      ];
+      workspace = let
+        # Base workspace rules that apply to all systems
+        baseWorkspaceRules = [
+          "w[t1], gapsout:0, gapsin:0"
+          "w[tg1], gapsout:0, gapsin:0"
+          "f[1], gapsout:0, gapsin:0"
+        ];
+        # System-specific workspace rules
+        systemWorkspaceRules = currentConfig.workspaceRules or [ ];
+      in baseWorkspaceRules ++ systemWorkspaceRules;
     };
 
-    extraConfig =
-      "\n \n  # Clear any previous monitor settings and set defaults\n  monitor=,preferred,auto,1\n  \n  # Define specific monitor configurations\n  # Laptop built-in display\n  monitor=eDP-1,2560x1600@90,0x0,1.6\n  \n  # Samsung Odyssey (DP-9) - Center screen with native resolution\n  monitor=DP-9,2560x1440@144,0x0,1\n  \n  # ASUS monitor (DP-8) - Position in portrait to the left of Samsung\n  monitor=DP-8,1920x1080@144,-1080x240,1,transform,1\n  \n  # Better startup sequence to ensure monitors turn on\n  exec-once = sleep 1 && hyprctl dispatch dpms on\n  \n    # Suspend and resume fix\n    exec-once = ${pkgs.bash}/bin/bash -c 'echo 'systemctl --user restart hyprpaper.service hyprpanel.service' > /tmp/hypr-resume-fix && systemd-inhibit --what=handle-lid-switch sleep infinity'\n\n      xwayland {\n        force_zero_scaling = true\n      }\n\n      env = QT_QPA_PLATFORM,wayland\n      env = SDL_VIDEODRIVER,wayland\n      env = CLUTTER_BACKEND,wayland\n      env = XDG_SESSION_TYPE,wayland\n      env = WLR_RENDERER,vulkan\n      env = MOZ_ENABLE_WAYLAND,1\n      env = WLR_NO_HARDWARE_CURSORS,0\n      env = XCURSOR_SIZE,24\n \n      # # env = __GLX_VENDOR_LIBRARY_NAME,nvidia\n      # # env = GBM_BACKEND,nvidia-drm\n      # env = __GL_GSYNC_ALLOWED,0\n      # env = __GL_VRR_ALLOWED,0\n      # # env = LIBVA_DRIVER_NAME,nvidia\n      # env = NVD_BACKEND,direct\n      #\n\n      source = ~/.config/hypr/colorscheme.conf\n    ";
+    extraConfig = ''
+      # System-specific monitor configuration
+      ${currentConfig.monitors}
 
+
+
+      xwayland {
+        force_zero_scaling = true;
+      }
+
+      env = QT_QPA_PLATFORM,wayland
+      env = SDL_VIDEODRIVER,wayland
+      env = CLUTTER_BACKEND,wayland
+      env = XDG_SESSION_TYPE,wayland
+      env = MOZ_ENABLE_WAYLAND,1
+      env = WLR_NO_HARDWARE_CURSORS,1
+      env = XCURSOR_SIZE,24
+
+      # Uncomment these for NVIDIA-specific configurations
+      # env = __GLX_VENDOR_LIBRARY_NAME,nvidia
+      # env = GBM_BACKEND,nvidia-drm
+      # env = __GL_GSYNC_ALLOWED,0
+      # env = __GL_VRR_ALLOWED,0
+      # env = LIBVA_DRIVER_NAME,nvidia
+      # env = NVD_BACKEND,direct
+
+      # source = ~/.config/hypr/colorscheme.conf
+    '';
   };
 
   # Create the scripts directory and add it to PATH
@@ -445,89 +574,6 @@
 
   # Ensure the .local/bin directory exists
   home.file.".local/bin/.keep".text = "";
-
-  home.file.".local/bin/toggle-laptop-display" = {
-    executable = true;
-    text = ''
-      #!/bin/sh
-      if hyprctl monitors | grep -A 20 "Monitor eDP-1" | grep -q "disabled: false"; then
-        hyprctl keyword monitor "eDP-1,disable"
-        hyprctl notify 1 5000 0 "Laptop display disabled"
-      else
-        hyprctl keyword monitor "eDP-1,2560x1600@90,0x0,1.6"
-        hyprctl notify 1 5000 0 "Laptop display enabled"
-      fi
-    '';
-  };
-
-  home.file.".local/bin/monitor-brightness" = {
-    executable = true;
-    text = ''
-      #!/bin/sh
-      # Usage: monitor-brightness up|down [monitor]
-      # monitor can be: samsung, asus, or all (default)
-
-      SAMSUNG_BUS=4
-      ASUS_BUS=5
-      STEP=30
-      MAX_BRIGHTNESS=255  # Maximum possible DDC/CI brightness value
-
-      adjust_brightness() {
-        local bus=$1
-        local direction=$2
-        
-        # Get the full output from ddcutil for debugging
-        ddcutil_output=$(ddcutil --bus=$bus getvcp 10)
-        echo "Raw ddcutil output for bus $bus:"
-        echo "$ddcutil_output"
-        
-        # Extract just the current value number, handling different output formats
-        current=$(echo "$ddcutil_output" | grep -o 'current value =.*' | cut -d= -f2 | cut -d, -f1 | tr -d ' ')
-        
-        # If we couldn't get a valid number, start from 0
-        if ! [ "$current" -eq "$current" ] 2>/dev/null; then
-          echo "Could not parse current value, starting from 0"
-          current=0
-        fi
-        
-        # Calculate new brightness
-        if [ "$direction" = "up" ]; then
-          new_value=$((current + STEP))
-          if [ $new_value -gt $MAX_BRIGHTNESS ]; then
-            new_value=$MAX_BRIGHTNESS
-          fi
-        else
-          new_value=$((current - STEP))
-          if [ $new_value -lt 0 ]; then
-            new_value=0
-          fi
-        fi
-        
-        echo "Adjusting monitor on bus $bus: Current=$current New=$new_value"
-        ddcutil --bus=$bus setvcp 10 $new_value
-      }
-
-      direction=$1
-      monitor=''${2:-all}
-
-      case "$monitor" in
-        "samsung")
-          adjust_brightness $SAMSUNG_BUS "$direction"
-          ;;
-        "asus")
-          adjust_brightness $ASUS_BUS "$direction"
-          ;;
-        "all")
-          adjust_brightness $SAMSUNG_BUS "$direction"
-          adjust_brightness $ASUS_BUS "$direction"
-          ;;
-        *)
-          echo "Usage: monitor-brightness up|down [samsung|asus|all]"
-          exit 1
-          ;;
-      esac
-    '';
-  };
 
 }
 
