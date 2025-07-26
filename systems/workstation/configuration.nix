@@ -34,4 +34,16 @@
   hardware.logitech.wireless.enable = true;
   hardware.logitech.wireless.enableGraphical = true;
 
+  # Keep the s2idle setting
+  boot.kernelParams = [ "mem_sleep_default=s2idle" ]; # default is "deep" sleep this sets to lighter sleep "s2idle"
+
+  # Add the missing power management
+  powerManagement.enable = true;
+
+  # Fix USB wake-up
+  services.udev.extraRules = ''
+    ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="1532", ATTR{idProduct}=="0040", ATTR{power/wakeup}="enabled"
+    ACTION=="add", SUBSYSTEM=="usb", ATTRS{bInterfaceClass}=="03", ATTR{power/wakeup}="enabled"
+  '';
+
 }
