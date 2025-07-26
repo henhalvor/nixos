@@ -17,7 +17,7 @@
       ./hardware-configuration.nix
       ../../nixos/default.nix
       # ../../nixos/modules/battery.nix
-      # ../../nixos/modules/amd-graphics.nix
+      ./amd-graphics.nix
       ../../nixos/modules/pipewire.nix
       ../../nixos/modules/bluetooth.nix
       ../../nixos/modules/networking.nix
