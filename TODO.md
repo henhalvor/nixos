@@ -5,9 +5,9 @@
 ### Need to add:
 
 - [x] Add a File explorer (ranger or yazi)
-- [ ] Add docker
-- [ ] Add tmux for persistent sessions
-- [ ] React native environment (node, yarn, adb, gradle, java, emulator???)
+- [x] Add docker
+- [x] Add tmux for persistent sessions
+- [x] React native environment (node, yarn, adb, gradle, java, emulator???)
 - [x] Add aider
 - [x] Add supermaven
 - [x] Micorsoft Edge
@@ -23,11 +23,10 @@
 - [x] Shell alias (v - nvim)
 - [x] Screen brightness control
 - [ ] Monitor management
-- [ ] Change aider to default to claude and use api key
 
 ## Other
 
-- [ ] Fix secrets loading
+- [x] Fix secrets loading
 - [ ] Dev environments
 
 <!---->
