@@ -108,17 +108,31 @@
       };
 
       # --- Output Configuration ---
+      # output = {
+      #   "eDP-1" = {
+      #     scale = "1.6";
+      #     mode = "2560x1600@90Hz";
+      #   };
+      #   "DP-9" = {
+      #     scale = "1";
+      #     mode = "2560x1440@144Hz";
+      #     position = "1080,0";
+      #   };
+      #   "DP-8" = {
+      #     scale = "1";
+      #     mode = "1920x1080";
+      #     transform = "270";
+      #     position = "0,-180";
+      #   };
+      # };
+# --- Output Configuration ---
       output = {
-        "eDP-1" = {
-          scale = "1.6";
-          mode = "2560x1600@90Hz";
-        };
-        "DP-9" = {
+        "HDMI-A-1" = {
           scale = "1";
           mode = "2560x1440@144Hz";
           position = "1080,0";
         };
-        "DP-8" = {
+        "DP-1" = {
           scale = "1";
           mode = "1920x1080";
           transform = "270";
