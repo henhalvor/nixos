@@ -70,14 +70,14 @@
 
   # Optional: For better performance with AMDGPU
   boot.kernelParams = [
-    "amdgpu.ppfeaturemask=0xffffffff" # Enables all power management features
+    # "amdgpu.ppfeaturemask=0xffffffff" # Enables all power management features
     "radeon.si_support=0" # Disable Southern Islands support
     "radeon.cik_support=0" # Disable Sea Islands support
     "amdgpu.si_support=1" # Enable Southern Islands support in amdgpu
     "amdgpu.cik_support=1" # Enable Sea Islands support in amdgpu
     "module_blacklist=nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm" # Blacklist NVIDIA modules
-    # ADD THIS LINE:
     "amdgpu.dpm=0" # Disables dynamic power management, (fixes amd-gpu crashing / freeze issues)
+    "amdgpu.runpm=0"
   ];
 
   # XDG Desktop Portal for proper application integrations
