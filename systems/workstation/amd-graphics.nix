@@ -68,7 +68,6 @@
     firmware = [ pkgs.linux-firmware ];
   };
 
-  # Optional: For better performance with AMDGPU
   boot.kernelParams = [
     # "amdgpu.ppfeaturemask=0xffffffff" # Enables all power management features
     "radeon.si_support=0" # Disable Southern Islands support
@@ -77,7 +76,11 @@
     "amdgpu.cik_support=1" # Enable Sea Islands support in amdgpu
     "module_blacklist=nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm" # Blacklist NVIDIA modules
     "amdgpu.dpm=0" # Disables dynamic power management, (fixes amd-gpu crashing / freeze issues)
-    "amdgpu.runpm=0"
+    "amdgpu.runpm=0" # Disable runtime power management
+    "amdgpu.bapm=0" # Disable bidirectional application power management
+    "amdgpu.ppfeaturemask=0x0" # Disable ALL power features completely
+    "amdgpu.noretry=1" # Don't retry failed operations
+    "amdgpu.lockup_timeout=0" # Disable lockup detection
   ];
 
   # XDG Desktop Portal for proper application integrations
