@@ -50,6 +50,12 @@
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDjlpTB8/FqToM9BkFuhL7w627YGto8ZYwAdXVR5AT+T henhal@henhal-Yoga-Pro-7-14APH8-Ubuntu"
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAyX9JZNVAi8TchOBM/bsbYHk6b4adcvqPS+yhCo0r/X henhalvor@gmail.com"
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIN05rLpXKWvbcdus29yl6d1uC18LKPqe9HLpiXUB9mxp henhalvor@gmail.com"
+
+      # Workstation_id pub key
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMnrs5Nx5elMxWtvQ0IvdJNloouLb2K68cx/ID/lv8Jc henhal@workstation"
+
+      # Lenovo Yoga Pro 7 laptop_id pub key
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICbU4sdXQwBdx/k/usv9DO6WByxwu6zYodYGfsGrHpbX henhal@yoga-pro-7"
     ];
   };
 
