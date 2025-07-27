@@ -16,6 +16,7 @@
     ]) ++ [
       ./hardware-configuration.nix
       ../../nixos/default.nix
+      ../../nixos/modules/external-io.nix
       # ../../nixos/modules/battery.nix
       ./amd-graphics.nix
       ../../nixos/modules/pipewire.nix
@@ -35,7 +36,9 @@
   hardware.logitech.wireless.enableGraphical = true;
 
   # Keep the s2idle setting
-  boot.kernelParams = [ "mem_sleep_default=s2idle" ]; # default is "deep" sleep this sets to lighter sleep "s2idle"
+  boot.kernelParams = [
+    "mem_sleep_default=s2idle"
+  ]; # default is "deep" sleep this sets to lighter sleep "s2idle"
 
   # Add the missing power management
   powerManagement.enable = true;
