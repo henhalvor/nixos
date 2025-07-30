@@ -37,6 +37,9 @@
   hardware.logitech.wireless.enable = true;
   hardware.logitech.wireless.enableGraphical = true;
 
+  # Fixes battery percentage in hyprpanel
+  services.upower.enable = true;
+
   # Drivers for usb-c to ethernet adapter
   boot.kernelModules = [ "ax88179_178a" ];
 }

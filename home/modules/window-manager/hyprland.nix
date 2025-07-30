@@ -3,6 +3,7 @@
 {
 
   imports = [
+    # ./swaync
     ./hyprpanel
     ./rofi
     ./hyprpaper

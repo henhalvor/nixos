@@ -1,3 +1,4 @@
+# DEPRECATED: using dedicated themes/ folder now
 { config, pkgs, lib, ... }:
 
 {
@@ -26,8 +27,9 @@
       name = "Papirus-Dark";
       # This is the proper way to get Papirus with Catppuccin folders
       package = pkgs.catppuccin-papirus-folders.override {
-        flavor = "macchiato"; # You can change to any flavor: latte, frappe, macchiato, mocha
-        accent = "blue";      # You can change to any accent color
+        flavor =
+          "macchiato"; # You can change to any flavor: latte, frappe, macchiato, mocha
+        accent = "blue"; # You can change to any accent color
       };
     };
     cursorTheme = {
@@ -85,7 +87,7 @@
     $mantle    = 0xff1e2030
     $crust     = 0xff181926
   '';
-  
+
   # Add to hyprland config (you'll need to source this file in your main hyprland conf)
   home.file.".config/hypr/hyprland-colors.conf".text = ''
     source = ~/.config/hypr/colorscheme.conf
