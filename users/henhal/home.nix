@@ -44,6 +44,8 @@
       ../../home/modules/applications/gimp.nix
       ../../home/modules/applications/microsoft-edge.nix
       ../../home/modules/applications/nvim.nix
+      ../../home/modules/applications/nautilus.nix
+      ../../home/modules/applications/spotify.nix
       # ../../home/modules/applications/nvf.nix
 
       # Environment

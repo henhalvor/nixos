@@ -1,57 +1,18 @@
-# STEP 1: Add basic layout changes
-{ inputs, ... }: {
-  programs.hyprpanel = {
-    enable = true;
-    settings = {
-      # Change layout to match your original
+{ pkgs, lib, config, ... }: {
+  programs.hyprpanel.enable = true;
 
-      bar.layouts = {
-        "*" = {
-          left = [ "workspaces" ];
-          middle = [ "clock" ];
-          right = [
-            "volume"
-            "media"
-            "bluetooth"
-            "network"
-            "systray"
-            "notifications"
-            "battery"
-            "dashboard"
-          ];
-        };
-      };
+  # Copy actual config.json into the correct location (not symlinked)
+  home.activation.copyHyprpanelConfig =
+    lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      config_source="${config.home.homeDirectory}/.dotfiles/home/modules/window-manager/hyprpanel/config.json"
+      config_target="${config.home.homeDirectory}/.config/hyprpanel/config.json"
 
-      bar.launcher.autoDetectIcon = true;
-      bar.workspaces.show_icons = true;
+      mkdir -p "$(dirname "$config_target")"
+      cp -f "$config_source" "$config_target"
+    '';
+}
 
-      # Add clock format
-      bar.clock.format = "%b %d  %H:%M";
-
-      menus.clock = {
-        time = {
-          military = true;
-          hideSeconds = true;
-        };
-        weather.unit = "metric";
-      };
-
-      menus.dashboard.directories.enabled = false;
-      menus.dashboard.stats.enable_gpu = false; # Keep as false for now
-
-      theme.bar.transparent = true;
-
-      # Change font back to your original
-      theme.font = {
-        name = "Hack Nerd Font"; # Changed from "JetBrains Mono"
-        size = "12px"; # Changed from "16px"
-      };
-
-      # Add scaling
-      scalingPriority = "hyprland";
-    };
-  };
-} # { inputs, ... }: {
+# { inputs, ... }: {
 #
 #   programs.hyprpanel = {
 #

@@ -5,6 +5,7 @@
   imports = [
     # ./swaync
     ./hyprpanel
+    ./hyprsunset
     ./rofi
     ./hyprpaper
     ./hypridle
@@ -339,6 +340,10 @@
 
       # windowrulev2
       windowrulev2 = [
+
+        # Top and bottom margin for floating file manager launched by browser etc..
+        # "float, center, size 90% 90%, margins 0 0 40 10, class:^(nautilus)$"
+
         # Firefox/Zen Picture-in-Picture rules
         "float, title:^(Picture-in-Picture)$"
         "size 480 270, title:^(Picture-in-Picture)$" # 16:9 aspect ratio at reasonable size
