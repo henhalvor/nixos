@@ -51,4 +51,18 @@
     ACTION=="add", SUBSYSTEM=="usb", ATTRS{bInterfaceClass}=="03", ATTR{power/wakeup}="enabled"
   '';
 
+  # # Configure monitor layout for GDM (X11)
+  # services.xserver.displayManager.setupCommands = ''
+  #   # Workstation monitor setup for GDM
+  #   ${pkgs.xorg.xrandr}/bin/xrandr --output HDMI-A-1 --mode 2560x1440 --rate 144 --pos 1080x0 --primary
+  #   ${pkgs.xorg.xrandr}/bin/xrandr --output DP-1 --mode 1920x1080 --rate 144 --pos 0x-180 --rotate left
+  # '';
+
+  # Configure monitor layout for SDDM
+  # services.displayManager.setupCommands = ''
+  #   # Workstation monitor setup for SDDM
+  #   ${pkgs.xorg.xrandr}/bin/xrandr --output HDMI-A-1 --mode 2560x1440 --rate 144 --pos 1080x0 --primary
+  #   ${pkgs.xorg.xrandr}/bin/xrandr --output DP-1 --mode 1920x1080 --rate 144 --pos 0x-180 --rotate left
+  # '';
+  #
 }

@@ -3,7 +3,13 @@
   services.xserver.enable = true;
 
   # Enable display manager
-  services.xserver.displayManager.gdm.enable = true;
+  # services.xserver.displayManager.gdm.enable = true;
+
+  # Add SDDM
+  services.displayManager.sddm = {
+    enable = true;
+    wayland.enable = true; # Native Wayland support
+  };
 
   # XDG portal
   xdg.portal = {
