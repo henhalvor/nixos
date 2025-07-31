@@ -22,7 +22,7 @@
       ../../nixos/modules/pipewire.nix
       ../../nixos/modules/bluetooth.nix
       ../../nixos/modules/networking.nix
-      ../../nixos/modules/systemd-loginhd.nix
+      # ../../nixos/modules/systemd-loginhd.nix
       ./bootloader.nix
       # window-manager
       ../../nixos/modules/window-manager/default.nix
@@ -37,26 +37,7 @@
   hardware.logitech.wireless.enable = true;
   hardware.logitech.wireless.enableGraphical = true;
 
-  # Keep the s2idle setting
-  boot.kernelParams = [
-    "mem_sleep_default=s2idle" # default is "deep" sleep this sets to lighter sleep "s2idle"
-  ];
-
   # Add the missing power management
-  powerManagement.enable = true;
-
-  # Configure monitor layout for GDM (X11)
-  services.xserver.displayManager.setupCommands = ''
-    # Workstation monitor setup for GDM
-    ${pkgs.xorg.xrandr}/bin/xrandr --output HDMI-A-1 --mode 2560x1440 --rate 144 --pos 1080x0 --primary
-    ${pkgs.xorg.xrandr}/bin/xrandr --output DP-1 --mode 1920x1080 --rate 144 --pos 0x-180 --rotate left
-  '';
-
-  # Safer approach - disable power profile switching at the software level
-  services.udev.extraRules = ''
-    # Your existing USB rules (keep these)
-    ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="1532", ATTR{idProduct}=="0040", ATTR{power/wakeup}="enabled"
-    ACTION=="add", SUBSYSTEM=="usb", ATTRS{bInterfaceClass}=="03", ATTR{power/wakeup}="enabled"
-  '';
+  # powerManagement.enable = true;
 
 }
