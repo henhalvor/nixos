@@ -44,7 +44,7 @@ let
 
       extraExecOnce = [
         # Better startup sequence to ensure monitors turn on
-        "sleep 1 && hyprctl dispatch dpms on"
+        # "sleep 1 && hyprctl dispatch dpms on"
       ];
 
       workspaceRules = [
@@ -312,7 +312,7 @@ in {
           # Lock screen
           "$mainMod SHIFT, L, exec, hyprlock"
 
-          "$mainMod SHIFT, M, exec, hyprctl dispatch dpms on && notify-send 'All displays forced on'"
+          # "$mainMod SHIFT, M, exec, hyprctl dispatch dpms on && notify-send 'All displays forced on'"
 
           # screenshot
           ",Print, exec, screenshot --copy"
@@ -560,9 +560,9 @@ in {
       env = SDL_VIDEODRIVER,wayland
       env = CLUTTER_BACKEND,wayland
       env = XDG_SESSION_TYPE,wayland
-      env = WLR_RENDERER,vulkan
+      env = WLR_RENDERER,gles2
       env = MOZ_ENABLE_WAYLAND,1
-      env = WLR_NO_HARDWARE_CURSORS,0
+      env = WLR_NO_HARDWARE_CURSORS,1
       env = XCURSOR_SIZE,24
 
       # Uncomment these for NVIDIA-specific configurations
