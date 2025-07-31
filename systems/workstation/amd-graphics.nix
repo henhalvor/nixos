@@ -90,6 +90,23 @@
     "amdgpu.aspm=0" # Disable ASPM for integrated GPU stability
   ];
 
+  #  # RECOMMENDED: Use kernel 6.6 LTS (stable before the DCN 3.1 regression)
+  #  boot.kernelPackages = pkgs.linuxPackages_6_6;
+  #
+  #  # Keep minimal but effective parameters for integrated graphics
+  #  boot.kernelParams = [
+  #    # Basic AMD integrated graphics setup
+  #    "radeon.si_support=0"
+  #    "radeon.cik_support=0"
+  #    "amdgpu.si_support=1"
+  #    "amdgpu.cik_support=1"
+  #
+  #    # Essential integrated GPU stability fixes
+  #    "amdgpu.dcfeaturemask=0x0" # Disable DCN 3.1 features
+  #    "amdgpu.dpm=0" # Disable dynamic power management
+  #    "amdgpu.runpm=0" # Disable runtime power management
+  # ];
+
   # XDG Desktop Portal for proper application integrations
   xdg.portal = {
     enable = true;
