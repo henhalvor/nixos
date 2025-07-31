@@ -125,7 +125,7 @@
           systemName = "workstation";
           hostname = "workstation";
           userSettings = userHenhal;
-          windowManager = "sway";
+          windowManager = "hyprland";
         };
 
         # Should be deleted
@@ -164,6 +164,7 @@
             inherit zen-browser;
             inputs = { inherit zen-browser nvf nvim-nix; };
             windowManager = "hyprland";
+            systemName = "workstation";
           };
         };
 
