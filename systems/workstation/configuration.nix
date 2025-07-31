@@ -33,6 +33,8 @@
 
     ];
 
+  boot.kernelPackages = pkgs.linuxPackages_latest;
+
   # logitect wireless dongle
   hardware.logitech.wireless.enable = true;
   hardware.logitech.wireless.enableGraphical = true;

@@ -92,7 +92,7 @@
 
   #  # RECOMMENDED: Use kernel 6.6 LTS (stable before the DCN 3.1 regression)
   #  boot.kernelPackages = pkgs.linuxPackages_6_6;
-  #
+  # #
   #  # Keep minimal but effective parameters for integrated graphics
   #  boot.kernelParams = [
   #    # Basic AMD integrated graphics setup
