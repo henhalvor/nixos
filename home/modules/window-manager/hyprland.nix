@@ -34,14 +34,7 @@ let
         "$mainMod ALT, F, exec, hyprctl keyword monitor 'eDP-1, disable'"
       ];
 
-      extraInput = {
-        touchpad = {
-          natural_scroll = true;
-          tap = "enabled";
-          dwt = "enabled";
-          middle_emulation = "enabled";
-        };
-      };
+      extraInput = { touchpad = { natural_scroll = true; }; };
 
       extraPackages = [ ];
 
@@ -200,7 +193,6 @@ in {
         border_size = 2;
         "col.active_border" = "rgb(98971A) rgb(CC241D) 45deg";
         "col.inactive_border" = "0x00000000";
-        border_part_of_window = false;
         no_border_on_floating = false;
         # Allow dragging with left mouse button
         resize_on_border = true;
@@ -425,11 +417,6 @@ in {
 
       # windowrule
       windowrule = [
-        "float,imv"
-        "float,mpv"
-        "tile,Aseprite"
-        "pin,rofi"
-        "idleinhibit focus,mpv"
         "float,title:^(Transmission)$"
         "float,title:^(Volume Control)$"
         "float,title:^(Firefox — Sharing Indicator)$"
@@ -442,6 +429,12 @@ in {
       windowrulev2 = let
         # Base window rules that apply to all systems
         baseWindowRules = [
+          # Basic application rules
+          "float, class:^(imv)$"
+          "float, class:^(mpv)$"
+          "tile, class:^(Aseprite)$"
+          "pin, class:^(rofi)$"
+          "idleinhibit focus, class:^(mpv)$"
 
           # Top and bottom margin for floating file manager launched by browser etc..
           # "float, center, size 90% 90%, margins 0 0 40 10, class:^(nautilus)$"
@@ -580,7 +573,7 @@ in {
       # env = LIBVA_DRIVER_NAME,nvidia
       # env = NVD_BACKEND,direct
 
-      source = ~/.config/hypr/colorscheme.conf
+      # source = ~/.config/hypr/colorscheme.conf
     '';
   };
 
