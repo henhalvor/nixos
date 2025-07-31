@@ -200,19 +200,6 @@
         "$mainMod, Print, exec, screenshot --save"
         "$mainMod SHIFT, Print, exec, screenshot --swappy"
 
-        # External monitor brightness
-        # Both monitors
-        # "$mainMod, N, exec, ${config.home.homeDirectory}/.local/bin/monitor-brightness up all"
-        # "$mainMod, M, exec, ${config.home.homeDirectory}/.local/bin/monitor-brightness down all"
-        #
-        # # Samsung monitor only (HDMI)
-        # "$mainMod SHIFT, N, exec, ${config.home.homeDirectory}/.local/bin/monitor-brightness up samsung"
-        # "$mainMod SHIFT, M, exec, ${config.home.homeDirectory}/.local/bin/monitor-brightness down samsung"
-        #
-        # # ASUS monitor only (DP)
-        # "$mainMod ALT, N, exec, ${config.home.homeDirectory}/.local/bin/monitor-brightness up asus"
-        # "$mainMod ALT, M, exec, ${config.home.homeDirectory}/.local/bin/monitor-brightness down asus"
-        #
         # Laptop display
         # Enable built-in display
         # "$mainMod SHIFT, F, exec, hyprctl keyword monitor 'eDP-1,  2560x1600@90, 0x0, 1.6'"
@@ -300,14 +287,7 @@
       # binds active in lockscreen
       bindl = [
         # Brightness
-        # Control all displays together
-        # Normal press: Small adjustments (5%)
-        ",XF86MonBrightnessUp, exec, brightnessctl set 5%+ && ${config.home.homeDirectory}/.local/bin/monitor-brightness up all"
-        ",XF86MonBrightnessDown, exec, brightnessctl set 5%- && ${config.home.homeDirectory}/.local/bin/monitor-brightness down all"
 
-        # With Super key: Large adjustments
-        "$mainMod, XF86MonBrightnessUp, exec, brightnessctl set 100%+ && ${config.home.homeDirectory}/.local/bin/monitor-brightness up all && ${config.home.homeDirectory}/.local/bin/monitor-brightness up all && ${config.home.homeDirectory}/.local/bin/monitor-brightness up all"
-        "$mainMod, XF86MonBrightnessDown, exec, brightnessctl set 100%- && ${config.home.homeDirectory}/.local/bin/monitor-brightness down all && ${config.home.homeDirectory}/.local/bin/monitor-brightness down all && ${config.home.homeDirectory}/.local/bin/monitor-brightness down all"
       ];
 
       # binds that repeat when held
@@ -440,9 +420,52 @@
       ];
     };
 
-    extraConfig =
-      "\n \n  # Clear any previous monitor settings and set defaults\n  monitor=,preferred,auto,1\n  \n  # Define specific monitor configurations\n  # Laptop built-in display\n  monitor=eDP-1,2560x1600@90,0x0,1.6\n  \n  # Samsung Odyssey (DP-9) - Center screen with native resolution\n  monitor=DP-9,2560x1440@144,0x0,1\n  \n  # ASUS monitor (DP-8) - Position in portrait to the left of Samsung\n  monitor=DP-8,1920x1080@144,-1080x240,1,transform,1\n  \n  # Better startup sequence to ensure monitors turn on\n  exec-once = sleep 1 && hyprctl dispatch dpms on\n  \n    # Suspend and resume fix\n    exec-once = ${pkgs.bash}/bin/bash -c 'echo 'systemctl --user restart hyprpaper.service hyprpanel.service' > /tmp/hypr-resume-fix && systemd-inhibit --what=handle-lid-switch sleep infinity'\n\n      xwayland {\n        force_zero_scaling = true\n      }\n\n      env = QT_QPA_PLATFORM,wayland\n      env = SDL_VIDEODRIVER,wayland\n      env = CLUTTER_BACKEND,wayland\n      env = XDG_SESSION_TYPE,wayland\n      env = WLR_RENDERER,vulkan\n      env = MOZ_ENABLE_WAYLAND,1\n      env = WLR_NO_HARDWARE_CURSORS,0\n      env = XCURSOR_SIZE,24\n \n      # # env = __GLX_VENDOR_LIBRARY_NAME,nvidia\n      # # env = GBM_BACKEND,nvidia-drm\n      # env = __GL_GSYNC_ALLOWED,0\n      # env = __GL_VRR_ALLOWED,0\n      # # env = LIBVA_DRIVER_NAME,nvidia\n      # env = NVD_BACKEND,direct\n      #\n\n      source = ~/.config/hypr/colorscheme.conf\n    ";
+    extraConfig = ''
+      # Clear any previous monitor settings and set defaults
+      monitor=,preferred,auto,1
 
+      # Define specific monitor configurations
+      # Laptop built-in display
+      monitor=eDP-1,2560x1600@90,0x0,1.6
+
+      # Samsung Odyssey (DP-9) - Center screen with native resolution
+      monitor=DP-9,2560x1440@144,0x0,1
+
+      # ASUS monitor (DP-8) - Position in portrait to the left of Samsung
+      monitor=DP-8,1920x1080@144,-1080x240,1,transform,1
+
+      # Better startup sequence to ensure monitors turn on
+      exec-once = sleep 1 && hyprctl dispatch dpms on
+
+      # # Suspend and resume fix
+      # exec-once = ${pkgs.bash}/bin/bash -c '
+      #   echo "systemctl --user restart hyprpaper.service hyprpanel.service" > /tmp/hypr-resume-fix &&
+      #   systemd-inhibit --what=handle-lid-switch sleep infinity
+      # '
+
+      xwayland {
+        force_zero_scaling = true;
+      }
+
+      env = QT_QPA_PLATFORM,wayland
+      env = SDL_VIDEODRIVER,wayland
+      env = CLUTTER_BACKEND,wayland
+      env = XDG_SESSION_TYPE,wayland
+      env = WLR_RENDERER,vulkan
+      env = MOZ_ENABLE_WAYLAND,1
+      env = WLR_NO_HARDWARE_CURSORS,0
+      env = XCURSOR_SIZE,24
+
+      # Uncomment these for NVIDIA-specific configurations
+      # env = __GLX_VENDOR_LIBRARY_NAME,nvidia
+      # env = GBM_BACKEND,nvidia-drm
+      # env = __GL_GSYNC_ALLOWED,0
+      # env = __GL_VRR_ALLOWED,0
+      # env = LIBVA_DRIVER_NAME,nvidia
+      # env = NVD_BACKEND,direct
+
+      source = ~/.config/hypr/colorscheme.conf
+    '';
   };
 
   # Create the scripts directory and add it to PATH
@@ -462,75 +485,6 @@
         hyprctl keyword monitor "eDP-1,2560x1600@90,0x0,1.6"
         hyprctl notify 1 5000 0 "Laptop display enabled"
       fi
-    '';
-  };
-
-  home.file.".local/bin/monitor-brightness" = {
-    executable = true;
-    text = ''
-      #!/bin/sh
-      # Usage: monitor-brightness up|down [monitor]
-      # monitor can be: samsung, asus, or all (default)
-
-      SAMSUNG_BUS=4
-      ASUS_BUS=5
-      STEP=30
-      MAX_BRIGHTNESS=255  # Maximum possible DDC/CI brightness value
-
-      adjust_brightness() {
-        local bus=$1
-        local direction=$2
-        
-        # Get the full output from ddcutil for debugging
-        ddcutil_output=$(ddcutil --bus=$bus getvcp 10)
-        echo "Raw ddcutil output for bus $bus:"
-        echo "$ddcutil_output"
-        
-        # Extract just the current value number, handling different output formats
-        current=$(echo "$ddcutil_output" | grep -o 'current value =.*' | cut -d= -f2 | cut -d, -f1 | tr -d ' ')
-        
-        # If we couldn't get a valid number, start from 0
-        if ! [ "$current" -eq "$current" ] 2>/dev/null; then
-          echo "Could not parse current value, starting from 0"
-          current=0
-        fi
-        
-        # Calculate new brightness
-        if [ "$direction" = "up" ]; then
-          new_value=$((current + STEP))
-          if [ $new_value -gt $MAX_BRIGHTNESS ]; then
-            new_value=$MAX_BRIGHTNESS
-          fi
-        else
-          new_value=$((current - STEP))
-          if [ $new_value -lt 0 ]; then
-            new_value=0
-          fi
-        fi
-        
-        echo "Adjusting monitor on bus $bus: Current=$current New=$new_value"
-        ddcutil --bus=$bus setvcp 10 $new_value
-      }
-
-      direction=$1
-      monitor=''${2:-all}
-
-      case "$monitor" in
-        "samsung")
-          adjust_brightness $SAMSUNG_BUS "$direction"
-          ;;
-        "asus")
-          adjust_brightness $ASUS_BUS "$direction"
-          ;;
-        "all")
-          adjust_brightness $SAMSUNG_BUS "$direction"
-          adjust_brightness $ASUS_BUS "$direction"
-          ;;
-        *)
-          echo "Usage: monitor-brightness up|down [samsung|asus|all]"
-          exit 1
-          ;;
-      esac
     '';
   };
 
