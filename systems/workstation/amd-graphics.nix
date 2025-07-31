@@ -69,18 +69,25 @@
   };
 
   boot.kernelParams = [
-    # "amdgpu.ppfeaturemask=0xffffffff" # Enables all power management features
-    "radeon.si_support=0" # Disable Southern Islands support
-    "radeon.cik_support=0" # Disable Sea Islands support
-    "amdgpu.si_support=1" # Enable Southern Islands support in amdgpu
-    "amdgpu.cik_support=1" # Enable Sea Islands support in amdgpu
-    "module_blacklist=nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm" # Blacklist NVIDIA modules
-    "amdgpu.dpm=0" # Disables dynamic power management, (fixes amd-gpu crashing / freeze issues)
+    # AMD integrated graphics configuration
+    "radeon.si_support=0"
+    "radeon.cik_support=0"
+    "amdgpu.si_support=1"
+    "amdgpu.cik_support=1"
+    "module_blacklist=nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm"
+
+    # CRITICAL FIX for Ryzen 7900 integrated graphics (DCN 3.1)
+    "amdgpu.dcfeaturemask=0x0" # Disable ALL Display Core features (fixes DCN 3.1 crashes)
+    "amdgpu.dpm=0" # Disable dynamic power management
     "amdgpu.runpm=0" # Disable runtime power management
+    "amdgpu.ppfeaturemask=0x0" # Disable power play features
     "amdgpu.bapm=0" # Disable bidirectional application power management
-    "amdgpu.ppfeaturemask=0x0" # Disable ALL power features completely
-    "amdgpu.noretry=1" # Don't retry failed operations
+
+    # Integrated GPU specific fixes
+    "amdgpu.gpu_recovery=0" # Disable recovery (broken with DCN 3.1)
     "amdgpu.lockup_timeout=0" # Disable lockup detection
+    "amdgpu.noretry=1" # Don't retry failed operations
+    "amdgpu.aspm=0" # Disable ASPM for integrated GPU stability
   ];
 
   # XDG Desktop Portal for proper application integrations
