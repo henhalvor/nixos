@@ -39,8 +39,22 @@
 
   # Keep the s2idle setting
   boot.kernelParams = [
-    "mem_sleep_default=s2idle"
-  ]; # default is "deep" sleep this sets to lighter sleep "s2idle"
+    "mem_sleep_default=s2idle" # default is "deep" sleep this sets to lighter sleep "s2idle"
+
+    # USB enumeration fixes (usb devices takes 30 seconds to load in display manager)
+    "usbcore.old_scheme_first=1" # Try old USB enumeration method first
+    "usbcore.use_both_schemes=1" # Use both old and new enumeration schemes
+    "usbcore.initial_descriptor_timeout=2000" # Increase timeout for device descriptors
+    "usb-storage.delay_use=3" # Delay USB storage device recognition
+    "usbhid.mousepoll=0" # Disable mouse polling optimization
+
+    # USB power management fixes
+    "usbcore.autosuspend=-1" # Disable USB autosuspend globally
+    "usb_core.autosuspend=-1" # Alternative parameter name
+
+    # USB 3.0/2.0 compatibility
+    "xhci_hcd.quirks=0x0008"
+  ];
 
   # Add the missing power management
   powerManagement.enable = true;
@@ -51,18 +65,11 @@
     ACTION=="add", SUBSYSTEM=="usb", ATTRS{bInterfaceClass}=="03", ATTR{power/wakeup}="enabled"
   '';
 
-  # # Configure monitor layout for GDM (X11)
-  # services.xserver.displayManager.setupCommands = ''
-  #   # Workstation monitor setup for GDM
-  #   ${pkgs.xorg.xrandr}/bin/xrandr --output HDMI-A-1 --mode 2560x1440 --rate 144 --pos 1080x0 --primary
-  #   ${pkgs.xorg.xrandr}/bin/xrandr --output DP-1 --mode 1920x1080 --rate 144 --pos 0x-180 --rotate left
-  # '';
+  # Configure monitor layout for GDM (X11)
+  services.xserver.displayManager.setupCommands = ''
+    # Workstation monitor setup for GDM
+    ${pkgs.xorg.xrandr}/bin/xrandr --output HDMI-A-1 --mode 2560x1440 --rate 144 --pos 1080x0 --primary
+    ${pkgs.xorg.xrandr}/bin/xrandr --output DP-1 --mode 1920x1080 --rate 144 --pos 0x-180 --rotate left
+  '';
 
-  # Configure monitor layout for SDDM
-  # services.displayManager.setupCommands = ''
-  #   # Workstation monitor setup for SDDM
-  #   ${pkgs.xorg.xrandr}/bin/xrandr --output HDMI-A-1 --mode 2560x1440 --rate 144 --pos 1080x0 --primary
-  #   ${pkgs.xorg.xrandr}/bin/xrandr --output DP-1 --mode 1920x1080 --rate 144 --pos 0x-180 --rotate left
-  # '';
-  #
 }
