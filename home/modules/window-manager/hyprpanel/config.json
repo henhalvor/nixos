@@ -136,5 +136,21 @@
   "menus.media.displayTimeTooltip": true,
   "menus.dashboard.powermenu.avatar.name": "Lenovo Yoga Pro 7",
   "menus.dashboard.shortcuts.left.shortcut2.command": "spotify",
-  "menus.dashboard.shortcuts.left.shortcut4.command": "rofi -show drun -theme ~/.config/rofi/theme.rasi"
+  "menus.dashboard.shortcuts.left.shortcut4.command": "rofi -show drun -theme ~/.config/rofi/theme.rasi",
+  "theme.bar.floating": false,
+  "theme.bar.border.width": "0.15em",
+  "theme.bar.border_radius": "99em",
+  "theme.bar.outer_spacing": "0em",
+  "theme.bar.buttons.y_margins": "0.2em",
+  "theme.bar.layer": "overlay",
+  "bar.autoHide": "never",
+  "theme.bar.buttons.padding_x": "0.5rem",
+  "bar.volume.label": true,
+  "bar.network.showWifiInfo": true,
+  "bar.network.label": false,
+  "bar.bluetooth.label": false,
+  "bar.media.show_label": false,
+  "bar.media.show_active_only": true,
+  "bar.notifications.show_total": true,
+  "bar.notifications.hideCountWhenZero": true
 }
