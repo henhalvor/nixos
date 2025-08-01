@@ -35,6 +35,11 @@
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
+  # Keep the s2idle setting
+  boot.kernelParams = [
+    "mem_sleep_default=s2idle"
+  ]; # default is "deep" sleep this sets to lighter sleep "s2idle"
+
   # logitect wireless dongle
   hardware.logitech.wireless.enable = true;
   hardware.logitech.wireless.enableGraphical = true;
