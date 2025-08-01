@@ -1,113 +1,83 @@
-{ config, pkgs, userSettings, ... }: {
+{ config, pkgs, unstable, ... }: {
   # Video drivers configuration
-  services.xserver.videoDrivers = [ "amdgpu" ]; # Only use amdgpu driver
+  services.xserver.videoDrivers = [ "amdgpu" ];
 
-  # # Remove any NVIDIA-related packages and modules
-  # hardware.nvidia.package = null;
-  # hardware.nvidia.modesetting.enable = false;
-  #
-  # # Environment variables for AMD graphics
-  # environment.sessionVariables = {
-  #   # Hardware acceleration API support
-  #   LIBVA_DRIVER_NAME = "radeonsi"; # For VA-API
-  #   VDPAU_DRIVER = "radeonsi"; # For VDPAU
-  #
-  #   # Wayland-specific settings (if using Wayland)
-  #   # WLR_RENDERER = "vulkan"; # Better performance on AMD
-  #   WLR_RENDERER =
-  #     "gles2"; # Change "vulkan" to "gles2" to MINIMIZE screen artifact
-  #   WLR_NO_HARDWARE_CURSORS = "1"; # FIXES screen artifact in lower right corner
-  #
-  #   # Force Mesa to ignore NVIDIA
-  #   MESA_LOADER_DRIVER_OVERRIDE = "radeonsi";
-  #
-  #   # Optional: Use Vulkan by default for games
-  #   AMD_VULKAN_ICD = "RADV"; # Use RADV Vulkan driver
-  # };
+  # Environment variables for AMD graphics - UNCOMMENT AND USE THESE:
+  environment.sessionVariables = {
+    # Hardware acceleration API support
+    LIBVA_DRIVER_NAME = "radeonsi";
+    VDPAU_DRIVER = "radeonsi";
 
-  # Graphics and Hardware Acceleration
+    # Wayland-specific settings - USE GLES2 for stability
+    WLR_RENDERER = "gles2"; # More stable than Vulkan for problematic GPUs
+    WLR_NO_HARDWARE_CURSORS = "1"; # Fixes artifacts
+
+    # Force Mesa to use AMD
+    MESA_LOADER_DRIVER_OVERRIDE = "radeonsi";
+
+    # AMD Vulkan driver
+    AMD_VULKAN_ICD = "RADV";
+
+    # Additional stability variables
+    __GL_GSYNC_ALLOWED = "0";
+    __GL_VRR_ALLOWED = "0";
+  };
+
+  # Graphics and Hardware Acceleration - UNCOMMENT AND USE UNSTABLE MESA:
   hardware = {
     graphics = {
       enable = true;
+      # Use LATEST Mesa and graphics packages from unstable
+      extraPackages = with unstable; [ # <-- KEY: Use unstable packages
+        # Latest Mesa (most important for AMD fixes)
+        mesa
+        mesa.drivers
 
-      # # Add drivers for AMD and definitely exclude NVIDIA
-      # extraPackages = with pkgs; [
-      #   # Vulkan support
-      #   vulkan-loader
-      #   vulkan-validation-layers
-      #   amdvlk # AMD's Vulkan implementation
-      #
-      #   # OpenGL and VA-API support
-      #   mesa # Main OpenGL implementation
-      #   libva # Video Acceleration API
-      #   libva-utils
-      #
-      #   # VDPAU support
-      #   vaapiVdpau # VDPAU backend for VA-API
-      #   libvdpau-va-gl # OpenGL backend for VDPAU
-      #
-      #   # ROCm (compute) support if needed
-      #   rocmPackages.clr # OpenCL runtime
-      # ];
-      #
-      # # 32-bit support (for Steam and other gaming applications)
-      # extraPackages32 = with pkgs.pkgsi686Linux; [
-      #   # Vulkan 32-bit support
-      #   vulkan-loader
-      #
-      #   # OpenGL 32-bit support
-      #   mesa
-      #
-      #   # Video acceleration 32-bit support
-      #   libva
-      #   vaapiVdpau
-      # ];
+        # Vulkan support
+        vulkan-loader
+        vulkan-validation-layers
+        amdvlk
+
+        # Video acceleration
+        libva
+        libva-utils
+        vaapiVdpau
+        libvdpau-va-gl
+
+        # ROCm support
+        rocmPackages.clr
+      ];
+
+      # 32-bit support with latest packages
+      extraPackages32 = with unstable.pkgsi686Linux; [ # <-- KEY: Use unstable
+        mesa
+        vulkan-loader
+        libva
+        vaapiVdpau
+      ];
     };
-
-    # Enable firmware for amdgpu if needed
     firmware = [ pkgs.linux-firmware ];
   };
 
+  # ACTIVATE your proven stable kernel parameters:
   boot.kernelParams = [
-    # AMD integrated graphics configuration
     "radeon.si_support=0"
     "radeon.cik_support=0"
     "amdgpu.si_support=1"
     "amdgpu.cik_support=1"
-    # "module_blacklist=nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm"
-    #
-    # # CRITICAL FIX for Ryzen 7900 integrated graphics (DCN 3.1)
-    # "amdgpu.dcfeaturemask=0x0" # Disable ALL Display Core features (fixes DCN 3.1 crashes)
-    # "amdgpu.dpm=0" # Disable dynamic power management
-    # "amdgpu.runpm=0" # Disable runtime power management
-    # "amdgpu.ppfeaturemask=0x0" # Disable power play features
-    # "amdgpu.bapm=0" # Disable bidirectional application power management
-    #
-    # # Integrated GPU specific fixes
-    # "amdgpu.gpu_recovery=0" # Disable recovery (broken with DCN 3.1)
-    # "amdgpu.lockup_timeout=0" # Disable lockup detection
-    # "amdgpu.noretry=1" # Don't retry failed operations
-    # "amdgpu.aspm=0" # Disable ASPM for integrated GPU stability
+
+    # Your proven stable parameters
+    "amdgpu.dcfeaturemask=0x0"
+    "amdgpu.dpm=0"
+    "amdgpu.runpm=0"
+    "amdgpu.ppfeaturemask=0x0"
+    "amdgpu.bapm=0"
+    "amdgpu.gpu_recovery=0"
+    "amdgpu.lockup_timeout=0"
+    "amdgpu.noretry=1"
   ];
 
-  #  # RECOMMENDED: Use kernel 6.6 LTS (stable before the DCN 3.1 regression)
-  #  boot.kernelPackages = pkgs.linuxPackages_6_6;
-  # #
-  #  # Keep minimal but effective parameters for integrated graphics
-  #  boot.kernelParams = [
-  #    # Basic AMD integrated graphics setup
-  #    "radeon.si_support=0"
-  #    "radeon.cik_support=0"
-  #    "amdgpu.si_support=1"
-  #    "amdgpu.cik_support=1"
-  #
-  #    # Essential integrated GPU stability fixes
-  #    "amdgpu.dcfeaturemask=0x0" # Disable DCN 3.1 features
-  #    "amdgpu.dpm=0" # Disable dynamic power management
-  #    "amdgpu.runpm=0" # Disable runtime power management
-  # ];
-
-  # XDG Desktop Portal for proper application integrations
+  # XDG Portal
   xdg.portal = {
     enable = true;
     extraPortals = with pkgs; [
