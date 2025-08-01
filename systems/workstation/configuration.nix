@@ -49,4 +49,8 @@
     "mem_sleep_default=s2idle" # Set sleep to "lighter sleep" default is "deep" sleep, solves weird graphics bug on displays after deep sleep
   ];
 
+  # Explicitly enable bluetooth support
+  services.blueman.enable = true;
+  hardware.bluetooth.enable = true;
+
 }
