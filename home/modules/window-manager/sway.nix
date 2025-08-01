@@ -3,7 +3,7 @@ let
 
   # Import the script
   toggleMonitorsWorkstation =
-    import ../scripts/toggle-monitors-workstation.nix { inherit pkgs; };
+    import ../scripts/toggle-monitors-workstation-sway.nix { inherit pkgs; };
 
   # Define system-specific configurations
   systemConfigs = {

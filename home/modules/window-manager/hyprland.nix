@@ -3,7 +3,9 @@ let
 
   # Import the script
   toggleMonitorsWorkstation =
-    import ../scripts/toggle-monitors-workstation.nix { inherit pkgs; };
+    import ../scripts/toggle-monitors-workstation-hyprland.nix {
+      inherit pkgs;
+    };
 
   # Define system-specific configurations
   systemConfigs = {
@@ -28,10 +30,6 @@ let
         ",XF86MonBrightnessUp,exec, brightnessctl s +10%"
         ",XF86MonBrightnessDown,exec, brightnessctl s 10%-"
 
-        # Laptop display toggle
-        "$mainMod SHIFT, D, exec, ~/.local/bin/toggle-laptop-display"
-        "$mainMod SHIFT, F, exec, hyprctl keyword monitor 'eDP-1, enable'"
-        "$mainMod ALT, F, exec, hyprctl keyword monitor 'eDP-1, disable'"
       ];
 
       extraInput = { touchpad = { natural_scroll = true; }; };
@@ -234,7 +232,7 @@ in {
 
         # Opacity
         active_opacity = 1.0; # Opacity for focused windows (100%)
-        inactive_opacity = 0.95; # Opacity for unfocused windows (95%)
+        inactive_opacity = 1.0; # Opacity for unfocused windows (95%)
         fullscreen_opacity = 1.0; # Opacity for fullscreen (100%)
 
         blur = {
@@ -546,11 +544,7 @@ in {
       # System-specific monitor configuration
       ${currentConfig.monitors}
 
-      # # Suspend and resume fix
-      # exec-once = ${pkgs.bash}/bin/bash -c '
-      #   echo "systemctl --user restart hyprpaper.service hyprpanel.service" > /tmp/hypr-resume-fix &&
-      #   systemd-inhibit --what=handle-lid-switch sleep infinity
-      # '
+
 
       xwayland {
         force_zero_scaling = true;
@@ -560,7 +554,6 @@ in {
       env = SDL_VIDEODRIVER,wayland
       env = CLUTTER_BACKEND,wayland
       env = XDG_SESSION_TYPE,wayland
-      env = WLR_RENDERER,gles2
       env = MOZ_ENABLE_WAYLAND,1
       env = WLR_NO_HARDWARE_CURSORS,1
       env = XCURSOR_SIZE,24
@@ -582,20 +575,6 @@ in {
 
   # Ensure the .local/bin directory exists
   home.file.".local/bin/.keep".text = "";
-
-  home.file.".local/bin/toggle-laptop-display" = {
-    executable = true;
-    text = ''
-      #!/bin/sh
-      if hyprctl monitors | grep -A 20 "Monitor eDP-1" | grep -q "disabled: false"; then
-        hyprctl keyword monitor "eDP-1,disable"
-        hyprctl notify 1 5000 0 "Laptop display disabled"
-      else
-        hyprctl keyword monitor "eDP-1,2560x1600@90,0x0,1.6"
-        hyprctl notify 1 5000 0 "Laptop display enabled"
-      fi
-    '';
-  };
 
 }
 
