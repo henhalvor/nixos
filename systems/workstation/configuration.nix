@@ -29,11 +29,6 @@
       ../../nixos/modules/server/tailscale.nix
 
     ];
-
-  # boot.kernelParams = [
-  #   "mem_sleep_default=s2idle"
-  # ]; # default is "deep" sleep this sets to lighter sleep "s2idle"
-
   # logitect wireless dongle
   hardware.logitech.wireless.enable = true;
   hardware.logitech.wireless.enableGraphical = true;
@@ -49,7 +44,9 @@
     nvidiaSettings = true; # Optional: enables `nvidia-settings` GUI tool
   };
 
-  # OPTIONAL: Prevent conflicts with AMD integrated GPU
-  boot.kernelParams = [ "modprobe.blacklist=amdgpu" ];
+  boot.kernelParams = [
+    "modprobe.blacklist=amdgpu" # Prevent conflicts with AMD integrated GPU:  Disable AMD integrated GPU since we are using NVIDIA - Linux firmware does not currently support the newest amd IGPU's
+    "mem_sleep_default=s2idle" # Set sleep to "lighter sleep" default is "deep" sleep, solves weird graphics bug on displays after deep sleep
+  ];
 
 }
