@@ -158,7 +158,7 @@ in {
           # "poweralertd &"
           "wl-paste --type text --watch clipman store &" # Store text entries
           "wl-paste --type image --watch clipman store &" # Store images
-          "hyprpanel &"
+          # "hyprpanel &"    # Dont manually start hyprpanel, it is started by systemd service
           "hyprpaper &"
           "hypridle &"
 

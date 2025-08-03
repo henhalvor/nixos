@@ -1,15 +1,38 @@
-{ pkgs, lib, config, ... }: {
+{ pkgs, lib, config, systemName, ... }:
+let
+  # Define system-specific configurations
+  systemConfigs = {
+    workstation = {
+      configFile = ./workstation.json;
+      extraPackages = [ ];
+    };
+
+    lenovo-yoga-pro-7 = {
+      configFile = ./lenovo-yoga-pro-7.json;
+      extraPackages = [ ];
+    };
+  };
+
+  # Fallback if unknown system
+  currentConfig =
+    systemConfigs.${systemName} or systemConfigs.lenovo-yoga-pro-7;
+
+  configTarget = "${config.home.homeDirectory}/.config/hyprpanel/config.json";
+in {
+
+  home.packages = with pkgs; [
+    grimblast # Screenshot tool for Hyprland
+    wf-recorder # Screen recorder
+  ];
+
   programs.hyprpanel.enable = true;
 
-  # Copy actual config.json into the correct location (not symlinked)
   home.activation.copyHyprpanelConfig =
     lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      config_source="${config.home.homeDirectory}/.dotfiles/home/modules/window-manager/hyprpanel/config.json"
-      config_target="${config.home.homeDirectory}/.config/hyprpanel/config.json"
-
-      mkdir -p "$(dirname "$config_target")"
-      cp -f "$config_source" "$config_target"
+      mkdir -p "$(dirname "${configTarget}")"
+      cp -f "${currentConfig.configFile}" "${configTarget}"
     '';
+
 }
 
 # { inputs, ... }: {
