@@ -18,10 +18,11 @@ let
     };
 
     workstation = {
-      timeouts = [{
-        timeout = 300;
-        command = "${pkgs.swaylock}/bin/swaylock -fF";
-      }];
+      # timeouts = [{
+      #   timeout = 300;
+      #   command = "${pkgs.swaylock}/bin/swaylock -fF";
+      # }];
+      timeouts = [ ];
     };
   };
 

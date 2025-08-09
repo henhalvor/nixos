@@ -305,6 +305,7 @@ in {
           "$mainMod SHIFT, O, exec, clipman clear --all"
           "$mainMod, X, togglesplit,"
           "$mainMod, E, exec, hyprctl dispatch exec '[float; size 1111 650] kitty -e yazi'"
+          "$mainMod, L, exec, ${pkgs.hyprlock}/bin/hyprlock"
           # "$mainMod SHIFT, B, exec, toggle_waybar"
 
           # Lock screen
@@ -390,8 +391,6 @@ in {
           "$mainMod, mouse_down, workspace, e-1"
           "$mainMod, mouse_up, workspace, e+1"
 
-          # clipboard manager
-          "$mainMod, V, exec, cliphist list | rofi -dmenu -theme-str 'window {width: 50%;} listview {columns: 1;}' | cliphist decode | wl-copy"
         ];
       in baseBinds ++ currentConfig.extraBinds;
 
@@ -428,8 +427,8 @@ in {
         # Base window rules that apply to all systems
         baseWindowRules = [
           # Basic application rules
-          "float, class:^(imv)$"
-          "float, class:^(mpv)$"
+          # "float, class:^(imv)$"  #Floating image viewer
+          # "float, class:^(mpv)$"  # Floating media player
           "tile, class:^(Aseprite)$"
           "pin, class:^(rofi)$"
           "idleinhibit focus, class:^(mpv)$"

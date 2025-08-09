@@ -8,18 +8,6 @@
     }
 
 
-    # Notify 30 seconds before locking
-    listener {
-        timeout = 300                        # 5 minutes of inactivity
-        on-timeout = notify-send "Locking screen in 30 seconds..."
-        on-resume = notify-send "Welcome back!"
-    }
-
-    # Lock screen after 5.5 minutes of inactivity
-    listener {
-        timeout = 330                        # 5.5 minutes
-        on-timeout = loginctl lock-session
-    }
   '';
 }
 
