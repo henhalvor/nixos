@@ -67,5 +67,8 @@
       # Theming
       ../../home/modules/themes/catppuccin/default.nix
 
+      # Scripts
+      ../../home/modules/scripts/power-monitor.nix
+
     ];
 }
