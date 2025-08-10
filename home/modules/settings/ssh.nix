@@ -157,7 +157,7 @@ in {
       };
       # Workstation connection (when connecting FROM laptop TO workstation)
       "workstation" = {
-        hostname = "10.0.0.4"; # Adjust this to your workstation's IP
+        hostname = "10.0.0.5"; # Adjust this to your workstation's IP
         user = "henhal";
         extraOptions = {
           RequestTTY = "yes";
