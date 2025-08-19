@@ -1,4 +1,4 @@
-{ config, pkgs, userSettings, windowManager, ... }: {
+{ config, pkgs, userSettings, windowManager, lib, ... }: {
   imports =
     # Window manager (conditional import)
     (if windowManager == "hyprland" then
@@ -17,12 +17,9 @@
       ./hardware-configuration.nix
       ../../nixos/default.nix
       ../../nixos/modules/external-io.nix
-      # ../../nixos/modules/battery.nix
-      ./amd-graphics.nix
       ../../nixos/modules/pipewire.nix
       ../../nixos/modules/bluetooth.nix
       ../../nixos/modules/networking.nix
-      ../../nixos/modules/systemd-loginhd.nix
       ./bootloader.nix
       # window-manager
       ../../nixos/modules/window-manager/default.nix
@@ -32,23 +29,28 @@
       ../../nixos/modules/server/tailscale.nix
 
     ];
-
   # logitect wireless dongle
   hardware.logitech.wireless.enable = true;
   hardware.logitech.wireless.enableGraphical = true;
 
-  # Keep the s2idle setting
+  # NVIDIA GPU
+  # Use NVIDIA proprietary drivers and automatically detect correct version
+  services.xserver.videoDrivers = [ "nvidia" ];
+
+  hardware.nvidia = {
+    modesetting.enable = true;
+    powerManagement.enable = false; # Power-saving mostly applies to laptops
+    open = false; # Use proprietary blob (recommended for your GPU)
+    nvidiaSettings = true; # Optional: enables `nvidia-settings` GUI tool
+  };
+
   boot.kernelParams = [
-    "mem_sleep_default=s2idle"
-  ]; # default is "deep" sleep this sets to lighter sleep "s2idle"
+    "modprobe.blacklist=amdgpu" # Prevent conflicts with AMD integrated GPU:  Disable AMD integrated GPU since we are using NVIDIA - Linux firmware does not currently support the newest amd IGPU's
+    "mem_sleep_default=s2idle" # Set sleep to "lighter sleep" default is "deep" sleep, solves weird graphics bug on displays after deep sleep
+  ];
 
-  # Add the missing power management
-  powerManagement.enable = true;
-
-  # Fix USB wake-up
-  services.udev.extraRules = ''
-    ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="1532", ATTR{idProduct}=="0040", ATTR{power/wakeup}="enabled"
-    ACTION=="add", SUBSYSTEM=="usb", ATTRS{bInterfaceClass}=="03", ATTR{power/wakeup}="enabled"
-  '';
+  # Explicitly enable bluetooth support
+  services.blueman.enable = true;
+  hardware.bluetooth.enable = true;
 
 }

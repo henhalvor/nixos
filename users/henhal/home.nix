@@ -44,6 +44,12 @@
       ../../home/modules/applications/gimp.nix
       ../../home/modules/applications/microsoft-edge.nix
       ../../home/modules/applications/nvim.nix
+      ../../home/modules/applications/nautilus.nix
+      ../../home/modules/applications/spotify.nix
+      ../../home/modules/applications/nsxiv.nix
+      ../../home/modules/applications/zathura.nix
+      ../../home/modules/applications/mpv.nix
+      ../../home/modules/applications/libreoffice.nix
       # ../../home/modules/applications/nvf.nix
 
       # Environment
@@ -56,8 +62,13 @@
       ../../home/modules/settings/secrets/secrets.nix
       ../../home/modules/settings/nerd-fonts.nix
       ../../home/modules/settings/ssh.nix
-      ../../home/modules/settings/theme.nix
       ../../home/modules/settings/udiskie.nix
+
+      # Theming
+      ../../home/modules/themes/catppuccin/default.nix
+
+      # Scripts
+      ../../home/modules/scripts/power-monitor.nix
 
     ];
 }

@@ -18,12 +18,12 @@
       ../../nixos/default.nix
       ../../nixos/modules/battery.nix
       ../../nixos/modules/external-io.nix
-      ../../nixos/modules/amd-graphics.nix
       ../../nixos/modules/pipewire.nix
       ../../nixos/modules/bluetooth.nix
       ../../nixos/modules/bootloader.nix
       ../../nixos/modules/networking.nix
       ../../nixos/modules/systemd-loginhd.nix
+      ./amd-graphics.nix
       # window-manager
       ../../nixos/modules/window-manager/default.nix
 
@@ -36,6 +36,9 @@
   # logitect wireless dongle
   hardware.logitech.wireless.enable = true;
   hardware.logitech.wireless.enableGraphical = true;
+
+  # Fixes battery percentage in hyprpanel
+  services.upower.enable = true;
 
   # Drivers for usb-c to ethernet adapter
   boot.kernelModules = [ "ax88179_178a" ];

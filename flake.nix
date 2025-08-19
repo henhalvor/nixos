@@ -9,10 +9,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nixpkgs-24-11.url = "github:nixos/nixpkgs/nixos-24.11";
-    hyprpanel = {
-      url = "github:jas-singhfsu/hyprpanel";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     zen-browser.url = "github:0xc000022070/zen-browser-flake";
     vscode-server.url = "github:nix-community/nixos-vscode-server";
     nvf = {
@@ -22,7 +18,7 @@
     nvim-nix.url = "github:henhalvor/nvim-nix";
   };
 
-  outputs = { nixpkgs, nixpkgs-unstable, home-manager, nixpkgs-24-11, hyprpanel
+  outputs = { nixpkgs, nixpkgs-unstable, home-manager, nixpkgs-24-11
     , zen-browser, vscode-server, nvf, nvim-nix, ... }:
     let
       system = "x86_64-linux";
@@ -42,11 +38,7 @@
         inherit system;
         config.allowUnfree = true;
         overlays = [
-          hyprpanel.overlay
-          (final: prev: {
-            unstable = unstablePkgs;
-            pkgs24-11 = pkgs24-11;
-          })
+
         ];
       };
 
@@ -77,7 +69,7 @@
             inherit userSettings;
             unstable = unstablePkgs;
             pkgs24-11 = pkgs24-11;
-            inherit zen-browser hyprpanel;
+            inherit zen-browser;
             inherit hostname windowManager systemName;
           } // extraSpecialArgs;
 
@@ -106,11 +98,11 @@
             home-manager.nixosModules.home-manager
             {
               home-manager.extraSpecialArgs = {
-                inherit system userSettings zen-browser hyprpanel nvf nvim-nix;
+                inherit system userSettings zen-browser nvf nvim-nix;
                 unstable = unstablePkgs;
                 pkgs24-11 = pkgs24-11;
                 inherit hostname windowManager systemName;
-                inputs = { inherit hyprpanel zen-browser nvf nvim-nix; };
+                inputs = { inherit zen-browser nvf nvim-nix; };
               };
               home-manager.useGlobalPkgs =
                 false; # NEEDS TO BE FALSE IN RECENT VERSION OF HOME MANAGER
@@ -126,14 +118,14 @@
           systemName = "lenovo-yoga-pro-7";
           hostname = "yoga-pro-7";
           userSettings = userHenhal;
-          windowManager = "sway";
+          windowManager = "hyprland";
         };
 
         workstation = mkNixosSystem {
           systemName = "workstation";
           hostname = "workstation";
           userSettings = userHenhal;
-          windowManager = "sway";
+          windowManager = "hyprland";
         };
 
         # Should be deleted
@@ -161,8 +153,7 @@
           pkgs = import nixpkgs {
             inherit system;
             config.allowUnfree = true;
-            overlays =
-              [ hyprpanel.overlay (final: prev: { unstable = unstablePkgs; }) ];
+            overlays = [ (final: prev: { unstable = unstablePkgs; }) ];
           };
           modules = [ ./users/henhal/home.nix ];
           extraSpecialArgs = {
@@ -170,9 +161,10 @@
             userSettings = userHenhal;
             unstable = unstablePkgs;
             pkgs24-11 = pkgs24-11;
-            inherit zen-browser hyprpanel;
-            inputs = { inherit hyprpanel zen-browser nvf nvim-nix; };
-            windowManager = "sway";
+            inherit zen-browser;
+            inputs = { inherit zen-browser nvf nvim-nix; };
+            windowManager = "hyprland";
+            systemName = "workstation";
           };
         };
 
@@ -180,8 +172,7 @@
           pkgs = import nixpkgs {
             inherit system;
             config.allowUnfree = true;
-            overlays =
-              [ hyprpanel.overlay (final: prev: { unstable = unstablePkgs; }) ];
+            overlays = [ (final: prev: { unstable = unstablePkgs; }) ];
           };
           modules = [ ./users/henhal-dev/home.nix ];
           extraSpecialArgs = {
@@ -189,8 +180,8 @@
             userSettings = userHenhalDev;
             unstable = unstablePkgs;
             pkgs24-11 = pkgs24-11;
-            inherit zen-browser hyprpanel;
-            inputs = { inherit hyprpanel zen-browser; };
+            inherit zen-browser;
+            inputs = { inherit zen-browser; };
             windowManager = "none";
           };
         };

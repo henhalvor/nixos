@@ -52,7 +52,7 @@
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIN05rLpXKWvbcdus29yl6d1uC18LKPqe9HLpiXUB9mxp henhalvor@gmail.com"
 
       # Workstation_id pub key
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMnrs5Nx5elMxWtvQ0IvdJNloouLb2K68cx/ID/lv8Jc henhal@workstation"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBuJ92xN/PoTQX4RwTCyLddDxJkqkc9q7P5ufl2XZEWy henhal@workstation"
 
       # Lenovo Yoga Pro 7 laptop_id pub key
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICbU4sdXQwBdx/k/usv9DO6WByxwu6zYodYGfsGrHpbX henhal@yoga-pro-7"
