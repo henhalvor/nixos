@@ -16,7 +16,6 @@
     ]) ++ [
       ./hardware-configuration.nix
       ../../nixos/default.nix
-      ../../nixos/modules/battery.nix
       ../../nixos/modules/external-io.nix
       ../../nixos/modules/pipewire.nix
       ../../nixos/modules/bluetooth.nix
@@ -24,6 +23,7 @@
       ../../nixos/modules/networking.nix
       ../../nixos/modules/systemd-loginhd.nix
       ./amd-graphics.nix
+      ./battery.nix
       # window-manager
       ../../nixos/modules/window-manager/default.nix
 
