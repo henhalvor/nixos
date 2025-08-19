@@ -15,12 +15,8 @@
     },
     "layouts": {
       "*": {
-        "left": [
-          "workspaces"
-        ],
-        "middle": [
-          "clock"
-        ],
+        "left": ["workspaces"],
+        "middle": ["clock"],
         "right": [
           "volume",
           "media",
@@ -80,9 +76,7 @@
       "size": "12px"
     }
   },
-  "bar.customModules.storage.paths": [
-    "/"
-  ],
+  "bar.customModules.storage.paths": ["/"],
   "theme.bar.buttons.radius": "999em",
   "bar.workspaces.show_icons": false,
   "bar.workspaces.showWsIcons": true,
@@ -91,12 +85,8 @@
   "bar.battery.hideLabelWhenFull": true,
   "bar.layouts": {
     "*": {
-      "left": [
-        "workspaces"
-      ],
-      "middle": [
-        "clock"
-      ],
+      "left": ["workspaces"],
+      "middle": ["clock"],
       "right": [
         "hypridle",
         "hyprsunset",
@@ -143,7 +133,7 @@
   "theme.bar.outer_spacing": "0em",
   "theme.bar.buttons.y_margins": "0.2em",
   "theme.bar.layer": "overlay",
-  "bar.autoHide": "never",
+  "bar.autoHide": "fullscreen",
   "theme.bar.buttons.padding_x": "0.5rem",
   "bar.volume.label": true,
   "bar.network.showWifiInfo": true,
@@ -156,3 +146,4 @@
   "menus.dashboard.stats.enabled": false,
   "menus.dashboard.stats.enable_gpu": false
 }
+

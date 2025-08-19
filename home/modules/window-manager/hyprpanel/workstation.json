@@ -19,7 +19,6 @@
         "middle": ["clock"],
         "right": [
           "volume",
-          "media",
           "bluetooth",
           "network",
           "systray",
@@ -87,10 +86,8 @@
       "left": ["workspaces"],
       "middle": ["clock"],
       "right": [
-        "hypridle",
         "hyprsunset",
         "volume",
-        "media",
         "bluetooth",
         "network",
         "systray",
@@ -131,7 +128,7 @@
   "theme.bar.outer_spacing": "0em",
   "theme.bar.buttons.y_margins": "0.2em",
   "theme.bar.layer": "overlay",
-  "bar.autoHide": "never",
+  "bar.autoHide": "fullsreen",
   "theme.bar.buttons.padding_x": "0.5rem",
   "bar.volume.label": true,
   "bar.network.showWifiInfo": true,
@@ -141,7 +138,6 @@
   "bar.media.show_active_only": true,
   "bar.notifications.show_total": true,
   "bar.notifications.hideCountWhenZero": true,
-  "menus.dashboard.stats.enabled": false,
-  "menus.dashboard.stats.enable_gpu": false
+  "menus.dashboard.stats.enabled": true,
+  "menus.dashboard.stats.enable_gpu": true
 }
-
