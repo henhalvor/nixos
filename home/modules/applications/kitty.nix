@@ -1,25 +1,21 @@
-{
-  config,
-  pkgs,
-  ...
-}: {
+{ config, pkgs, lib, ... }: {
   programs.kitty = {
     enable = true;
     settings = {
-      background_opacity = "0.8"; # 0.9 means 90% opaque
+      background_opacity = lib.mkForce "0.8"; # 0.9 means 90% opaque
       # Optional: disable opacity in fullscreen
-      dynamic_background_opacity = "yes";
+      dynamic_background_opacity = lib.mkForce "yes";
       # Optional: if you want transparency to work well with background blur
-      background_blur = "1";
+      background_blur = lib.mkForce "1";
 
-      # Font settings
-      font_family = "Hack Nerd Font";
-      font_size = "10";
-
-      # Optional font tweaks
-      bold_font = "Hack Nerd Font Bold";
-      italic_font = "Hack Nerd Font Italic";
-      bold_italic_font = "Hack Nerd Font Bold Italic";
+      # # Font settings
+      # font_family = "Hack Nerd Font";
+      # font_size = "10";
+      #
+      # # Optional font tweaks
+      # bold_font = "Hack Nerd Font Bold";
+      # italic_font = "Hack Nerd Font Italic";
+      # bold_italic_font = "Hack Nerd Font Bold Italic";
     };
   };
 }

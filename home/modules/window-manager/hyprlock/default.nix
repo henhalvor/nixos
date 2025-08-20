@@ -22,7 +22,7 @@
     # The background section configures the background appearance
     background {
         monitor =  # Leave this empty for all monitors
-        path = ~/.dotfiles/home/modules/window-manager/hyprpaper/catpuccin_landscape.png #screenshot   # Use a screenshot as background
+        path = ~/.dotfiles/assets/wallpapers/catppuccin_landscape.png #screenshot   # Use a screenshot as background
         blur_passes = 2    # How many blur passes to perform
         blur_size = 7      # Scale of the gaussian blur
         noise = 0.0117     # Add noise to blur

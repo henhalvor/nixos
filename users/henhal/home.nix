@@ -1,4 +1,4 @@
-{ config, pkgs, windowManager, userSettings, ... }: {
+{ config, pkgs, windowManager, userSettings, stylix, unstable, ... }: {
   home.username = userSettings.username;
   home.homeDirectory = "/home/${userSettings.username}";
 
@@ -11,6 +11,8 @@
   nixpkgs.config.allowUnfree = true;
 
   ### Imports
+
+  # home.packages = with pkgs; [ unstable.ankiAddons unstable.anki ];
 
   imports =
     # Window manager (conditional import)
@@ -27,6 +29,9 @@
       throw
       "Unsupported window manager in flake's windowManager: ${windowManager}"
     ]) ++ [
+      # Add this line to import the Stylix Home Manager module
+      stylix.homeModules.stylix
+
       # Applications
       ../../home/modules/applications/zsh.nix
       ../../home/modules/applications/${userSettings.term}.nix
@@ -65,7 +70,8 @@
       ../../home/modules/settings/udiskie.nix
 
       # Theming
-      ../../home/modules/themes/catppuccin/default.nix
+      # ../../home/modules/themes/catppuccin/default.nix
+      ../../home/modules/themes/stylix/default.nix
 
       # Scripts
       ../../home/modules/scripts/power-monitor.nix

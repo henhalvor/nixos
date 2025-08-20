@@ -33,7 +33,7 @@ let
 
   # Verify this image path is correct!
   imagePath =
-    "${config.home.homeDirectory}/.dotfiles/home/modules/window-manager/hyprpaper/catpuccin_landscape.png";
+    "${config.home.homeDirectory}/.dotfiles/assets/wallpapers/catpuccin_landscape.png";
   # Or, if the image is relative to this Nix file (recommended):
   # imagePath = "${./relative/path/to/catpuccin_landscape.png}";
 

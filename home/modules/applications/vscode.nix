@@ -1,10 +1,4 @@
-{
-  config,
-  pkgs,
-  lib,
-  unstable,
-  ...
-}: {
+{ config, pkgs, lib, unstable, ... }: {
   programs.vscode = {
     enable = true;
     package = unstable.vscode;
@@ -23,8 +17,7 @@
 
           # NeoVim
           asvetliakov.vscode-neovim # VSCode Neovim
-        ]
-        ++ pkgs.vscode-utils.extensionsFromVscodeMarketplace [
+        ] ++ pkgs.vscode-utils.extensionsFromVscodeMarketplace [
           # Additional TypeScript extensions that might not be in nixpkgs
           # {
           #   name = "typescript-hero";
@@ -50,8 +43,8 @@
         # Theme settings - Fix for light title bar
         "window.titleBarStyle" = "custom";
         "window.autoDetectColorScheme" = false;
-        "workbench.colorTheme" = "Catppuccin Macchiato";
-        "workbench.preferredDarkColorTheme" = "Catppuccin Macchiato";
+        # "workbench.colorTheme" = "Catppuccin Macchiato";
+        # "workbench.preferredDarkColorTheme" = "Catppuccin Macchiato";
         "workbench.colorCustomizations" = {
           "titleBar.activeBackground" = "#24273a";
           "titleBar.activeForeground" = "#cad3f5";
@@ -80,7 +73,8 @@
 
         # NeoVim settings
         "vscode-neovim.neovimExecutablePaths.linux" = "${pkgs.neovim}/bin/nvim";
-        "vscode-neovim.neovimInitVimPaths.linux" = "$HOME/.config/vscode-neovim/init.lua";
+        "vscode-neovim.neovimInitVimPaths.linux" =
+          "$HOME/.config/vscode-neovim/init.lua";
         "keyboard.dispatch" = "keyCode";
         "vscode-neovim.NVIM_APPNAME" = "vscode-neovim";
 
@@ -110,39 +104,28 @@
         {
           key = "alt+y";
           command = "editor.action.inlineSuggest.commit";
-          when = "inlineSuggestionHasIndentationLessThanTabSize && inlineSuggestionVisible && !editorHoverFocused && !editorTabMovesFocus && !suggestWidgetVisible";
+          when =
+            "inlineSuggestionHasIndentationLessThanTabSize && inlineSuggestionVisible && !editorHoverFocused && !editorTabMovesFocus && !suggestWidgetVisible";
         }
         # Close file sidebar
         {
           key = "q";
           command = "runCommands";
-          args = {
-            commands = [
-              "workbench.action.toggleSidebarVisibility"
-            ];
-          };
+          args = { commands = [ "workbench.action.toggleSidebarVisibility" ]; };
           when = "sideBarVisible";
         }
         # Close terminal
         {
           key = "q";
           command = "runCommands";
-          args = {
-            commands = [
-              "workbench.action.terminal.toggleTerminal"
-            ];
-          };
+          args = { commands = [ "workbench.action.terminal.toggleTerminal" ]; };
           when = "terminalFocus";
         }
         # Close Ai sidebar (secondary sidebar)
         {
           key = "q";
           command = "runCommands";
-          args = {
-            commands = [
-              "workbench.action.toggleAuxiliaryBar"
-            ];
-          };
+          args = { commands = [ "workbench.action.toggleAuxiliaryBar" ]; };
           when = "auxiliaryBarFocus";
         }
       ];
@@ -150,11 +133,12 @@
   };
 
   # Create a separate directory for VSCode-specific NeoVim config
-  home.activation.createVSCodeNeovimDir = lib.hm.dag.entryAfter ["writeBoundary"] ''
-    $DRY_RUN_CMD mkdir -p $VERBOSE_ARG ${config.home.homeDirectory}/.config/vscode-neovim
-    $DRY_RUN_CMD mkdir -p $VERBOSE_ARG ${config.home.homeDirectory}/.local/share/vscode-neovim/lazy
-    $DRY_RUN_CMD mkdir -p $VERBOSE_ARG ${config.home.homeDirectory}/.local/share/vscode-neovim/plugins
-  '';
+  home.activation.createVSCodeNeovimDir =
+    lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      $DRY_RUN_CMD mkdir -p $VERBOSE_ARG ${config.home.homeDirectory}/.config/vscode-neovim
+      $DRY_RUN_CMD mkdir -p $VERBOSE_ARG ${config.home.homeDirectory}/.local/share/vscode-neovim/lazy
+      $DRY_RUN_CMD mkdir -p $VERBOSE_ARG ${config.home.homeDirectory}/.local/share/vscode-neovim/plugins
+    '';
 
   # Create a VSCode-specific init.vim file
   home.file.".config/vscode-neovim/init.lua".text = ''
