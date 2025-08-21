@@ -82,6 +82,8 @@ in {
         terminal = lib.mkDefault 10;
       };
     };
+
+    # targets.kitty.enable = false;
     # Override anki to use unstable version that has ankiAddons
 
   };

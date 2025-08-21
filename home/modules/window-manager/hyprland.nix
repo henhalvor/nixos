@@ -113,15 +113,7 @@ let
 
 in {
 
-  imports = [
-    ./hyprpanel
-    ./hyprsunset
-    ./rofi
-    ./hyprpaper
-    ./hypridle
-    ./hyprlock
-    ./kanshi
-  ];
+  imports = [ ./hyprpanel ./hyprsunset ./rofi ./hypridle ./hyprlock ./kanshi ];
 
   home.packages = with pkgs;
     [
@@ -158,7 +150,6 @@ in {
           "wl-paste --type text --watch clipman store &" # Store text entries
           "wl-paste --type image --watch clipman store &" # Store images
           # "hyprpanel &"    # Dont manually start hyprpanel, it is started by systemd service
-          "hyprpaper &"
           "hypridle &"
 
           #   "swaync &"
@@ -304,7 +295,7 @@ in {
           "$mainMod SHIFT, O, exec, clipman clear --all"
           "$mainMod, X, togglesplit,"
           "$mainMod, E, exec, hyprctl dispatch exec '[float; size 1111 650] kitty -e yazi'"
-          "$mainMod, SHIFT, L, exec, ${pkgs.hyprlock}/bin/hyprlock"
+          # "$mainMod, SHIFT, L, exec, ${pkgs.hyprlock}/bin/hyprlock"
           # "$mainMod SHIFT, B, exec, toggle_waybar"
 
           # "$mainMod SHIFT, M, exec, hyprctl dispatch dpms on && notify-send 'All displays forced on'"
@@ -561,7 +552,6 @@ in {
       # env = LIBVA_DRIVER_NAME,nvidia
       # env = NVD_BACKEND,direct
 
-      # source = ~/.config/hypr/colorscheme.conf
     '';
   };
 

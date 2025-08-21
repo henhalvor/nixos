@@ -56,8 +56,7 @@
         stateVersion = "25.05";
         stylixTheme = {
           scheme = "gruvbox-dark-hard"; # Theme name in assets/themes/
-          wallpaper =
-            "catppuccin_landscape.png"; # Filename in assets/wallpapers/
+          wallpaper = "starry-sky.png"; # Filename in assets/wallpapers/
         };
       };
 
