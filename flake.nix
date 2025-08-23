@@ -55,7 +55,9 @@
         browser = "zen-browser";
         stateVersion = "25.05";
         stylixTheme = {
+          # scheme = "catppuccin-macchiato"; # Theme name in assets/themes/
           scheme = "gruvbox-dark-hard"; # Theme name in assets/themes/
+          # wallpaper = "catppuccin_landscape.png";
           wallpaper = "starry-sky.png"; # Filename in assets/wallpapers/
         };
       };
