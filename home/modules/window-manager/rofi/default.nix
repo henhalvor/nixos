@@ -1,5 +1,14 @@
-{ config, pkgs, userSettings, ... }:
-let inherit (config.lib.stylix) colors;
+{ config, pkgs, userSettings, windowManager ? "hyprland", ... }:
+let
+  inherit (config.lib.stylix) colors;
+
+  # Choose lock command based on window manager
+  lockCommand = if windowManager == "hyprland" then
+    "${pkgs.hyprlock}/bin/hyprlock"
+  else if windowManager == "sway" then
+    "${pkgs.swaylock}/bin/swaylock -f"
+  else
+    "loginctl lock-session";
 in {
   home.packages = with pkgs; [ rofi-wayland ];
 
@@ -214,4 +223,68 @@ in {
       }
 
   '';
+
+  # Add power management entries to rofi drun menu
+  home.file = {
+    ".local/share/applications/power-shutdown.desktop".text = ''
+      [Desktop Entry]
+      Name=⏻ Shutdown
+      Comment=Power off the system
+      Exec=systemctl poweroff
+      Icon=application-exit
+      Type=Application
+      Categories=System;
+      Terminal=false
+      NoDisplay=false
+    '';
+
+    ".local/share/applications/power-reboot.desktop".text = ''
+      [Desktop Entry]
+      Name=🔄 Reboot
+      Comment=Restart the system
+      Exec=systemctl reboot
+      Icon=system-reboot-symbolic
+      Type=Application
+      Categories=System;
+      Terminal=false
+      NoDisplay=false
+    '';
+
+    ".local/share/applications/power-lock.desktop".text = ''
+      [Desktop Entry]
+      Name=🔒 Lock Screen
+      Comment=Lock the screen
+      Exec=${lockCommand}
+      Icon=dialog-password-symbolic
+      Type=Application
+      Categories=System;
+      Terminal=false
+      NoDisplay=false
+    '';
+
+    ".local/share/applications/power-logout.desktop".text = ''
+      [Desktop Entry]
+      Name=📤 Logout
+      Comment=End the current session
+      Exec=loginctl terminate-session $XDG_SESSION_ID
+      Icon=system-users-symbolic
+      Type=Application
+      Categories=System;
+      Terminal=false
+      NoDisplay=false
+    '';
+
+    ".local/share/applications/power-suspend.desktop".text = ''
+      [Desktop Entry]
+      Name=💤 Suspend
+      Comment=Suspend the system
+      Exec=systemctl suspend
+      Icon=media-playback-pause
+      Type=Application
+      Categories=System;
+      Terminal=false
+      NoDisplay=false
+    '';
+
+  };
 }
