@@ -59,6 +59,7 @@
           scheme = "gruvbox-dark-hard"; # Theme name in assets/themes/
           # wallpaper = "catppuccin_landscape.png";
           wallpaper = "starry-sky.png"; # Filename in assets/wallpapers/
+          # wallpaper = "futuristic-background-with-green-letters.jpg"; # Filename in assets/wallpapers/
         };
       };
 
