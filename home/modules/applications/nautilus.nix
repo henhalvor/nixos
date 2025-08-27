@@ -1,7 +1,7 @@
 { config, pkgs, ... }:
 
 {
-  home.packages = with pkgs; [ nautilus ];
+  home.packages = with pkgs; [ nautilus gnome.gvfs ];
 
   xdg.mimeApps.enable = true;
 

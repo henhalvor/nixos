@@ -51,7 +51,8 @@
       ../../home/modules/applications/nvim.nix
       ../../home/modules/applications/nautilus.nix
       ../../home/modules/applications/spotify.nix
-      ../../home/modules/applications/nsxiv.nix
+      # ../../home/modules/applications/nsxiv.nix
+      ../../home/modules/applications/gthumb.nix
       ../../home/modules/applications/zathura.nix
       ../../home/modules/applications/mpv.nix
       ../../home/modules/applications/libreoffice.nix
