@@ -98,8 +98,14 @@
                 isNormalUser = true;
                 description = userSettings.name;
                 initialPassword = "password";
-                extraGroups =
-                  [ "networkmanager" "wheel" "i2c" "docker" "video" ];
+                extraGroups = [
+                  "networkmanager"
+                  "wheel"
+                  "i2c"
+                  "docker"
+                  "video"
+                  "libvirtd"
+                ];
                 shell = pkgsForNixOS.zsh;
                 home = userSettings.homeDirectory;
                 packages = with pkgsForNixOS; [ ethtool ];
