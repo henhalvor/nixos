@@ -47,7 +47,7 @@
       ../../home/modules/settings/secrets/secrets.nix
       ../../home/modules/settings/nerd-fonts.nix
       ../../home/modules/settings/ssh.nix
-      ../../home/modules/settings/theme.nix
+      ../../home/modules/themes/catppuccin/default.nix
     ];
 
 }

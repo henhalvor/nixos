@@ -20,6 +20,8 @@
       ../../nixos/modules/pipewire.nix
       ../../nixos/modules/bluetooth.nix
       ../../nixos/modules/networking.nix
+      ../../nixos/modules/gaming.nix
+      ../../nixos/modules/virtualization.nix
       ./bootloader.nix
       # window-manager
       ../../nixos/modules/window-manager/default.nix

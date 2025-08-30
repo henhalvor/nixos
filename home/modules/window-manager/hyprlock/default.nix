@@ -1,16 +1,20 @@
-{ config, lib, pkgs, ... }: {
+{ config, lib, pkgs, ... }:
+let
+  # Access stylix colors
+  colors = config.lib.stylix.colors;
+in {
   # First, we need to install hyprlock
   home.packages = [ pkgs.hyprlock ];
 
   # Create the configuration file for hyprlock
   xdg.configFile."hypr/hyprlock.conf".text = ''
-    # Base colors for background and surface elements
-    $base = rgb(24, 25, 38)        # Base background color
-    $surface0 = rgb(54, 58, 79)    # Surface color for elements
-    $overlay0 = rgb(110, 115, 141) # Muted foreground color
-    $text = rgb(202, 211, 245)     # Main text color
-    $lavender = rgb(183, 189, 248) # Accent color for highlights
-    $red = rgb(237, 135, 150)      # For error states or emphasis
+    # Base colors from Stylix theme
+    $base = rgb(${colors.base00-rgb-r}, ${colors.base00-rgb-g}, ${colors.base00-rgb-b})        # Base background color
+    $surface0 = rgb(${colors.base01-rgb-r}, ${colors.base01-rgb-g}, ${colors.base01-rgb-b})    # Surface color for elements
+    $overlay0 = rgb(${colors.base03-rgb-r}, ${colors.base03-rgb-g}, ${colors.base03-rgb-b})    # Muted foreground color
+    $text = rgb(${colors.base05-rgb-r}, ${colors.base05-rgb-g}, ${colors.base05-rgb-b})        # Main text color
+    $lavender = rgb(${colors.base0D-rgb-r}, ${colors.base0D-rgb-g}, ${colors.base0D-rgb-b})    # Accent color for highlights
+    $red = rgb(${colors.base08-rgb-r}, ${colors.base08-rgb-g}, ${colors.base08-rgb-b})         # For error states or emphasis
 
     # The general configuration section specifies core settings
     general {
@@ -22,7 +26,7 @@
     # The background section configures the background appearance
     background {
         monitor =  # Leave this empty for all monitors
-        path = ~/.dotfiles/home/modules/window-manager/hyprpaper/catpuccin_landscape.png #screenshot   # Use a screenshot as background
+        path = ${config.stylix.image}   # Use stylix wallpaper
         blur_passes = 2    # How many blur passes to perform
         blur_size = 7      # Scale of the gaussian blur
         noise = 0.0117     # Add noise to blur
@@ -67,7 +71,7 @@
         text = cmd[update:1000] echo "$(date "+%H:%M")"
         color = $text
         font_size = 64
-        font_family = Hack Nerd Font
+        font_family = ${config.stylix.fonts.monospace.name}
         position = 0, -140
         halign = center
         valign = center

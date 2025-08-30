@@ -3,7 +3,7 @@
   services.xserver.enable = true;
 
   # Enable display manager
-  services.xserver.displayManager.gdm.enable = true;
+  imports = [ ./display-manager/sddm.nix ];
 
   # XDG portal
   xdg.portal = {

@@ -221,7 +221,7 @@ in {
         # Set wallpaper
         {
           command =
-            "${pkgs.swaybg}/bin/swaybg -i ~/.dotfiles/home/modules/window-manager/hyprpaper/catpuccin_landscape.png -m fill";
+            "${pkgs.swaybg}/bin/swaybg -i ~/.dotfiles/assets/wallpapers/catpuccin_landscape.png -m fill";
         }
         # { command = "waybar"; }
         { command = "autotiling-rs"; }

@@ -1,5 +1,27 @@
-{ pkgs, lib, config, systemName, ... }:
+{ pkgs, lib, config, systemName, userSettings, ... }:
 let
+  # Theme mapping: stylix theme -> hyprpanel theme
+  hyprpanelThemeMap = {
+    # Gruvbox variants -> gruvbox theme
+    gruvbox-dark-medium = "gruvbox";
+    gruvbox-dark-hard = "gruvbox"; 
+    
+    # Catppuccin variants -> catppuccin_macchiato theme
+    catppuccin-mocha = "catppuccin_macchiato";
+    catppuccin-macchiato = "catppuccin_macchiato";
+    
+    # Fallbacks for unmapped themes -> default to gruvbox
+    nord = "gruvbox";
+    dracula = "gruvbox"; 
+    rose-pine-moon = "gruvbox";
+  };
+
+  # Get selected theme from userSettings (passed from flake.nix)
+  selectedStylixTheme = userSettings.stylixTheme.scheme or "gruvbox-dark-hard";
+
+  # Map to hyprpanel theme, with fallback
+  selectedHyprpanelTheme = hyprpanelThemeMap.${selectedStylixTheme} or "gruvbox";
+
   # Define system-specific configurations
   systemConfigs = {
     workstation = {
@@ -18,6 +40,18 @@ let
     systemConfigs.${systemName} or systemConfigs.lenovo-yoga-pro-7;
 
   configTarget = "${config.home.homeDirectory}/.config/hyprpanel/config.json";
+
+  # Dynamic theme selection based on stylix theme
+  currentTheme = ./themes/${selectedHyprpanelTheme}.json;
+
+  # Merge theme and system config dynamically
+  baseConfig = builtins.fromJSON (builtins.readFile currentConfig.configFile);
+  themeConfig = builtins.fromJSON (builtins.readFile currentTheme);
+  mergedConfig = lib.recursiveUpdate themeConfig baseConfig;
+
+  combinedConfigJson = pkgs.writeText "hyprpanel-merged-config.json"
+    (builtins.toJSON mergedConfig);
+
 in {
 
   home.packages = with pkgs; [
@@ -30,7 +64,7 @@ in {
   home.activation.copyHyprpanelConfig =
     lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       mkdir -p "$(dirname "${configTarget}")"
-      cp -f "${currentConfig.configFile}" "${configTarget}"
+      cp -f "${combinedConfigJson}" "${configTarget}"
     '';
 
 }

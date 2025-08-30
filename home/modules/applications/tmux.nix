@@ -1,9 +1,5 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
-}: let
+{ config, lib, pkgs, ... }:
+let
   # Status bar configuration using Machiato colors
   # statusBar = ''
   #   # Status bar styling
@@ -12,11 +8,8 @@
   #   set -g status-justify "left"
   # '';
   #
-  is_vim =
-    pkgs.writeShellScriptBin "is_vim.sh"
-    /*
-    bash
-    */
+  is_vim = pkgs.writeShellScriptBin "is_vim.sh"
+    # bash
     ''
       pane_pid=$(tmux display -p "#{pane_pid}")
 
@@ -77,7 +70,7 @@ in {
 
     extraConfig = ''
        # Theme
-       set -g @catppuccin_flavor 'macchiato' # latte, frappe, macchiato or mocha
+       # set -g @catppuccin_flavor 'macchiato' # latte, frappe, macchiato or mocha
 
        #
        # Old commented out config
@@ -131,7 +124,7 @@ in {
            # Theme: borders
       set -g pane-border-lines simple
       set -g pane-border-style fg=black,bright
-       set -g pane-active-border-style fg=#89b4fa
+       # set -g pane-active-border-style fg=#89b4fa
 
       # Theme: status
 
@@ -143,8 +136,8 @@ in {
       # Theme: status (windows)
        set -g window-status-format "#[fg=gray]●"
       set -g window-status-current-format "●"
-       set -g window-status-current-style "#{?window_zoomed_flag,fg=yellow,fg=#89b4fa,nobold}"
-      set -g window-status-bell-style "fg=red,nobold"
+       # set -g window-status-current-style "#{?window_zoomed_flag,fg=yellow,fg=#89b4fa,nobold}"
+      # set -g window-status-bell-style "fg=red,nobold"
 
       #
       #

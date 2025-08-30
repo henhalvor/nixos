@@ -113,16 +113,7 @@ let
 
 in {
 
-  imports = [
-    ./hyprpanel
-    ./hyprsunset
-    ./rofi
-    ./hyprpaper
-    ./hypridle
-    ./hyprlock
-    ./hyprland-services.nix
-    ./kanshi
-  ];
+  imports = [ ./hyprpanel ./hyprsunset ./rofi ./hypridle ./hyprlock ./kanshi ];
 
   home.packages = with pkgs;
     [
@@ -159,7 +150,6 @@ in {
           "wl-paste --type text --watch clipman store &" # Store text entries
           "wl-paste --type image --watch clipman store &" # Store images
           # "hyprpanel &"    # Dont manually start hyprpanel, it is started by systemd service
-          "hyprpaper &"
           "hypridle &"
 
           #   "swaync &"
@@ -189,8 +179,8 @@ in {
         gaps_in = 5;
         gaps_out = 10;
         border_size = 2;
-        "col.active_border" = "rgb(98971A) rgb(CC241D) 45deg";
-        "col.inactive_border" = "0x00000000";
+        # "col.active_border" = "rgb(98971A) rgb(CC241D) 45deg";
+        # "col.inactive_border" = "0x00000000";
         no_border_on_floating = false;
         # Allow dragging with left mouse button
         resize_on_border = true;
@@ -254,7 +244,7 @@ in {
           offset = "0 2";
           range = 20;
           render_power = 3;
-          color = "rgba(00000055)";
+          # color = "rgba(00000055)";
         };
       };
 
@@ -305,11 +295,8 @@ in {
           "$mainMod SHIFT, O, exec, clipman clear --all"
           "$mainMod, X, togglesplit,"
           "$mainMod, E, exec, hyprctl dispatch exec '[float; size 1111 650] kitty -e yazi'"
-          "$mainMod, L, exec, ${pkgs.hyprlock}/bin/hyprlock"
+          # "$mainMod, SHIFT, L, exec, ${pkgs.hyprlock}/bin/hyprlock"
           # "$mainMod SHIFT, B, exec, toggle_waybar"
-
-          # Lock screen
-          "$mainMod SHIFT, L, exec, hyprlock"
 
           # "$mainMod SHIFT, M, exec, hyprctl dispatch dpms on && notify-send 'All displays forced on'"
 
@@ -565,7 +552,6 @@ in {
       # env = LIBVA_DRIVER_NAME,nvidia
       # env = NVD_BACKEND,direct
 
-      # source = ~/.config/hypr/colorscheme.conf
     '';
   };
 

@@ -16,10 +16,14 @@
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
     nvim-nix.url = "github:henhalvor/nvim-nix";
+    stylix = {
+      url = "github:nix-community/stylix/release-25.05";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = { nixpkgs, nixpkgs-unstable, home-manager, nixpkgs-24-11
-    , zen-browser, vscode-server, nvf, nvim-nix, ... }:
+    , zen-browser, vscode-server, nvf, nvim-nix, stylix, ... }:
     let
       system = "x86_64-linux";
 
@@ -50,6 +54,13 @@
         term = "kitty";
         browser = "zen-browser";
         stateVersion = "25.05";
+        stylixTheme = {
+          # scheme = "catppuccin-macchiato"; # Theme name in assets/themes/
+          scheme = "gruvbox-dark-hard"; # Theme name in assets/themes/
+          # wallpaper = "catppuccin_landscape.png";
+          wallpaper = "starry-sky.png"; # Filename in assets/wallpapers/
+          # wallpaper = "futuristic-background-with-green-letters.jpg"; # Filename in assets/wallpapers/
+        };
       };
 
       userHenhalDev = rec {
@@ -74,6 +85,7 @@
           } // extraSpecialArgs;
 
           modules = [
+            stylix.nixosModules.stylix
             ./systems/${systemName}/configuration.nix
             { nixpkgs.config.allowUnfree = true; }
             ({ config, pkgs, ... }: {
@@ -86,8 +98,14 @@
                 isNormalUser = true;
                 description = userSettings.name;
                 initialPassword = "password";
-                extraGroups =
-                  [ "networkmanager" "wheel" "i2c" "docker" "video" ];
+                extraGroups = [
+                  "networkmanager"
+                  "wheel"
+                  "i2c"
+                  "docker"
+                  "video"
+                  "libvirtd"
+                ];
                 shell = pkgsForNixOS.zsh;
                 home = userSettings.homeDirectory;
                 packages = with pkgsForNixOS; [ ethtool ];
@@ -98,11 +116,11 @@
             home-manager.nixosModules.home-manager
             {
               home-manager.extraSpecialArgs = {
-                inherit system userSettings zen-browser nvf nvim-nix;
+                inherit system userSettings zen-browser nvf nvim-nix stylix;
                 unstable = unstablePkgs;
                 pkgs24-11 = pkgs24-11;
                 inherit hostname windowManager systemName;
-                inputs = { inherit zen-browser nvf nvim-nix; };
+                inputs = { inherit zen-browser nvf nvim-nix stylix; };
               };
               home-manager.useGlobalPkgs =
                 false; # NEEDS TO BE FALSE IN RECENT VERSION OF HOME MANAGER
@@ -157,12 +175,12 @@
           };
           modules = [ ./users/henhal/home.nix ];
           extraSpecialArgs = {
-            inherit system nvf nvim-nix;
+            inherit system nvf nvim-nix stylix;
             userSettings = userHenhal;
             unstable = unstablePkgs;
             pkgs24-11 = pkgs24-11;
             inherit zen-browser;
-            inputs = { inherit zen-browser nvf nvim-nix; };
+            inputs = { inherit zen-browser nvf nvim-nix stylix; };
             windowManager = "hyprland";
             systemName = "workstation";
           };

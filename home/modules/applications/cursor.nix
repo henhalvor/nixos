@@ -4,17 +4,15 @@
   # Make sure vscode-neovim (asvetliakov.vscode-neovim) is installed 
 
   # Install the Cursor package
-  home.packages = with pkgs; [
-    unstable.code-cursor
-  ];
+  home.packages = with pkgs; [ unstable.code-cursor ];
 
   # Cursor user settings (adapted from VSCode config)
   home.file.".config/Cursor/User/settings.json".text = builtins.toJSON {
     # Theme settings - Fix for light title bar
     "window.titleBarStyle" = "custom";
     "window.autoDetectColorScheme" = false;
-    "workbench.colorTheme" = "Catppuccin Macchiato";
-    "workbench.preferredDarkColorTheme" = "Catppuccin Macchiato";
+    # "workbench.colorTheme" = "Catppuccin Macchiato";
+    # "workbench.preferredDarkColorTheme" = "Catppuccin Macchiato";
     "workbench.colorCustomizations" = {
       "titleBar.activeBackground" = "#24273a";
       "titleBar.activeForeground" = "#cad3f5";
@@ -43,285 +41,273 @@
 
     # NeoVim settings
     "vscode-neovim.neovimExecutablePaths.linux" = "${pkgs.neovim}/bin/nvim";
-    "vscode-neovim.neovimInitVimPaths.linux" = "$HOME/.config/cursor-neovim/init.lua";
+    "vscode-neovim.neovimInitVimPaths.linux" =
+      "$HOME/.config/cursor-neovim/init.lua";
     "keyboard.dispatch" = "keyCode";
     "vscode-neovim.NVIM_APPNAME" = "cursor-neovim";
-
 
     # Enable NeoVim keybindings
     "editor.lineNumbers" = "relative";
 
     # Performance improvements for neovim
-    "extensions.experimental.affinity" = {
-      "asvetliakov.vscode-neovim" = 1;
-    };
+    "extensions.experimental.affinity" = { "asvetliakov.vscode-neovim" = 1; };
   };
 
   # Cursor keybindings
   home.file.".config/Cursor/User/keybindings.json".text = builtins.toJSON [
-  {
-    key = "ctrl+y";
-    command = "-aichat.newfollowupaction";
-  }
-  {
-    key = "ctrl+y";
-    command = "-redo";
-  }
-  {
-    key = "ctrl+y";
-    command = "acceptSelectedSuggestion";
-    when = "suggestWidgetVisible && textInputFocus";
-  }
-  {
-    key = "alt+y";
-    command = "editor.action.inlineSuggest.commit";
-    when = "inlineSuggestionHasIndentationLessThanTabSize && inlineSuggestionVisible && !editorHoverFocused && !editorTabMovesFocus && !suggestWidgetVisible";
-  }
- #   {
- #      key = "space";
- #      command = "vscode-neovim.leader";
- #      when = "editorTextFocus && neovim.mode != 'insert'";
- #    }
-   #
-  #   #  // Navigation
-  # {
-  #   key = "ctrl+h";
-  #   command = "workbench.action.navigateLeft";
-  # }
-  # {
-  #   key = "ctrl+l";
-  #   command = "workbench.action.navigateRight";
-  # }
-  # {
-  #   key = "ctrl+k";
-  #   command = "workbench.action.navigateUp";
-  # }
-  # {
-  #   key = "ctrl+j";
-  #   command = "workbench.action.navigateDown";
-  # }
- # Close file sidebar
-  {
-    key = "q";
-    command = "runCommands";
-    args = {
-      commands = [
-        "workbench.action.toggleSidebarVisibility"
-      ];
-    };
-    when = "sideBarVisible";
-  }
-  # Close terminal
-  {
-    key = "q";
-    command = "runCommands";
-    args = {
-      commands = [
-        "workbench.action.terminal.toggleTerminal"
-      ];
-    };
-    when = "terminalFocus";
-  }
+    {
+      key = "ctrl+y";
+      command = "-aichat.newfollowupaction";
+    }
+    {
+      key = "ctrl+y";
+      command = "-redo";
+    }
+    {
+      key = "ctrl+y";
+      command = "acceptSelectedSuggestion";
+      when = "suggestWidgetVisible && textInputFocus";
+    }
+    {
+      key = "alt+y";
+      command = "editor.action.inlineSuggest.commit";
+      when =
+        "inlineSuggestionHasIndentationLessThanTabSize && inlineSuggestionVisible && !editorHoverFocused && !editorTabMovesFocus && !suggestWidgetVisible";
+    }
+    #   {
+    #      key = "space";
+    #      command = "vscode-neovim.leader";
+    #      when = "editorTextFocus && neovim.mode != 'insert'";
+    #    }
+    #
+    #   #  // Navigation
+    # {
+    #   key = "ctrl+h";
+    #   command = "workbench.action.navigateLeft";
+    # }
+    # {
+    #   key = "ctrl+l";
+    #   command = "workbench.action.navigateRight";
+    # }
+    # {
+    #   key = "ctrl+k";
+    #   command = "workbench.action.navigateUp";
+    # }
+    # {
+    #   key = "ctrl+j";
+    #   command = "workbench.action.navigateDown";
+    # }
+    # Close file sidebar
+    {
+      key = "q";
+      command = "runCommands";
+      args = { commands = [ "workbench.action.toggleSidebarVisibility" ]; };
+      when = "sideBarVisible";
+    }
+    # Close terminal
+    {
+      key = "q";
+      command = "runCommands";
+      args = { commands = [ "workbench.action.terminal.toggleTerminal" ]; };
+      when = "terminalFocus";
+    }
     # Close Ai sidebar (secondary sidebar)
-  {
-    key = "q";
-    command = "runCommands";
-    args = {
-      commands = [
-        "workbench.action.toggleAuxiliaryBar"
-      ];
-    };
-    when = "auxiliaryBarFocus";
-  }
- #
-  # #
-  # #  // Coding
-  # #
-  # {
-  #   key = "space c a";
-  #   command = "editor.action.codeAction";
-  #   when = "vim.mode == 'Normal' && editorTextFocus";
-  # }
-  # # Move visually selected text
-  # {
-  #   key = "shift+k";
-  #   command = "editor.action.moveLinesUpAction";
-  #   when = "vim.mode == 'VisualLine' && editorTextFocus";
-  # }
-  # {
-  #   key = "shift+j";
-  #   command = "editor.action.moveLinesDownAction";
-  #   when = "vim.mode == 'VisualLine' && editorTextFocus";
-  # }
-  # # Lsp hover
-  # {
-  #   key = "shift+k";
-  #   command = "editor.action.showHover";
-  #   when = "vim.mode == 'Normal' && editorTextFocus";
-  # }
-  # # Lsp rename
-  # {
-  #   key = "space r n";
-  #   command = "editor.action.rename";
-  #   when = "vim.mode == 'Normal' && editorTextFocus";
-  # }
-  # # Open symbol menu
-  # {
-  #   key = "space c s";
-  #   command = "workbench.action.gotoSymbol";
-  #   when = "vim.mode == 'Normal' && editorTextFocus";
-  # }
-  # # {
-  # #   key = "space b d";
-  # #   command = "workbench.action.closeActiveEditor";
-  # #   when = "(vim.mode == 'Normal' && editorTextFocus) || !inputFocus";
-  # # }
-  # # {
-  # #   key = "space b o";
-  # #   command = "workbench.action.closeOtherEditors";
-  # #   when = "(vim.mode == 'Normal' && editorTextFocus) || !inputFocus";
-  # # }
-  #
-  # # Search files
-  # {
-  #   key = "space s c";
-  #   command = "workbench.action.quickOpen";
-  #   when = "vim.mode == 'Normal' && (editorTextFocus || !inputFocus)";
-  # }
-  # {
-  #   key = "space g d";
-  #   command = "editor.action.revealDefinition";
-  #   when = "vim.mode == 'Normal' && editorTextFocus";
-  # }
-  # {
-  #   key = "space g r";
-  #   command = "editor.action.goToReferences";
-  #   when = "vim.mode == 'Normal' && editorTextFocus";
-  # }
-  # {
-  #   key = "space g i";
-  #   command = "editor.action.goToImplementation";
-  #   when = "vim.mode == 'Normal' && editorTextFocus";
-  # }
-  # {
-  #   key = "space s g";
-  #   command = "workbench.action.findInFiles";
-  #   when = "vim.mode == 'Normal' && (editorTextFocus || !inputFocus)";
-  # }
-  # {
-  #   key = "space g g";
-  #   command = "runCommands";
-  #   when = "vim.mode == 'Normal' && (editorTextFocus || !inputFocus)";
-  #   args = {
-  #     commands = ["workbench.view.scm" "workbench.scm.focus"];
-  #   };
-  # }
-  # {
-  #   key = "ctrl+n";
-  #   command = "editor.action.addSelectionToNextFindMatch";
-  #   when = "(vim.mode == 'Normal' || vim.mode == 'Visual') && (editorTextFocus || !inputFocus)";
-  # }
-  #
-  # #  // File Explorer
-  # {
-  #   key = "r";
-  #   command = "renameFile";
-  #   when = "filesExplorerFocus && foldersViewVisible && !explorerResourceIsRoot && !explorerResourceReadonly && !inputFocus";
-  # }
-  # {
-  #   key = "c";
-  #   command = "filesExplorer.copy";
-  #   when = "filesExplorerFocus && foldersViewVisible && !explorerResourceIsRoot && !explorerResourceReadonly && !inputFocus";
-  # }
-  # {
-  #   key = "p";
-  #   command = "filesExplorer.paste";
-  #   when = "filesExplorerFocus && foldersViewVisible && !explorerResourceIsRoot && !explorerResourceReadonly && !inputFocus";
-  # }
-  # {
-  #   key = "x";
-  #   command = "filesExplorer.cut";
-  #   when = "filesExplorerFocus && foldersViewVisible && !explorerResourceIsRoot && !explorerResourceReadonly && !inputFocus";
-  # }
-  # {
-  #   key = "d";
-  #   command = "deleteFile";
-  #   when = "filesExplorerFocus && foldersViewVisible && !explorerResourceIsRoot && !explorerResourceReadonly && !inputFocus";
-  # }
-  # {
-  #   key = "a";
-  #   command = "explorer.newFile";
-  #   when = "filesExplorerFocus && foldersViewVisible && !explorerResourceIsRoot && !explorerResourceReadonly && !inputFocus";
-  # }
-  # {
-  #   key = "s";
-  #   command = "explorer.openToSide";
-  #   when = "filesExplorerFocus && foldersViewVisible && !explorerResourceIsRoot && !explorerResourceReadonly && !inputFocus";
-  # }
-  # {
-  #   key = "shift+s";
-  #   command = "runCommands";
-  #   when = "filesExplorerFocus && foldersViewVisible && !explorerResourceIsRoot && !explorerResourceReadonly && !inputFocus";
-  #   args = {
-  #     commands = [
-  #       "workbench.action.splitEditorDown"
-  #       "explorer.openAndPassFocus"
-  #       "workbench.action.closeOtherEditors"
-  #     ];
-  #   };
-  # }
-  # {
-  #   key = "enter";
-  #   command = "explorer.openAndPassFocus";
-  #   when = "filesExplorerFocus && foldersViewVisible && !explorerResourceIsRoot && !explorerResourceIsFolder && !inputFocus";
-  # }
-  # {
-  #   key = "enter";
-  #   command = "list.toggleExpand";
-  #   when = "filesExplorerFocus && foldersViewVisible && !explorerResourceIsRoot && explorerResourceIsFolder && !inputFocus";
-  # }
-  #
-  # #  // Debug
-  # {
-  #   key = "space d a";
-  #   command = "workbench.action.debug.selectandstart";
-  #   when = "vim.mode == 'Normal' && (editorTextFocus || !inputFocus) && debuggersAvailable";
-  # }
-  # {
-  #   key = "space d t";
-  #   command = "workbench.action.debug.stop";
-  #   when = "vim.mode == 'Normal' && editorTextFocus && inDebugMode && !focusedSessionIsAttached";
-  # }
-  # {
-  #   key = "space d o";
-  #   command = "workbench.action.debug.stepOver";
-  #   when = "vim.mode == 'Normal' && (editorTextFocus || !inputFocus) && inDebugMode && debugState == 'stopped'";
-  # }
-  # {
-  #   key = "space d b";
-  #   command = "editor.debug.action.toggleBreakpoint";
-  #   when = "vim.mode == 'Normal' && editorTextFocus";
-  # }
-  # {
-  #   key = "space d e";
-  #   command = "editor.debug.action.showDebugHover";
-  #   when = "vim.mode == 'Normal' && editorTextFocus && inDebugMode && debugState == 'stopped'";
-  # }
-  # {
-  #   key = "space d c";
-  #   command = "workbench.action.debug.continue";
-  #   when = "vim.mode == 'Normal' && (editorTextFocus || !inputFocus) && inDebugMode && debugState == 'stopped'";
-  # }
-  #
-  
+    {
+      key = "q";
+      command = "runCommands";
+      args = { commands = [ "workbench.action.toggleAuxiliaryBar" ]; };
+      when = "auxiliaryBarFocus";
+    }
+    #
+    # #
+    # #  // Coding
+    # #
+    # {
+    #   key = "space c a";
+    #   command = "editor.action.codeAction";
+    #   when = "vim.mode == 'Normal' && editorTextFocus";
+    # }
+    # # Move visually selected text
+    # {
+    #   key = "shift+k";
+    #   command = "editor.action.moveLinesUpAction";
+    #   when = "vim.mode == 'VisualLine' && editorTextFocus";
+    # }
+    # {
+    #   key = "shift+j";
+    #   command = "editor.action.moveLinesDownAction";
+    #   when = "vim.mode == 'VisualLine' && editorTextFocus";
+    # }
+    # # Lsp hover
+    # {
+    #   key = "shift+k";
+    #   command = "editor.action.showHover";
+    #   when = "vim.mode == 'Normal' && editorTextFocus";
+    # }
+    # # Lsp rename
+    # {
+    #   key = "space r n";
+    #   command = "editor.action.rename";
+    #   when = "vim.mode == 'Normal' && editorTextFocus";
+    # }
+    # # Open symbol menu
+    # {
+    #   key = "space c s";
+    #   command = "workbench.action.gotoSymbol";
+    #   when = "vim.mode == 'Normal' && editorTextFocus";
+    # }
+    # # {
+    # #   key = "space b d";
+    # #   command = "workbench.action.closeActiveEditor";
+    # #   when = "(vim.mode == 'Normal' && editorTextFocus) || !inputFocus";
+    # # }
+    # # {
+    # #   key = "space b o";
+    # #   command = "workbench.action.closeOtherEditors";
+    # #   when = "(vim.mode == 'Normal' && editorTextFocus) || !inputFocus";
+    # # }
+    #
+    # # Search files
+    # {
+    #   key = "space s c";
+    #   command = "workbench.action.quickOpen";
+    #   when = "vim.mode == 'Normal' && (editorTextFocus || !inputFocus)";
+    # }
+    # {
+    #   key = "space g d";
+    #   command = "editor.action.revealDefinition";
+    #   when = "vim.mode == 'Normal' && editorTextFocus";
+    # }
+    # {
+    #   key = "space g r";
+    #   command = "editor.action.goToReferences";
+    #   when = "vim.mode == 'Normal' && editorTextFocus";
+    # }
+    # {
+    #   key = "space g i";
+    #   command = "editor.action.goToImplementation";
+    #   when = "vim.mode == 'Normal' && editorTextFocus";
+    # }
+    # {
+    #   key = "space s g";
+    #   command = "workbench.action.findInFiles";
+    #   when = "vim.mode == 'Normal' && (editorTextFocus || !inputFocus)";
+    # }
+    # {
+    #   key = "space g g";
+    #   command = "runCommands";
+    #   when = "vim.mode == 'Normal' && (editorTextFocus || !inputFocus)";
+    #   args = {
+    #     commands = ["workbench.view.scm" "workbench.scm.focus"];
+    #   };
+    # }
+    # {
+    #   key = "ctrl+n";
+    #   command = "editor.action.addSelectionToNextFindMatch";
+    #   when = "(vim.mode == 'Normal' || vim.mode == 'Visual') && (editorTextFocus || !inputFocus)";
+    # }
+    #
+    # #  // File Explorer
+    # {
+    #   key = "r";
+    #   command = "renameFile";
+    #   when = "filesExplorerFocus && foldersViewVisible && !explorerResourceIsRoot && !explorerResourceReadonly && !inputFocus";
+    # }
+    # {
+    #   key = "c";
+    #   command = "filesExplorer.copy";
+    #   when = "filesExplorerFocus && foldersViewVisible && !explorerResourceIsRoot && !explorerResourceReadonly && !inputFocus";
+    # }
+    # {
+    #   key = "p";
+    #   command = "filesExplorer.paste";
+    #   when = "filesExplorerFocus && foldersViewVisible && !explorerResourceIsRoot && !explorerResourceReadonly && !inputFocus";
+    # }
+    # {
+    #   key = "x";
+    #   command = "filesExplorer.cut";
+    #   when = "filesExplorerFocus && foldersViewVisible && !explorerResourceIsRoot && !explorerResourceReadonly && !inputFocus";
+    # }
+    # {
+    #   key = "d";
+    #   command = "deleteFile";
+    #   when = "filesExplorerFocus && foldersViewVisible && !explorerResourceIsRoot && !explorerResourceReadonly && !inputFocus";
+    # }
+    # {
+    #   key = "a";
+    #   command = "explorer.newFile";
+    #   when = "filesExplorerFocus && foldersViewVisible && !explorerResourceIsRoot && !explorerResourceReadonly && !inputFocus";
+    # }
+    # {
+    #   key = "s";
+    #   command = "explorer.openToSide";
+    #   when = "filesExplorerFocus && foldersViewVisible && !explorerResourceIsRoot && !explorerResourceReadonly && !inputFocus";
+    # }
+    # {
+    #   key = "shift+s";
+    #   command = "runCommands";
+    #   when = "filesExplorerFocus && foldersViewVisible && !explorerResourceIsRoot && !explorerResourceReadonly && !inputFocus";
+    #   args = {
+    #     commands = [
+    #       "workbench.action.splitEditorDown"
+    #       "explorer.openAndPassFocus"
+    #       "workbench.action.closeOtherEditors"
+    #     ];
+    #   };
+    # }
+    # {
+    #   key = "enter";
+    #   command = "explorer.openAndPassFocus";
+    #   when = "filesExplorerFocus && foldersViewVisible && !explorerResourceIsRoot && !explorerResourceIsFolder && !inputFocus";
+    # }
+    # {
+    #   key = "enter";
+    #   command = "list.toggleExpand";
+    #   when = "filesExplorerFocus && foldersViewVisible && !explorerResourceIsRoot && explorerResourceIsFolder && !inputFocus";
+    # }
+    #
+    # #  // Debug
+    # {
+    #   key = "space d a";
+    #   command = "workbench.action.debug.selectandstart";
+    #   when = "vim.mode == 'Normal' && (editorTextFocus || !inputFocus) && debuggersAvailable";
+    # }
+    # {
+    #   key = "space d t";
+    #   command = "workbench.action.debug.stop";
+    #   when = "vim.mode == 'Normal' && editorTextFocus && inDebugMode && !focusedSessionIsAttached";
+    # }
+    # {
+    #   key = "space d o";
+    #   command = "workbench.action.debug.stepOver";
+    #   when = "vim.mode == 'Normal' && (editorTextFocus || !inputFocus) && inDebugMode && debugState == 'stopped'";
+    # }
+    # {
+    #   key = "space d b";
+    #   command = "editor.debug.action.toggleBreakpoint";
+    #   when = "vim.mode == 'Normal' && editorTextFocus";
+    # }
+    # {
+    #   key = "space d e";
+    #   command = "editor.debug.action.showDebugHover";
+    #   when = "vim.mode == 'Normal' && editorTextFocus && inDebugMode && debugState == 'stopped'";
+    # }
+    # {
+    #   key = "space d c";
+    #   command = "workbench.action.debug.continue";
+    #   when = "vim.mode == 'Normal' && (editorTextFocus || !inputFocus) && inDebugMode && debugState == 'stopped'";
+    # }
+    #
+
   ];
 
-# Create directories for Cursor-specific Neovim config and plugins
-home.activation.createCursorNeovimDirs = lib.hm.dag.entryAfter ["writeBoundary"] ''
-  $DRY_RUN_CMD mkdir -p $VERBOSE_ARG ${config.home.homeDirectory}/.config/cursor-neovim
-  $DRY_RUN_CMD mkdir -p $VERBOSE_ARG ${config.home.homeDirectory}/.local/share/cursor-neovim/lazy
-  $DRY_RUN_CMD mkdir -p $VERBOSE_ARG ${config.home.homeDirectory}/.local/share/cursor-neovim/plugins
-'';
+  # Create directories for Cursor-specific Neovim config and plugins
+  home.activation.createCursorNeovimDirs =
+    lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      $DRY_RUN_CMD mkdir -p $VERBOSE_ARG ${config.home.homeDirectory}/.config/cursor-neovim
+      $DRY_RUN_CMD mkdir -p $VERBOSE_ARG ${config.home.homeDirectory}/.local/share/cursor-neovim/lazy
+      $DRY_RUN_CMD mkdir -p $VERBOSE_ARG ${config.home.homeDirectory}/.local/share/cursor-neovim/plugins
+    '';
 
   # Create a Cursor-specific init.lua file
   home.file.".config/cursor-neovim/init.lua".text = ''
@@ -415,7 +401,7 @@ home.activation.createCursorNeovimDirs = lib.hm.dag.entryAfter ["writeBoundary"]
       vscode.call("workbench.files.action.focusFilesExplorer")
     end)
     -- Keymap for closing the file explorer (sidebar) is located in keybindings.json (nvim does not work when sideBarFocus is set)
- 
+
     -- Git (version control)
     vim.keymap.set("n", "<leader>gg", function()
       vscode.call("workbench.scm.focus")
