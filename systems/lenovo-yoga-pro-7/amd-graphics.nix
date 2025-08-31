@@ -1,35 +1,24 @@
 { config, pkgs, userSettings, ... }: {
   # Video drivers
-  services.xserver.videoDrivers = [ "amdgpu" ];
+  # services.xserver.videoDrivers = [ "amdgpu" ];
 
-  # Environment variables for video acceleration
   environment.sessionVariables = {
-    # Hardware video acceleration - Essential for low-power video
+    # Essential video acceleration
     LIBVA_DRIVER_NAME = "radeonsi";
     VDPAU_DRIVER = "radeonsi";
 
-    # Firefox hardware acceleration
+    # Wayland Basics
     MOZ_ENABLE_WAYLAND = "1";
-    MOZ_USE_XINPUT2 = "1";
-    MOZ_X11_EGL = "1";
-    MOZ_WEBRENDER = "1";
-    MOZ_ACCELERATED = "1";
-
-    # AMD Vulkan settings
-    AMD_VULKAN_ICD = "RADV";
-    RADV_PERFTEST = "video_decode";
-
-    # Mesa settings
-    MESA_LOADER_DRIVER_OVERRIDE = "radeonsi";
-    mesa_glthread = "true";
-
-    # Wayland settings from your config
     WLR_RENDERER = "gles2";
     WLR_NO_HARDWARE_CURSORS = "1";
 
-    # Enable DRI3
-    LIBGL_DRI3_DISABLE = "0";
   };
+
+  # Performance Issues with AMDVLK
+  # Some games choose AMDVLK over RADV, which can cause noticeable performance issues (e.g. <50% less FPS in games)
+  # This is also more power efficient than AMDVL
+  # To force RADV
+  environment.variables.AMD_VULKAN_ICD = "RADV";
 
   # Graphics hardware configuration
   hardware = {
@@ -38,23 +27,17 @@
       enable32Bit = true;
 
       extraPackages = with pkgs; [
-        # Mesa drivers
+        # Core Mesa drivers
         mesa
 
-        # Vulkan
-        amdvlk
-        vulkan-loader
-        vulkan-validation-layers
-
-        # Video acceleration - Critical for battery life during video
+        # Essential video acceleration for battery life
         libva
-        libva-utils
         libvdpau
         vaapiVdpau
         libvdpau-va-gl
 
-        # AMD ROCm
-        rocmPackages.clr
+        # Minimal Vulkan support
+        vulkan-loader
       ];
 
       extraPackages32 = with pkgs.pkgsi686Linux; [
@@ -69,29 +52,17 @@
     firmware = with pkgs; [ linux-firmware ];
   };
 
-  # Balanced kernel parameters for Radeon 780M
+  # Optional: For better performance with AMDGPU
   boot.kernelParams = [
-    # AMD GPU parameters
-    "amdgpu.ppfeaturemask=0xffffffff"
-    "amdgpu.runpm=1"
-    "amdgpu.aspm=1"
-    "amdgpu.bapm=1"
-    "amdgpu.dpm=1"
-    "amdgpu.dc=1"
-    "amdgpu.msi=1"
-    "amdgpu.gpu_recovery=1"
+    "amdgpu.ppfeaturemask=0xffffffff" # Enables all power management features
+    "amdgpu.runpm=1" # Runtime PM
+    "amdgpu.bapm=1" # Battery power management
+    "amdgpu.dpm=1" # Dynamic power management
+    "amdgpu.dc=1" # Display core efficiency
 
-    # Disable unused features
+    # Additional battery optimizations
     "amdgpu.audio=0" # Disable HDMI audio if not needed
-
-    # Disable old radeon driver
-    "radeon.si_support=0"
-    "radeon.cik_support=0"
-    "amdgpu.si_support=1"
-    "amdgpu.cik_support=1"
-
-    # Blacklist NVIDIA
-    "module_blacklist=nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm,nouveau"
+    "module_blacklist=nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm" # Blacklist NVIDIA modules
   ];
 
   # XDG Portal configuration
@@ -101,156 +72,51 @@
     config = { common = { default = [ "wlr" "gtk" ]; }; };
   };
 
-  # Firefox with video acceleration
+  # Battery-focused Firefox
   programs.firefox = {
     enable = true;
     preferences = {
-      # Hardware video acceleration
+      # Video acceleration (essential for battery)
       "media.ffmpeg.vaapi.enabled" = true;
       "media.hardware-video-decoding.enabled" = true;
-      "media.hardware-video-decoding.force-enabled" = true;
       "media.ffvpx.enabled" = false;
-      "media.av1.enabled" = true;
-      "media.navigator.mediadatadecoder_vpx_enabled" = true;
-      "media.rdd-process.enabled" = false; # Reduce process overhead
 
-      # WebRender
-      "gfx.webrender.all" = true;
-      "gfx.webrender.enabled" = true;
-      "gfx.webrender.compositor" = true;
-      "gfx.webrender.compositor.force-enabled" = true;
-
-      # Wayland
-      "widget.wayland.use-cached-mode-info" = true;
-      "widget.dmabuf.force-enabled" = true;
-
-      # Performance settings for battery
-      "dom.ipc.processCount" = 4;
-      "browser.sessionstore.interval" = 60000; # Save session less often
+      # Battery optimizations
+      "dom.ipc.processCount" = 2;
+      "browser.sessionstore.interval" = 120000;
       "browser.tabs.unloadOnLowMemory" = true;
-      "javascript.options.mem.gc_incremental_slice_ms" = 20;
+      "browser.tabs.remote.autostart" = false;
+      "media.autoplay.default" = 5; # Block autoplay
 
-      # Disable telemetry
+      # Memory management
+      "javascript.options.mem.gc_incremental_slice_ms" = 10;
+      "browser.sessionhistory.max_entries" = 10;
+
+      # Disable telemetry (saves CPU cycles)
       "toolkit.telemetry.unified" = false;
       "browser.newtabpage.activity-stream.telemetry" = false;
 
-      # GPU acceleration
-      "layers.acceleration.force-enabled" = true;
-      "layers.omtp.enabled" = true;
-      "layers.gpu-process.enabled" = true;
+      # Conservative GPU usage
+      "layers.acceleration.disabled" = false;
+      "gfx.webrender.software.opengl" = true;
     };
   };
 
-  # Additional GPU management
-  services = {
-    udev.extraRules = ''
-      # AMD GPU power management
-      KERNEL=="card[0-9]", SUBSYSTEM=="drm", DRIVERS=="amdgpu", ATTR{device/power_dpm_state}="battery"
-      KERNEL=="card[0-9]", SUBSYSTEM=="drm", DRIVERS=="amdgpu", ATTR{device/power_dpm_force_performance_level}="auto"
-      ACTION=="add", SUBSYSTEM=="pci", DRIVER=="amdgpu", ATTR{power/control}="auto"
-    '';
-  };
+  # Aggressive power management
+  services.udev.extraRules = ''
+    # Maximum battery optimization for AMD GPU
+    KERNEL=="card[0-9]", SUBSYSTEM=="drm", DRIVERS=="amdgpu", ATTR{device/power_dpm_state}="battery"
+    KERNEL=="card[0-9]", SUBSYSTEM=="drm", DRIVERS=="amdgpu", ATTR{device/power_dpm_force_performance_level}="low"
+    KERNEL=="card[0-9]", SUBSYSTEM=="drm", DRIVERS=="amdgpu", ATTR{device/pp_power_profile_mode}="1"
+    ACTION=="add", SUBSYSTEM=="pci", DRIVER=="amdgpu", ATTR{power/control}="auto"
+    ACTION=="add", SUBSYSTEM=="pci", DRIVER=="amdgpu", ATTR{power/autosuspend_delay_ms}="1000"
+  '';
 
-  # Video playback tools
-  environment.systemPackages = with pkgs; [
-    libva-utils # vainfo command
-    vdpauinfo # vdpauinfo command
-    radeontop # GPU monitoring
-    nvtopPackages.amd # Better GPU monitoring
-  ];
+  # Minimal monitoring tools
+  environment.systemPackages = with pkgs;
+    [
+      libva-utils # vainfo - verify video acceleration works
+      # radeontop and nvtop are useful but consume power themselves
+    ];
 }
 
-# {
-#   config,
-#   pkgs,
-#   userSettings,
-#   ...
-# }: {
-#   # Video drivers configuration
-#   services.xserver.videoDrivers = ["amdgpu"]; # Only use amdgpu driver
-#
-#   # Remove any NVIDIA-related packages and modules
-#   hardware.nvidia.package = null;
-#   hardware.nvidia.modesetting.enable = false;
-#
-#   # Environment variables for AMD graphics
-#   environment.sessionVariables = {
-#     # Hardware acceleration API support
-#     LIBVA_DRIVER_NAME = "radeonsi"; # For VA-API
-#     VDPAU_DRIVER = "radeonsi"; # For VDPAU
-#
-#     # Wayland-specific settings (if using Wayland)
-#     # WLR_RENDERER = "vulkan"; # Better performance on AMD
-#   WLR_RENDERER = "gles2"; # Change "vulkan" to "gles2" to MINIMIZE screen artifact
-#  WLR_NO_HARDWARE_CURSORS = "1"; # FIXES screen artifact in lower right corner
-#
-#     # Force Mesa to ignore NVIDIA
-#     MESA_LOADER_DRIVER_OVERRIDE = "radeonsi";
-#
-#     # Optional: Use Vulkan by default for games
-#     AMD_VULKAN_ICD = "RADV"; # Use RADV Vulkan driver
-#   };
-#
-#   # Graphics and Hardware Acceleration
-#   hardware = {
-#     graphics = {
-#       enable = true;
-#
-#       # Add drivers for AMD and definitely exclude NVIDIA
-#       extraPackages = with pkgs; [
-#         # Vulkan support
-#         vulkan-loader
-#         vulkan-validation-layers
-#         amdvlk # AMD's Vulkan implementation
-#
-#         # OpenGL and VA-API support
-#         mesa # Main OpenGL implementation
-#         libva # Video Acceleration API
-#         libva-utils
-#
-#         # VDPAU support
-#         vaapiVdpau # VDPAU backend for VA-API
-#         libvdpau-va-gl # OpenGL backend for VDPAU
-#
-#         # ROCm (compute) support if needed
-#         rocmPackages.clr # OpenCL runtime
-#       ];
-#
-#       # 32-bit support (for Steam and other gaming applications)
-#       extraPackages32 = with pkgs.pkgsi686Linux; [
-#         # Vulkan 32-bit support
-#         vulkan-loader
-#
-#         # OpenGL 32-bit support
-#         mesa
-#
-#         # Video acceleration 32-bit support
-#         libva
-#         vaapiVdpau
-#       ];
-#     };
-#
-#     # Enable firmware for amdgpu if needed
-#     firmware = [pkgs.linux-firmware];
-#   };
-#
-#   # Optional: For better performance with AMDGPU
-#   boot.kernelParams = [
-#     "amdgpu.ppfeaturemask=0xffffffff" # Enables all power management features
-#     "radeon.si_support=0" # Disable Southern Islands support
-#     "radeon.cik_support=0" # Disable Sea Islands support
-#     "amdgpu.si_support=1" # Enable Southern Islands support in amdgpu
-#     "amdgpu.cik_support=1" # Enable Sea Islands support in amdgpu
-#     "module_blacklist=nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm" # Blacklist NVIDIA modules
-#   ];
-#
-#   # XDG Desktop Portal for proper application integrations
-#   xdg.portal = {
-#     enable = true;
-#     extraPortals = with pkgs; [
-#       xdg-desktop-portal-gtk
-#       xdg-desktop-portal-gnome
-#     ];
-#     config.common.default = "*";
-#   };
-# }
