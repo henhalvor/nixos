@@ -144,6 +144,6 @@
   "bar.notifications.show_total": true,
   "bar.notifications.hideCountWhenZero": true,
   "menus.dashboard.stats.enabled": false,
-  "menus.dashboard.stats.enable_gpu": false
+  "menus.dashboard.stats.enable_gpu": false,
+  "wallpaper.enable": false
 }
-
