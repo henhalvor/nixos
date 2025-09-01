@@ -16,7 +16,7 @@ let
 
         # Define specific monitor configurations
         # Laptop built-in display
-        monitor=eDP-1,2560x1600@90,0x0,1.6
+        monitor=eDP-1,2560x1600@60,0x0,1.6
 
         # Samsung Odyssey (DP-9) - Center screen with native resolution
         monitor=DP-9,2560x1440@144,0x0,1
@@ -31,6 +31,17 @@ let
         ",XF86MonBrightnessDown,exec, brightnessctl s 10%-"
 
       ];
+
+      # NEW: Battery-optimized animations (LAPTOP ONLY)
+      extraAnimations = {
+        enabled = false; # Disable all animations for battery life
+      };
+
+      # NEW: Battery-optimized decorations (LAPTOP ONLY)
+      extraDecorations = { };
+
+      # NEW: Battery-optimized misc settings (LAPTOP ONLY)
+      extraMisc = { };
 
       extraInput = { touchpad = { natural_scroll = true; }; };
 
@@ -78,6 +89,40 @@ let
         # Workstation-specific monitor toggle
         "$mainMod, M, exec, toggle-monitors"
       ];
+
+      extraAnimations = { enabled = true; };
+
+      extraDecorations = {
+
+        # opacity
+        active_opacity = 1.0; # opacity for focused windows (100%)
+        inactive_opacity = 1.0; # opacity for unfocused windows (95%)
+        fullscreen_opacity = 1.0; # opacity for fullscreen (100%)
+
+        blur = {
+          enabled = true;
+          size = 3;
+          passes = 2;
+          brightness = 1;
+          contrast = 1.4;
+          ignore_opacity = true;
+          noise = 0;
+          new_optimizations = true;
+          xray = true;
+        };
+
+        shadow = {
+          enabled = true;
+
+          ignore_window = true;
+          offset = "0 2";
+          range = 20;
+          render_power = 3;
+          # color = "rgba(00000055)";
+        };
+
+      };
+      extraMisc = { };
 
       extraInput = {
         # Workstation-specific input settings
@@ -188,17 +233,19 @@ in {
         hover_icon_on_border = true;
       };
 
-      misc = {
-        disable_autoreload = true;
-        disable_hyprland_logo = true;
-        always_follow_on_dnd = true;
-        layers_hog_keyboard_focus = true;
-        animate_manual_resizes = false;
-        enable_swallow = true;
-        focus_on_activate = true;
-        new_window_takes_over_fullscreen = 2;
-        middle_click_paste = false;
-      };
+      misc = let
+        baseMisc = {
+          disable_autoreload = true;
+          disable_hyprland_logo = true;
+          always_follow_on_dnd = true;
+          layers_hog_keyboard_focus = true;
+          animate_manual_resizes = false;
+          enable_swallow = true;
+          focus_on_activate = true;
+          new_window_takes_over_fullscreen = 2;
+          middle_click_paste = false;
+        };
+      in baseMisc // currentConfig.extraMisc;
 
       dwindle = {
         # no_gaps_when_only = false;
@@ -216,67 +263,41 @@ in {
         # no_gaps_when_only = false;
       };
 
-      decoration = {
-        # Rounding
-        rounding = 10;
-
-        # Opacity
-        active_opacity = 1.0; # Opacity for focused windows (100%)
-        inactive_opacity = 1.0; # Opacity for unfocused windows (95%)
-        fullscreen_opacity = 1.0; # Opacity for fullscreen (100%)
-
-        blur = {
-          enabled = true;
-          size = 3;
-          passes = 2;
-          brightness = 1;
-          contrast = 1.4;
-          ignore_opacity = true;
-          noise = 0;
-          new_optimizations = true;
-          xray = true;
+      decoration = let
+        baseDecoration = {
+          rounding = 10; # Rounding on all windows
         };
+      in baseDecoration // currentConfig.extraDecorations;
 
-        shadow = {
-          enabled = true;
+      animations = let
+        baseAnimations = {
+          bezier = [
+            "fluent_decel, 0, 0.2, 0.4, 1"
+            "easeOutCirc, 0, 0.55, 0.45, 1"
+            "easeOutCubic, 0.33, 1, 0.68, 1"
+            "fade_curve, 0, 0.55, 0.45, 1"
+          ];
 
-          ignore_window = true;
-          offset = "0 2";
-          range = 20;
-          render_power = 3;
-          # color = "rgba(00000055)";
+          animation = [
+            # name, enable, speed, curve, style
+
+            # Windows
+            "windowsIn,   0, 4, easeOutCubic,  popin 20%" # window open
+            "windowsOut,  0, 4, fluent_decel,  popin 80%" # window close.
+            "windowsMove, 1, 2, fluent_decel, slide" # everything in between, moving, dragging, resizing.
+
+            # Fade
+            "fadeIn,      1, 3,   fade_curve" # fade in (open) -> layers and windows
+            "fadeOut,     1, 3,   fade_curve" # fade out (close) -> layers and windows
+            "fadeSwitch,  0, 1,   easeOutCirc" # fade on changing activewindow and its opacity
+            "fadeShadow,  1, 10,  easeOutCirc" # fade on changing activewindow for shadows
+            "fadeDim,     1, 4,   fluent_decel" # the easing of the dimming of inactive windows
+            # "border,      1, 2.7, easeOutCirc"  # for animating the border's color switch speed
+            # "borderangle, 1, 30,  fluent_decel, once" # for animating the border's gradient angle - styles: once (default), loop
+            "workspaces,  1, 4,   easeOutCubic, fade" # styles: slide, slidevert, fade, slidefade, slidefadevert
+          ];
         };
-      };
-
-      animations = {
-        enabled = true;
-
-        bezier = [
-          "fluent_decel, 0, 0.2, 0.4, 1"
-          "easeOutCirc, 0, 0.55, 0.45, 1"
-          "easeOutCubic, 0.33, 1, 0.68, 1"
-          "fade_curve, 0, 0.55, 0.45, 1"
-        ];
-
-        animation = [
-          # name, enable, speed, curve, style
-
-          # Windows
-          "windowsIn,   0, 4, easeOutCubic,  popin 20%" # window open
-          "windowsOut,  0, 4, fluent_decel,  popin 80%" # window close.
-          "windowsMove, 1, 2, fluent_decel, slide" # everything in between, moving, dragging, resizing.
-
-          # Fade
-          "fadeIn,      1, 3,   fade_curve" # fade in (open) -> layers and windows
-          "fadeOut,     1, 3,   fade_curve" # fade out (close) -> layers and windows
-          "fadeSwitch,  0, 1,   easeOutCirc" # fade on changing activewindow and its opacity
-          "fadeShadow,  1, 10,  easeOutCirc" # fade on changing activewindow for shadows
-          "fadeDim,     1, 4,   fluent_decel" # the easing of the dimming of inactive windows
-          # "border,      1, 2.7, easeOutCirc"  # for animating the border's color switch speed
-          # "borderangle, 1, 30,  fluent_decel, once" # for animating the border's gradient angle - styles: once (default), loop
-          "workspaces,  1, 4,   easeOutCubic, fade" # styles: slide, slidevert, fade, slidefade, slidefadevert
-        ];
-      };
+      in baseAnimations // currentConfig.extraAnimations;
 
       bind = let
         # Base keybindings that apply to all systems

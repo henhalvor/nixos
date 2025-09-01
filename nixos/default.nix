@@ -14,8 +14,11 @@
   # Enable CUPS to print documents.
   services.printing.enable = true;
 
-  # Docker
-  virtualisation.docker.enable = true;
+  # Docker configuration - disabled by default for battery life
+  virtualisation.docker = {
+    enable = false; # Start manually with: sudo systemctl start docker
+
+  };
 
   # Enable zsh
   programs.zsh.enable = true;
