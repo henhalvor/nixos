@@ -105,9 +105,9 @@ in {
         extraPackages = [ sddm-astronaut ];
 
         # Not working since sddm is using wayland and not x11
-        setupScript = ''
-          ${pkgs.xorg.xrandr}/bin/xrandr --output HDMI-A-1 --primary --mode 2560x1440 --pos 1080x0 --output DP-1 --mode 1080x1920 --pos 0x0 --rotate left
-        '';
+        # setupScript = ''
+        #   ${pkgs.xorg.xrandr}/bin/xrandr --output HDMI-A-1 --primary --mode 2560x1440 --pos 1080x0 --output DP-1 --mode 1080x1920 --pos 0x0 --rotate left
+        # '';
 
       };
       autoLogin = {
