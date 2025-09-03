@@ -22,13 +22,17 @@
       ../../nixos/modules/networking.nix
       ../../nixos/modules/gaming.nix
       ../../nixos/modules/virtualization.nix
-      ./bootloader.nix
+      # ./bootloader.nix
+      ./secure-boot.nix # Secore boot overrides bootloader settings
       # window-manager
       ../../nixos/modules/window-manager/default.nix
 
       # Server connectivity
       ../../nixos/modules/server/ssh.nix
       ../../nixos/modules/server/tailscale.nix
+
+      # Scripts
+      ./scripts/boot-windows.nix
 
     ];
   # logitect wireless dongle
@@ -55,7 +59,7 @@
   services.blueman.enable = true;
   hardware.bluetooth.enable = true;
 
- hardware.enableAllFirmware = true;
+  hardware.enableAllFirmware = true;
   hardware.firmware = [ pkgs.linux-firmware ];
 
 }
