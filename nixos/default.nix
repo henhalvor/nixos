@@ -23,6 +23,8 @@
   # Virtual filesystem support (for GVFS, used by Nautilus)
   services.gvfs.enable = true;
 
+  programs.gnome-disks.enable = true;
+
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [

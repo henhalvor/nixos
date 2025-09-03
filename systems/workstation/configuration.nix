@@ -55,4 +55,7 @@
   services.blueman.enable = true;
   hardware.bluetooth.enable = true;
 
+ hardware.enableAllFirmware = true;
+  hardware.firmware = [ pkgs.linux-firmware ];
+
 }
