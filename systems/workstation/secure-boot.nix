@@ -5,6 +5,7 @@
   ];
 
   # Config here overrides the settings in bootloader.nix
+  # https://github.com/nix-community/lanzaboote
 
   # Lanzaboote currently replaces the systemd-boot module.
   # This setting is usually set to true in configuration.nix
