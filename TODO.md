@@ -1,28 +1,15 @@
 # Todo's
 
-## Applications
-
-### Need to add:
-
-- [x] Add a File explorer (ranger or yazi)
-- [x] Add docker
-- [x] Add tmux for persistent sessions
-- [x] React native environment (node, yarn, adb, gradle, java, emulator???)
-- [x] Add aider
-- [x] Add supermaven
-- [x] Micorsoft Edge
-
 ### Config:
 
-- [x] Wallpaper
-- [x] Hypridle / Hyprlock
-- [x] Rounded window borders
-- [x] Transparent windows (transparent terminal)
-- [x] Kitty config
-- [x] Neovim Markdown preview
-- [x] Shell alias (v - nvim)
-- [x] Screen brightness control
-- [ ] Monitor management
+- [ ] Rofi entry for brightness control (sudo ddcutil etc......)
+- [ ] Correct monitor orientation in sddm
+- [ ] Proper VM setup
+- [ ] Remove home-manager standalone rebuild config from flake.nix. This breaks system config since home-manager rebuild relies on variables from nixos so it cant be fully independent.
+- [ ] Sort out gpu issues on workstation
+- [ ] Update install script to actually work
+- [ ] Update README
+- [ ] Fix github ssh key loading on workstation
 
 ## Other
 
