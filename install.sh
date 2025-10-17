@@ -36,16 +36,51 @@ cp /etc/nixos/hardware-configuration.nix ~/.dotfiles/nixos/hardware-configuratio
 echo -e "${YELLOW}Staging repo changes...${NC}"
 git add .
 
+# Prompt user for system configuration
+echo -e "${YELLOW}Available system configurations:${NC}"
+echo "1) workstation"
+echo "2) lenovo-yoga-pro-7"
+echo "3) desktop"
+echo "4) hp-server"
+echo "5) Enter custom configuration name"
+echo ""
+read -p "Select system configuration (1-5): " choice
+
+case $choice in
+    1)
+        SYSTEM_CONFIG="workstation"
+        ;;
+    2)
+        SYSTEM_CONFIG="lenovo-yoga-pro-7"
+        ;;
+    3)
+        SYSTEM_CONFIG="desktop"
+        ;;
+    4)
+        SYSTEM_CONFIG="hp-server"
+        ;;
+    5)
+        read -p "Enter custom system configuration name: " SYSTEM_CONFIG
+        if [ -z "$SYSTEM_CONFIG" ]; then
+            echo -e "${RED}Configuration name cannot be empty. Exiting.${NC}"
+            exit 1
+        fi
+        ;;
+    *)
+        echo -e "${RED}Invalid selection. Exiting.${NC}"
+        exit 1
+        ;;
+esac
+
+echo -e "${GREEN}Selected configuration: $SYSTEM_CONFIG${NC}"
+
 # Apply the system configuration
-echo -e "${GREEN}Building and activating NixOS configuration...${NC}"
-sudo nixos-rebuild switch --flake .#nixos
+echo -e "${GREEN}Building and activating NixOS and home-manager configuration...${NC}"
+sudo nixos-rebuild switch --flake .#$SYSTEM_CONFIG
 
 # Git needs to be removed after system rebuild and before home-manager install
 # Remove Git from Shell (needs to be removed before installing rebuilding config otherwise the git shell install conflicts with the rebuild install)
 nix-env -e git
 
-# Apply home-manager configuration
-echo -e "${GREEN}Building and activating home-manager configuration...${NC}"
-home-manager switch --flake .#henhal
 
 echo -e "${GREEN}Installation complete! Please log out and back in for all changes to take effect.${NC}"
