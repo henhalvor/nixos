@@ -15,7 +15,31 @@
     thermald.enable = false; # AMD doesn't need Intel's thermald!
 
     # Only use auto-cpufreq (much simpler and more effective than TLP)
-    auto-cpufreq.enable = true;
+    # Example config: https://github.com/AdnanHodzic/auto-cpufreq/blob/v2.6.0/auto-cpufreq.conf-example
+    auto-cpufreq = {
+      enable = true;
+      settings = {
+        battery = {
+          governor = "powersave";
+          energy_performance_preference = "power";
+          platform_profile = "low-power";
+          turbo = "never";
+        };
+        charger = {
+          governor = "powersave";
+          energy_performance_preference = "power";
+          platform_profile = "low-power";
+          turbo = "never";
+          # enable BATTERY thresholds true or false
+          enable_thresholds = true;
+          # start threshold (0 is off ) can be 0-99
+          start_threshold = 0;
+          # stop threshold (100 is off) can be 1-100
+          stop_threshold = 85;
+
+        };
+      };
+    };
     #
     # # Use ONLY TLP 
     # tlp = {
