@@ -62,6 +62,7 @@ sudo nixos-rebuild switch --flake .#<system-name>
 ```
 
 **Examples:**
+
 ```bash
 # For workstation
 sudo nixos-rebuild switch --flake .#workstation
@@ -74,6 +75,7 @@ sudo nixos-rebuild switch --flake .#hp-server
 ```
 
 **Available Actions:**
+
 - `switch`: Build, activate, and set as boot default (recommended)
 - `boot`: Build and set as boot default, activate on next reboot
 - `test`: Build and activate temporarily (no boot changes)
@@ -90,6 +92,7 @@ curl -L https://raw.githubusercontent.com/henhalvor/nixos/main/install.sh | sh
 ```
 
 The script will:
+
 1. Install git if needed
 2. Clone the repository to `~/.dotfiles`
 3. Enable Nix experimental features
@@ -100,17 +103,20 @@ The script will:
 ### Manual Installation
 
 1. **Clone Repository:**
+
    ```bash
    git clone https://github.com/henhalvor/nixos.git ~/.dotfiles
    cd ~/.dotfiles
    ```
 
 2. **Copy Hardware Configuration:**
+
    ```bash
    sudo cp /etc/nixos/hardware-configuration.nix ~/.dotfiles/systems/<system-name>/hardware-configuration.nix
    ```
 
 3. **Enable Nix Flakes:**
+
    ```bash
    mkdir -p ~/.config/nix
    echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
@@ -124,25 +130,28 @@ The script will:
 ## Adding a New System
 
 1. **Create System Directory:**
+
    ```bash
    mkdir -p ~/.dotfiles/systems/new-system
    ```
 
 2. **Create Configuration:**
    Create `~/.dotfiles/systems/new-system/configuration.nix`:
+
    ```nix
    { config, pkgs, userSettings, ... }: {
      imports = [
        ./hardware-configuration.nix
        ../../nixos/modules/default.nix
      ];
-     
+
      # System-specific configuration here
    }
    ```
 
 3. **Add to Flake:**
    Edit `flake.nix` and add to `nixosConfigurations`:
+
    ```nix
    new-system = mkNixosSystem {
      systemName = "new-system";
@@ -153,6 +162,7 @@ The script will:
    ```
 
 4. **Copy Hardware Config:**
+
    ```bash
    sudo cp /etc/nixos/hardware-configuration.nix ~/.dotfiles/systems/new-system/
    ```
@@ -165,6 +175,7 @@ The script will:
 ## Adding a New User
 
 1. **Define User Settings in flake.nix:**
+
    ```nix
    userNewUser = rec {
      username = "newuser";
@@ -178,6 +189,7 @@ The script will:
    ```
 
 2. **Create User Directory:**
+
    ```bash
    mkdir -p ~/.dotfiles/users/newuser
    ```
@@ -194,11 +206,13 @@ The script will:
 ## User Profiles
 
 ### henhal (Primary User)
+
 - Full desktop environment with Hyprland
 - Development tools and applications
 - Theming with Stylix (Gruvbox/Catppuccin)
 
 ### henhal-dev (Development User)
+
 - Minimal server-oriented configuration
 - Development tools without GUI applications
 - Used on server systems
@@ -215,6 +229,7 @@ The script will:
 ## Maintenance
 
 ### Update Dependencies
+
 ```bash
 cd ~/.dotfiles
 nix flake update
@@ -222,12 +237,14 @@ sudo nixos-rebuild switch --flake .#<system-name>
 ```
 
 ### Update Neovim Packages
+
 ```vim
 :Lazy update
 :Mason update
 ```
 
 ### Backup and Version Control
+
 ```bash
 cd ~/.dotfiles
 git add .
@@ -255,12 +272,13 @@ The repository includes development shells for specific languages:
 
 ```bash
 # Rust development
-cd ~/.dotfiles/home/shells/rust
+cd ~/.dotfiles/shells/rust
 nix develop
 
-# React Native development  
-cd ~/.dotfiles/home/shells/js/react-native
+# React Native development
+cd ~/.dotfiles/shells/js/react-native
 nix develop
 ```
 
 This configuration provides a robust, reproducible development environment that can be easily deployed across multiple systems while maintaining consistency and flexibility.
+
