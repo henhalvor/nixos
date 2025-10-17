@@ -28,14 +28,6 @@ if ! grep -q "experimental-features = nix-command flakes" "$HOME/.config/nix/nix
     echo "experimental-features = nix-command flakes" >> "$HOME/.config/nix/nix.conf"
 fi
 
-# Copy hardware configuration
-echo -e "${YELLOW}Copying hardware configuration...${NC}"
-cp /etc/nixos/hardware-configuration.nix ~/.dotfiles/nixos/hardware-configuration.nix
-
-# Stage repo changes before system rebuild to avoid error
-echo -e "${YELLOW}Staging repo changes...${NC}"
-git add .
-
 # Prompt user for system configuration
 echo -e "${YELLOW}Available system configurations:${NC}"
 echo "1) workstation"
@@ -74,11 +66,26 @@ esac
 
 echo -e "${GREEN}Selected configuration: $SYSTEM_CONFIG${NC}"
 
+# Check if system configuration directory exists
+if [ ! -d "$HOME/.dotfiles/systems/$SYSTEM_CONFIG" ]; then
+    echo -e "${RED}Error: System configuration '$SYSTEM_CONFIG' does not exist in systems/ directory.${NC}"
+    echo -e "${RED}Available configurations:${NC}"
+    ls ~/.dotfiles/systems/
+    exit 1
+fi
+
+# Copy hardware configuration to the correct system directory
+echo -e "${YELLOW}Copying hardware configuration to systems/$SYSTEM_CONFIG/...${NC}"
+cp /etc/nixos/hardware-configuration.nix ~/.dotfiles/systems/$SYSTEM_CONFIG/hardware-configuration.nix
+
+# Stage repo changes before system rebuild to avoid error
+echo -e "${YELLOW}Staging repo changes...${NC}"
+git add .
+
 # Apply the system configuration
 echo -e "${GREEN}Building and activating NixOS and home-manager configuration...${NC}"
 sudo nixos-rebuild switch --flake .#$SYSTEM_CONFIG
 
-# Git needs to be removed after system rebuild and before home-manager install
 # Remove Git from Shell (needs to be removed before installing rebuilding config otherwise the git shell install conflicts with the rebuild install)
 nix-env -e git
 
