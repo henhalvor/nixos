@@ -170,44 +170,5 @@
           ];
         };
       };
-
-      homeConfigurations = {
-        henhal = home-manager.lib.homeManagerConfiguration {
-          pkgs = import nixpkgs {
-            inherit system;
-            config.allowUnfree = true;
-            overlays = [ (final: prev: { unstable = unstablePkgs; }) ];
-          };
-          modules = [ ./users/henhal/home.nix ];
-          extraSpecialArgs = {
-            inherit system nvf nvim-nix stylix;
-            userSettings = userHenhal;
-            unstable = unstablePkgs;
-            pkgs24-11 = pkgs24-11;
-            inherit zen-browser;
-            inputs = { inherit zen-browser nvf nvim-nix stylix; };
-            windowManager = "hyprland";
-            systemName = "workstation";
-          };
-        };
-
-        henhal-dev = home-manager.lib.homeManagerConfiguration {
-          pkgs = import nixpkgs {
-            inherit system;
-            config.allowUnfree = true;
-            overlays = [ (final: prev: { unstable = unstablePkgs; }) ];
-          };
-          modules = [ ./users/henhal-dev/home.nix ];
-          extraSpecialArgs = {
-            inherit system;
-            userSettings = userHenhalDev;
-            unstable = unstablePkgs;
-            pkgs24-11 = pkgs24-11;
-            inherit zen-browser;
-            inputs = { inherit zen-browser; };
-            windowManager = "none";
-          };
-        };
-      };
     };
 }
