@@ -68,10 +68,10 @@ let
 
         # Define specific monitor configurations for workstation
         # Samsung monitor (HDMI-A-1) - Main display
-        monitor=HDMI-A-1,2560x1440@144,1080x0,1
+        monitor=DP-1,2560x1440@144,1080x0,1
 
         # ASUS monitor (DP-1) - Portrait mode to the left
-        monitor=DP-1,1920x1080@144,0x-180,1,transform,1
+        monitor=HDMI-A-1,1920x1080@144,0x-180,1,transform,1
       '';
 
       extraBinds = [
@@ -98,12 +98,13 @@ let
 
       workspaceRules = [
         # Workspace assignments for multi-monitor setup
-        # ASUS monitor (portrait mode) - DP-1
-        "1, monitor:DP-1"
 
-        # Samsung monitor (main display) - HDMI-A-1
-        "2, monitor:HDMI-A-1"
-        "3, monitor:HDMI-A-1"
+        # ASUS monitor (portrait mode) - HDMI-A-1
+        "1, monitor:HDMI-A-1"
+
+        # Samsung monitor (main display) - DP-1
+        "2, monitor:DP-1"
+        "3, monitor:DP-1"
       ];
     };
   };

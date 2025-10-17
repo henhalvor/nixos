@@ -45,6 +45,7 @@
       ../../home/modules/applications/vscode.nix
       ../../home/modules/applications/cursor.nix
       ../../home/modules/applications/mission-center.nix
+      ../../home/modules/applications/amazon-q.nix
       # ../../home/modules/applications/google-chrome.nix
       ../../home/modules/applications/gimp.nix
       ../../home/modules/applications/microsoft-edge.nix
@@ -78,4 +79,14 @@
       ../../home/modules/scripts/power-monitor.nix
 
     ];
+
+  # Create a desktop entry for boot-windows script (Only for workstation system)
+  xdg.desktopEntries.boot-windows = {
+    name = "Boot Windows";
+    comment = "Boot into Windows on next reboot";
+    exec = "${pkgs.kitty}/bin/kitty -e boot-windows";
+    terminal = true;
+    categories = [ "System" ];
+    icon = "computer";
+  };
 }

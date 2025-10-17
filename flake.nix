@@ -20,10 +20,14 @@
       url = "github:nix-community/stylix/release-25.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    lanzaboote = {
+      url = "github:nix-community/lanzaboote/v0.4.2";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = { nixpkgs, nixpkgs-unstable, home-manager, nixpkgs-24-11
-    , zen-browser, vscode-server, nvf, nvim-nix, stylix, ... }:
+    , zen-browser, vscode-server, nvf, nvim-nix, stylix, lanzaboote, ... }:
     let
       system = "x86_64-linux";
 
@@ -86,6 +90,7 @@
 
           modules = [
             stylix.nixosModules.stylix
+            lanzaboote.nixosModules.lanzaboote
             ./systems/${systemName}/configuration.nix
             { nixpkgs.config.allowUnfree = true; }
             ({ config, pkgs, ... }: {
