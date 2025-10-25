@@ -11,6 +11,9 @@
 - [ ] Update README
 - [ ] Fix github ssh key loading on workstation
 
+- [ ] Lazygit Theming
+- [ ] Yazi config + theming
+
 ## Other
 
 - [x] Fix secrets loading
