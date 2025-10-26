@@ -3,6 +3,9 @@
   # Fix for allowing openssh.authorizedKeys to work (does not work without this)
   # fileSystems."/" = { options = [ "mode=755" ]; };
 
+  # Start SSH agent
+  programs.ssh.startAgent = true;
+
   # Enable SSH server
   services.openssh = {
     enable = true;
