@@ -22,6 +22,7 @@
       ../../nixos/modules/bootloader.nix
       ../../nixos/modules/networking.nix
       ../../nixos/modules/systemd-loginhd.nix
+      ../../nixos/modules/syncthing.nix
       ./amd-graphics.nix
       ./battery.nix
       # window-manager
