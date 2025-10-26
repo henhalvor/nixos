@@ -11,7 +11,7 @@
     settings = {
       devices = {
         "workstation" = { id = "VDQBMZD-3LCRWHG-7IZ7HLT-G3JQU25-SDUKIWP-BG4RMSA-VBZ6FNC-XPR5PQG"; };
-        "yoga-pro-7" = { id = "YOGA-PRO-7-DEVICE-ID-HERE"; };
+        "yoga-pro-7" = { id = "T2SDKBB-6W6PC6S-2MOF26Y-ISGI7GM-NV3G7U3-XQKVF7N-WD76D4R-IEIURQQ"; };
       };
 
       folders = {
