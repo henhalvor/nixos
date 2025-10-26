@@ -26,6 +26,7 @@
     gcc
     gnumake
     cmake
+
   ];
 
   # Ensure npm config directory exists

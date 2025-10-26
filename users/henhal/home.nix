@@ -78,6 +78,9 @@
       # Scripts
       ../../home/modules/scripts/power-monitor.nix
 
+      # Utils
+      ../../home/modules/utils/default.nix
+
     ];
 
   # Create a desktop entry for boot-windows script (Only for workstation system)
