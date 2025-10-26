@@ -13,6 +13,7 @@
 
 - [ ] Lazygit Theming
 - [ ] Yazi config + theming
+- [ ] Project syncing all files
 
 ## Other
 
