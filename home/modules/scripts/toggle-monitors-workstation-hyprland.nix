@@ -37,8 +37,8 @@ pkgs.writeShellScriptBin "toggle-monitors" ''
     sleep 1
 
     echo "Reassigning workspaces..." >> "$DEBUG_FILE"
-    hyprctl dispatch moveworkspacetomonitor 2 HDMI-A-1 >> "$DEBUG_FILE" 2>&1
-    hyprctl dispatch moveworkspacetomonitor 1 DP-1 >> "$DEBUG_FILE" 2>&1
+    hyprctl dispatch moveworkspacetomonitor 1 HDMI-A-1 >> "$DEBUG_FILE" 2>&1
+    hyprctl dispatch moveworkspacetomonitor 2 DP-1 >> "$DEBUG_FILE" 2>&1
 
     echo "Monitor reinitialization complete" >> "$DEBUG_FILE"
   fi

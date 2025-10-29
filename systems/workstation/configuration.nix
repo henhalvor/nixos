@@ -65,4 +65,7 @@
   hardware.firmware = [ pkgs.linux-firmware ];
   hardware.enableRedistributableFirmware = true;
 
+  # Enable Gnome keyring for automatic ssh key registration
+  security.pam.services.login.enableGnomeKeyring = true;
+
 }

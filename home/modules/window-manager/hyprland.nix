@@ -139,6 +139,7 @@ let
 
       extraExecOnce = [
         # Workstation-specific startup commands
+        "${userSettings.term}"
       ];
 
       workspaceRules = [
@@ -197,6 +198,7 @@ in {
           "wl-paste --type image --watch clipman store &" # Store images
           # "hyprpanel &"    # Dont manually start hyprpanel, it is started by systemd service
           "hypridle &"
+          "zen" # zen browser
 
           #   "swaync &"
           #   "hyprctl setcursor Bibata-Modern-Ice 24 &"
