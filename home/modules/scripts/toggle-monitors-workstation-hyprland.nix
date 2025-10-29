@@ -31,8 +31,8 @@ pkgs.writeShellScriptBin "toggle-monitors" ''
     sleep 2
 
     echo "Reapplying monitor configuration..." >> "$DEBUG_FILE"
-    hyprctl keyword monitor "HDMI-A-1,2560x1440@144,1080x0,1" >> "$DEBUG_FILE" 2>&1
-    hyprctl keyword monitor "DP-1,1920x1080@144,0x-180,1,transform,1" >> "$DEBUG_FILE" 2>&1
+    hyprctl keyword monitor "DP-1,2560x1440@144,1080x0,1" >> "$DEBUG_FILE" 2>&1
+    hyprctl keyword monitor "HDMI-A-1,1920x1080@144,0x-180,1,transform,1" >> "$DEBUG_FILE" 2>&1
 
     sleep 1
 

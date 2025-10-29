@@ -320,7 +320,7 @@ in {
           # "$mainMod, SHIFT, L, exec, ${pkgs.hyprlock}/bin/hyprlock"
           # "$mainMod SHIFT, B, exec, toggle_waybar"
 
-          # "$mainMod SHIFT, M, exec, hyprctl dispatch dpms on && notify-send 'All displays forced on'"
+          "$mainMod SHIFT, M, exec, ${toggleMonitorsWorkstation}"
 
           # screenshot
           ",Print, exec, screenshot --copy"
