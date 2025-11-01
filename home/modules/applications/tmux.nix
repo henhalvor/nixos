@@ -143,6 +143,13 @@ in {
       #
       #
 
+      # Enable OSC52 clipboard integration
+      set-option -g set-clipboard on
+
+      # Optional but recommended: allows terminals that support direct OSC52 copying
+      set-option -ga terminal-features ',xterm-256color:clipboard'
+
+
        # Reload config
        bind r source-file ~/.config/tmux/tmux.conf
 
