@@ -153,6 +153,13 @@ in {
        # Reload config
        bind r source-file ~/.config/tmux/tmux.conf
 
+        # --- Dynamic sizing between different terminals ---
+        set -g aggressive-resize on
+        set-hook -g client-attached 'refresh-client -A'
+
+        # (optional) ensure the first attached client defines window size
+        set-option -g allow-rename off
+
 
        # Vim movement
        bind-key -n 'C-h' if-shell '${is_vim}/bin/is_vim.sh' 'send-keys C-h' 'select-pane -L'
