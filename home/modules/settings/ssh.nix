@@ -174,6 +174,25 @@ in {
         serverAliveCountMax = 3;
       };
 
+      "workstation-tailscale" = {
+        hostname =
+          "workstation.tail37a5eb.ts.net"; # Adjust this to your workstation's tailscale address
+        user = "henhal";
+        extraOptions = {
+          RequestTTY = "yes";
+          RemoteCommand = "tmux new-session -A -s ssh";
+          Compression = "yes";
+          ControlMaster = "auto";
+          ControlPath = "~/.ssh/control:%h:%p:%r";
+          ControlPersist = "10m";
+        };
+
+        localForwards = portsToForward;
+        compression = true;
+        serverAliveInterval = 30;
+        serverAliveCountMax = 3;
+      };
+
       # Laptop connection (when connecting FROM workstation TO laptop)
       # We are not forwarding any ports here
       "laptop" = {
