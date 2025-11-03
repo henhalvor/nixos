@@ -68,6 +68,12 @@ let
       host.address = "localhost";
       host.port = 54327;
     }
+    {
+      # Aws sso login
+      bind.port = 38215;
+      host.address = "localhost";
+      host.port = 38215;
+    }
     #
     # React Native
     #
