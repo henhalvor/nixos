@@ -38,7 +38,7 @@
       ../../home/modules/applications/${userSettings.browser}.nix
       ../../home/modules/applications/yazi.nix
       ../../home/modules/applications/aider-chat.nix
-      # ../../home/modules/applications/claude-code.nix # installed via npm
+      ../../home/modules/applications/claude-code.nix # installed via npm
       ../../home/modules/applications/tmux.nix
       ../../home/modules/applications/vial.nix
       ../../home/modules/applications/brave.nix
