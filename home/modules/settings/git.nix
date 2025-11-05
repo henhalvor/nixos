@@ -51,4 +51,10 @@
       fi
     '';
   };
+
+programs.gh = {
+    enable = true;
+    settings.editor = "nvim";
+    settings.git_protocol = "ssh";
+  };
 }
