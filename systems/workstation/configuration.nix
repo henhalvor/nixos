@@ -65,7 +65,14 @@
   hardware.firmware = [ pkgs.linux-firmware ];
   hardware.enableRedistributableFirmware = true;
 
-  # Enable Gnome keyring for automatic ssh key registration
+  # Enable Gnome keyring but disable SSH component to prevent conflicts with ssh-agent
   security.pam.services.login.enableGnomeKeyring = true;
+  services.gnome.gnome-keyring.enable = true;
+
+  # Disable the SSH component of gnome-keyring to use system ssh-agent instead
+  environment.sessionVariables = {
+    # Prevent gnome-keyring from overriding SSH_AUTH_SOCK
+    GSM_SKIP_SSH_AGENT_WORKAROUND = "1";
+  };
 
 }
