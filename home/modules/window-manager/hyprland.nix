@@ -48,6 +48,9 @@ let
       extraPackages = [ ];
 
       extraWindowRules = [
+        "workspace 1, class:^(zen)$"
+        "workspace 2, class:^(kitty)$"
+        "workspace 3, class:^(code)$"
         # Laptop-specific window rules can go here
       ];
 
