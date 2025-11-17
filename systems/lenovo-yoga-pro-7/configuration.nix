@@ -21,6 +21,7 @@
       ../../nixos/modules/bluetooth.nix
       ../../nixos/modules/bootloader.nix
       ../../nixos/modules/networking.nix
+      ../../nixos/modules/printer.nix
       ../../nixos/modules/systemd-loginhd.nix
       ../../nixos/modules/syncthing.nix
       ./amd-graphics.nix
