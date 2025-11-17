@@ -63,7 +63,7 @@
       ../../home/modules/applications/zathura.nix
       ../../home/modules/applications/mpv.nix
       ../../home/modules/applications/libreoffice.nix
-      ../../home/modules/applications/vivaldi.nix
+      # ../../home/modules/applications/vivaldi.nix
       ../../home/modules/applications/nvf.nix
 
       # Environment

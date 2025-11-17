@@ -7,7 +7,18 @@
   unstable,
   pkgs24-11,
   ...
-}: {
+}: let
+  # Use nixpkgs 24.11 to build the plugin to avoid the require check issues
+  neocodeium-nvim-plugin = pkgs24-11.vimUtils.buildVimPlugin {
+    name = "neocodeium-nvim-from-source";
+    src = pkgs24-11.fetchFromGitHub {
+      owner = "monkoose";
+      repo = "neocodeium";
+      rev = "v1.16.3";
+      sha256 = "sha256-UemmcgQbdTDYYh8BCCjHgr/wQ8M7OH0ef6MBMHfOJv8=";
+    };
+  };
+in {
   # Import the nvf home-manager module directly
   imports = [
     inputs.nvf.homeManagerModules.default
@@ -66,7 +77,7 @@
         theme = {
           enable = true;
           # name = "catppuccin";
-          style = "macchiato"; # This is the "machiato" you mentioned
+          # style = "macchiato"; # This is the "machiato" you mentioned
           transparent = true; # Enable transparent background
         };
 
@@ -242,8 +253,6 @@
             };
           };
         };
-
-        dashboard.startify.sessionPersistence = true;
 
         # # GitHub Copilot Configuration
         # assistant.copilot = {
@@ -878,13 +887,13 @@
             desc = "[S]earch [D]iagnostics";
             silent = true;
           }
-          {
-            key = "<leader>sr";
-            mode = "n";
-            action = "<CMD>Telescope resume<CR>";
-            desc = "[S]earch [R]esume";
-            silent = true;
-          }
+          # {
+          #   key = "<leader>sr";
+          #   mode = "n";
+          #   action = "<CMD>Telescope resume<CR>";
+          #   desc = "[S]earch [R]esume";
+          #   silent = true;
+          # }
           {
             key = "<leader><leader>";
             mode = "n";
@@ -1025,6 +1034,70 @@
         # Additional Lua configuration for advanced setups
         luaConfigRC = {
           # Base neovim config
+          restore-cursor-position-in-previous-editing-session-autocmd = ''
+            vim.api.nvim_create_autocmd("BufReadPost", {
+              callback = function(args)
+                local mark = vim.api.nvim_buf_get_mark(args.buf, '"')
+                local line_count = vim.api.nvim_buf_line_count(args.buf)
+                if mark[1] > 0 and mark[1] <= line_count then
+                  vim.api.nvim_win_set_cursor(0, mark)
+                  -- defer centering slightly so it's applied after render
+                  vim.schedule(function()
+                    vim.cmd("normal! zz")
+                  end)
+                end
+              end,
+            })
+          '';
+
+          open-help-in-vertical-split-autocmd = ''
+            vim.api.nvim_create_autocmd("FileType", {
+              pattern = "help",
+              command = "wincmd L",
+            })
+          '';
+
+          auto-rezise-splits-when-terminal-window-is-rezised-autocmd = ''
+            vim.api.nvim_create_autocmd("VimResized", {
+              command = "wincmd =",
+            })
+          '';
+
+          no-auto-continue-comments-on-new-line-autocmd = ''
+            vim.api.nvim_create_autocmd("FileType", {
+              group = vim.api.nvim_create_augroup("no_auto_comment", {}),
+              callback = function()
+                vim.opt_local.formatoptions:remove({ "c", "r", "o" })
+              end,
+            })
+          '';
+
+          dotenv-files-syntax-highlighting-autocmd = ''
+            vim.api.nvim_create_autocmd("BufRead", {
+              group = vim.api.nvim_create_augroup("dotenv_ft", { clear = true }),
+              pattern = { ".env", ".env.*" },
+              callback = function()
+                vim.bo.filetype = "dosini"
+              end,
+            })
+          '';
+
+          show-cursorline-only-in-active-window-autocmd = ''
+            -- show cursorline only in active window enable
+            vim.api.nvim_create_autocmd({ "WinEnter", "BufEnter" }, {
+              group = vim.api.nvim_create_augroup("active_cursorline", { clear = true }),
+              callback = function()
+                vim.opt_local.cursorline = true
+              end,
+            })
+            -- show cursorline only in active window disable
+            vim.api.nvim_create_autocmd({ "WinLeave", "BufLeave" }, {
+             group = "active_cursorline",
+              callback = function()
+               vim.opt_local.cursorline = false
+              end,
+            })
+          '';
 
           highlight-yank-autocmd = ''
             vim.api.nvim_create_autocmd('TextYankPost', {
@@ -1163,13 +1236,59 @@
 
           # Setup mini.statusline with custom location format
           mini-statusline-setup = ''
-            local statusline = require('mini.statusline')
-            statusline.setup({ use_icons = vim.g.have_nerd_font or true })
-
-            -- Custom location format: LINE:COLUMN
+            local statusline = require("mini.statusline")
+            -- set use_icons to true if you have a Nerd Font
+            statusline.setup({ use_icons = vim.g.have_nerd_font })
+            -- You can configure sections in the statusline by overriding their
+            -- default behavior. For example, here we set the section for
+            -- cursor location to LINE:COLUMN
+            ---@diagnostic disable-next-line: duplicate-set-field
+            -- statusline.section_location = function()
+            -- 	return "%2l:%-2v"
+            -- end
+            --
+            -- Minimal sections
             statusline.section_location = function()
-              return '%2l:%-2v'
+              return "%2l:%-2v"
             end
+
+            -- Hide or simplify other sections
+            statusline.section_filename = function()
+              return "%f" -- Just filename without path/flags
+            end
+
+            statusline.section_fileinfo = function()
+              return "" -- Hide file info (encoding, type)
+            end
+
+            statusline.section_searchcount = function()
+              return "" -- Hide search count
+            end
+
+            statusline.section_git = function()
+              return "" -- Hide git info
+            end
+
+            statusline.section_diagnostics = function()
+              return "" -- Hide diagnostics
+            end
+
+            vim.api.nvim_create_autocmd("ColorScheme", {
+              callback = function()
+                vim.api.nvim_set_hl(0, "MiniStatuslineFilename", { fg = "#ebdbb2", bold = true })
+                vim.api.nvim_set_hl(0, "MiniStatuslineDevinfo", { fg = "#ebdbb2" })
+                vim.api.nvim_set_hl(0, "StatusLine", { bg = "NONE" })
+                vim.api.nvim_set_hl(0, "StatusLineNC", { bg = "NONE" })
+              end,
+            })
+
+            vim.defer_fn(function()
+              vim.api.nvim_set_hl(0, "MiniStatuslineFilename", { fg = "#ebdbb2", bold = true })
+              vim.api.nvim_set_hl(0, "MiniStatuslineDevinfo", { fg = "#ebdbb2" })
+              vim.api.nvim_set_hl(0, "StatusLine", { bg = "NONE" })
+              vim.api.nvim_set_hl(0, "StatusLineNC", { bg = "NONE" })
+            end, 100)
+
           '';
 
           # Telescope custom configuration
@@ -1275,6 +1394,135 @@
             package = pkgs.vimPlugins.barbecue-nvim;
             setup = "require('barbecue').setup {}";
           };
+
+          nvim-osc52 = {
+            package = pkgs.vimPlugins.nvim-osc52;
+            setup = ''
+              local osc52 = require("osc52")
+
+              -- Auto-copy any yanked text to clipboard
+              vim.api.nvim_create_autocmd("TextYankPost", {
+                callback = function()
+                  if vim.v.event.operator == "y" and vim.v.event.regname == "" then
+                   osc52.copy_register("")
+                  end
+                end,
+              })
+            '';
+          };
+
+          persistence-nvim = {
+            package = pkgs.vimPlugins.persistence-nvim;
+            setup = ''
+                -- Auto-load session on startup
+                vim.api.nvim_create_autocmd("VimEnter", {
+                  group = vim.api.nvim_create_augroup("restore_session", { clear = true }),
+                  callback = function()
+                    -- Check if we should auto-load session
+                    local should_load = false
+
+                    if vim.fn.argc() == 0 then
+                    -- No arguments passed (nvim)
+                    should_load = true
+                  elseif vim.fn.argc() == 1 then
+                    -- Check if the single argument is current directory
+                    local arg = vim.fn.argv(0)
+                    if arg == "." or arg == vim.fn.getcwd() then
+                      should_load = true
+                    end
+                  end
+
+                  if should_load and vim.fn.getcwd() ~= vim.env.HOME then
+                    require("persistence").load()
+                  end
+                end,
+                nested = true,
+              })
+
+              require("persistence").setup(opts)
+              -- load the session for the current directory
+              vim.keymap.set("n", "<leader>qs", function()
+                require("persistence").load()
+              end, { desc = "Persistence load session for current directory" })
+
+              -- select a session to load
+              vim.keymap.set("n", "<leader>qS", function()
+                require("persistence").select()
+              end, { desc = "Persistence [S]elect" })
+
+              -- load the last session
+              vim.keymap.set("n", "<leader>ql", function()
+                require("persistence").load({ last = true })
+              end, { desc = "Persistence [L]oad last session" })
+
+              -- stop Persistence => session won't be saved on exit
+              vim.keymap.set("n", "<leader>qd", function()
+                require("persistence").stop()
+              end, { desc = "Persistence Stop" })
+            '';
+          };
+
+          grug-far-nvim = {
+            package = pkgs.vimPlugins.grug-far-nvim;
+            setup = ''
+              require("grug-far").setup(opts)
+                  vim.api.nvim_create_autocmd("FileType", {
+                    pattern = "grug-far",
+                    callback = function()
+                        -- Map <Esc> to quit after ensuring we're in normal mode
+                        vim.keymap.set({ "n" }, "<Esc>", "<Cmd>stopinsert | bd!<CR>", { buffer = true })
+                      end,
+                    })
+
+                vim.keymap.set("n", "<leader>sr", function()
+                  local grug = require("grug-far")
+                  local ext = vim.bo.buftype == "" and vim.fn.expand("%:e")
+                  grug.open({
+                    transient = true,
+                    prefills = {
+                      filesFilter = ext and ext ~= "" and "*." .. ext or nil,
+                    },
+                  })
+                end, { desc = "Grug Far Search and Replace" })
+            '';
+          };
+
+          gruvbox-baby = {
+            package = pkgs.vimPlugins.gruvbox-baby;
+            setup = ''
+              vim.g.gruvbox_baby_transparent_mode = true
+            '';
+          };
+
+          neocodeium = {
+            package = neocodeium-nvim-plugin;
+            # The `build` step for npm install is ignored here; user handles CLI install.
+            # The `config` function from Lua spec is translated to `setup` string:
+            setup = ''
+              local neocodeium = require 'neocodeium'
+              neocodeium.setup {
+                manual = false,
+              }
+              vim.keymap.set('i', '<A-y>', function()
+                require('neocodeium').accept()
+              end)
+              vim.keymap.set('i', '<A-w>', function()
+                require('neocodeium').accept_word()
+              end)
+              vim.keymap.set('i', '<A-a>', function()
+                require('neocodeium').accept_line()
+              end)
+              vim.keymap.set('i', '<A-n>', function()
+                require('neocodeium').cycle_or_complete()
+              end)
+              vim.keymap.set('i', '<A-p>', function()
+                require('neocodeium').cycle_or_complete(-1)
+              end)
+              vim.keymap.set('i', '<A-c>', function()
+                require('neocodeium').clear()
+              end)
+            '';
+          };
         };
 
         # Extra packages needed
@@ -1287,6 +1535,13 @@
           vimPlugins.telescope-live-grep-args-nvim # ADD THIS - it was missing
           vimPlugins.vim-tmux-navigator
           vimPlugins.barbecue-nvim
+          vimPlugins.nvim-osc52
+          vimPlugins.grug-far-nvim
+          vimPlugins.persistence-nvim
+          vimPlugins.gruvbox-baby
+
+          # Use this if "built in" persistence is not working
+          # vimPlugins.persistence-nvim
           # Add any additional packages you might need
         ];
       };
