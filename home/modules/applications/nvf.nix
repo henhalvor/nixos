@@ -413,29 +413,29 @@ in {
         #   };
         # };
 
-        # Telescope Configuration
-        telescope = {
-          enable = true;
-          setupOpts = {
-            extensions = {
-              ui-select = {
-                # Note: nvf might prefer keys without dashes, but "ui-select" is standard for Telescope. If issues, try "ui_select".
-                # Configure the ui-select extension to use the dropdown theme
-                _type = "lua-inline";
-                expr = ''
-                  require("telescope.themes").get_dropdown {
-                    -- You can add more theme options here if needed, e.g.:
-                    -- previewer = false,
-                    -- winblend = 10,
-                  }
-                '';
-              };
-              live_grep_args = {
-                auto_quoting = true;
-              };
-            };
-          };
-        };
+        # Telescope Configuration (disabled - using snacks.picker)
+        # telescope = {
+        #   enable = true;
+        #   setupOpts = {
+        #     extensions = {
+        #       ui-select = {
+        #         # Note: nvf might prefer keys without dashes, but "ui-select" is standard for Telescope. If issues, try "ui_select".
+        #         # Configure the ui-select extension to use the dropdown theme
+        #         _type = "lua-inline";
+        #         expr = ''
+        #           require("telescope.themes").get_dropdown {
+        #             -- You can add more theme options here if needed, e.g.:
+        #             -- previewer = false,
+        #             -- winblend = 10,
+        #           }
+        #         '';
+        #       };
+        #       live_grep_args = {
+        #         auto_quoting = true;
+        #       };
+        #     };
+        #   };
+        # };
 
         utility.yazi-nvim = {
           enable = true;
@@ -584,9 +584,9 @@ in {
             terminal = {
               enabled = true;
             };
-            # picker = {
-            #   enabled = true;
-            # };
+            picker = {
+              enabled = true;
+            };
           };
         };
 
@@ -840,67 +840,67 @@ in {
             desc = "CodeCompanion add to chat";
           }
 
-          # Telescope keybindings
+          # Snacks Picker keybindings
           {
             key = "<leader>sh";
             mode = "n";
-            action = "<CMD>Telescope help_tags<CR>";
+            action = "<cmd>lua Snacks.picker.help()<CR>";
             desc = "[S]earch [H]elp";
             silent = true;
           }
           {
             key = "<leader>sk";
             mode = "n";
-            action = "<CMD>Telescope keymaps<CR>";
+            action = "<cmd>lua Snacks.picker.keymaps()<CR>";
             desc = "[S]earch [K]eymaps";
             silent = true;
           }
           {
             key = "<leader>sc";
             mode = "n";
-            action = "<CMD>Telescope find_files<CR>";
+            action = "<cmd>lua Snacks.picker.files()<CR>";
             desc = "[S]earch [Current] Files";
             silent = true;
           }
           {
             key = "<leader>ss";
             mode = "n";
-            action = "<CMD>Telescope builtin<CR>";
-            desc = "[S]earch [S]elect Telescope";
+            action = "<cmd>lua Snacks.picker.pickers()<CR>";
+            desc = "[S]earch [S]elect Picker";
             silent = true;
           }
           {
             key = "<leader>sw";
             mode = "n";
-            action = "<CMD>Telescope grep_string<CR>";
+            action = "<cmd>lua Snacks.picker.grep_word()<CR>";
             desc = "[S]earch current [W]ord";
             silent = true;
           }
           {
             key = "<leader>sg";
             mode = "n";
-            action = "<CMD>lua require('telescope').extensions.live_grep_args.live_grep_args()<CR>";
+            action = "<cmd>lua Snacks.picker.grep()<CR>";
             desc = "[S]earch by [G]rep";
             silent = true;
           }
           {
             key = "<leader>sd";
             mode = "n";
-            action = "<CMD>Telescope diagnostics<CR>";
+            action = "<cmd>lua Snacks.picker.diagnostics()<CR>";
             desc = "[S]earch [D]iagnostics";
             silent = true;
           }
           # {
           #   key = "<leader>sr";
           #   mode = "n";
-          #   action = "<CMD>Telescope resume<CR>";
+          #   action = "<cmd>lua Snacks.picker.resume()<CR>";
           #   desc = "[S]earch [R]esume";
           #   silent = true;
           # }
           {
             key = "<leader><leader>";
             mode = "n";
-            action = "<CMD>Telescope buffers<CR>";
+            action = "<cmd>lua Snacks.picker.buffers()<CR>";
             desc = "Find existing buffers";
             silent = true;
           }
@@ -1176,12 +1176,12 @@ in {
                   vim.keymap.set('n', keys, func, { buffer = event.buf, desc = 'LSP: ' .. desc })
                 end
 
-                map('gd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
-                map('gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
-                map('gI', require('telescope.builtin').lsp_implementations, '[G]oto [I]mplementation')
-                map('<leader>D', require('telescope.builtin').lsp_type_definitions, 'Type [D]efinition')
-                map('<leader>ds', require('telescope.builtin').lsp_document_symbols, '[D]ocument [S]ymbols')
-                map('<leader>ws', require('telescope.builtin').lsp_dynamic_workspace_symbols, '[W]orkspace [S]ymbols')
+                map('gd', function() Snacks.picker.lsp_definitions() end, '[G]oto [D]efinition')
+                map('gr', function() Snacks.picker.lsp_references() end, '[G]oto [R]eferences')
+                map('gI', function() Snacks.picker.lsp_implementations() end, '[G]oto [I]mplementation')
+                map('<leader>D', function() Snacks.picker.lsp_type_definitions() end, 'Type [D]efinition')
+                map('<leader>ds', function() Snacks.picker.lsp_symbols() end, '[D]ocument [S]ymbols')
+                map('<leader>ws', function() Snacks.picker.lsp_workspace_symbols() end, '[W]orkspace [S]ymbols')
                 map('<leader>rn', vim.lsp.buf.rename, '[R]e[n]ame')
                 map('<leader>ca', vim.lsp.buf.code_action, '[C]ode [A]ction')
                 map('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
@@ -1211,6 +1211,35 @@ in {
           #
           # Plugin config
           #
+
+          # Snacks picker
+          snacks-picker-layout = ''
+            -- Configure snacks picker layout
+              Snacks.config.picker = {
+                layout = "custom",
+                layouts = {
+                  custom = {
+                    layout = {
+                       box = "vertical",
+                       backdrop = false,
+                       row = -1,
+                       width = 0,
+                       height = 0.4,
+                       border = "none",
+                       title = " {title} {live} {flags}",
+                       title_pos = "left",
+                       {
+                         box = "horizontal",
+                         { win = "list", border = "rounded" },
+                         { win = "preview", title = "{preview}", width = 0.6, border = "rounded" },
+                       },
+                       { win = "input", height = 1, border = "none" },
+                          }
+                        }
+                      }
+                    }
+
+          '';
 
           # Setup ts-context-commentstring for better JSX/TSX comments
           mini-comment-setup = ''
@@ -1299,40 +1328,22 @@ in {
 
           '';
 
-          # Telescope custom configuration
-          telescope-setup = ''
-            local telescope = require('telescope')
-            local builtin = require('telescope.builtin')
-
-
-            -- Load extensions
-            pcall(telescope.load_extension, 'fzf')
-            pcall(telescope.load_extension, 'ui-select')
-            pcall(telescope.load_extension, 'live_grep_args')
-
-            -- Custom telescope functions
+          # Snacks Picker custom configuration
+          snacks-picker-setup = ''
+            -- Custom snacks.picker functions
             vim.keymap.set('n', '<leader>/', function()
-              builtin.current_buffer_fuzzy_find(require('telescope.themes').get_dropdown {
-                winblend = 10,
-                previewer = false,
-              })
+              Snacks.picker.lines()
             end, { desc = '[/] Fuzzily search in current buffer' })
 
             vim.keymap.set('n', '<leader>s/', function()
-              builtin.live_grep {
-                grep_open_files = true,
-                prompt_title = 'Live Grep in Open Files',
-              }
+              Snacks.picker.grep_buffers()
             end, { desc = '[S]earch [/] in Open Files' })
 
             vim.keymap.set('n', '<leader>s.', function()
-              builtin.find_files {
+              Snacks.picker.files({
                 cwd = vim.fn.expand '~/.dotfiles/',
-                hidden = true, -- to show hidden files
-                follow = true, -- to follow symlinks
-                no_ignore = false, -- respect gitignore
-                search_dirs = { vim.fn.expand '~/.dotfiles/' },
-              }
+                hidden = true,
+              })
             end, { desc = '[S]earch [.]dotfiles' })
           '';
 
@@ -1378,15 +1389,15 @@ in {
         };
 
         extraPlugins = {
-          # Add telescope extensions here instead of extraPackages
-          telescope-ui-select = {
-            package = pkgs.vimPlugins.telescope-ui-select-nvim;
-            # No setup needed - loaded via luaConfigRC
-          };
-          telescope-live-grep-args = {
-            package = pkgs.vimPlugins.telescope-live-grep-args-nvim;
-            # No setup needed - loaded via luaConfigRC
-          };
+          # Telescope extensions (disabled - using snacks.picker)
+          # telescope-ui-select = {
+          #   package = pkgs.vimPlugins.telescope-ui-select-nvim;
+          #   # No setup needed - loaded via luaConfigRC
+          # };
+          # telescope-live-grep-args = {
+          #   package = pkgs.vimPlugins.telescope-live-grep-args-nvim;
+          #   # No setup needed - loaded via luaConfigRC
+          # };
           blink-compat = {
             package = unstable.vimPlugins.blink-compat;
           };
@@ -1543,11 +1554,12 @@ in {
         # Extra packages needed
         extraPackages = with pkgs; [
           prettierd
-          ripgrep # Required for telescope live grep
-          fd # Better find command for telescope
+          ripgrep # Required for snacks.picker grep
+          fd # Better find command for snacks.picker
           unstable.vimPlugins.blink-compat
-          vimPlugins.telescope-ui-select-nvim
-          vimPlugins.telescope-live-grep-args-nvim # ADD THIS - it was missing
+          # Telescope extensions (disabled - using snacks.picker)
+          # vimPlugins.telescope-ui-select-nvim
+          # vimPlugins.telescope-live-grep-args-nvim
           vimPlugins.vim-tmux-navigator
           vimPlugins.barbecue-nvim
           vimPlugins.nvim-osc52
