@@ -1,29 +1,32 @@
-{ config, pkgs, lib, userSettings, systemName, unstable, ... }:
-let
+{
+  config,
+  pkgs,
+  lib,
+  userSettings,
+  systemName,
+  unstable,
+  ...
+}: let
   # Theme definitions
   themes = {
     catppuccin-mocha = {
-      base16Scheme =
-        "${pkgs.base16-schemes}/share/themes/catppuccin-mocha.yaml";
+      base16Scheme = "${pkgs.base16-schemes}/share/themes/catppuccin-mocha.yaml";
     };
-    nord = { base16Scheme = "${pkgs.base16-schemes}/share/themes/nord.yaml"; };
+    nord = {base16Scheme = "${pkgs.base16-schemes}/share/themes/nord.yaml";};
     dracula = {
       base16Scheme = "${pkgs.base16-schemes}/share/themes/dracula.yaml";
     };
     gruvbox-dark-medium = {
-      base16Scheme =
-        "${pkgs.base16-schemes}/share/themes/gruvbox-dark-medium.yaml";
+      base16Scheme = "${pkgs.base16-schemes}/share/themes/gruvbox-dark-medium.yaml";
     };
     rose-pine-moon = {
       base16Scheme = "${pkgs.base16-schemes}/share/themes/rose-pine-moon.yaml";
     };
     gruvbox-dark-hard = {
-      base16Scheme =
-        "${pkgs.base16-schemes}/share/themes/gruvbox-dark-hard.yaml";
+      base16Scheme = "${pkgs.base16-schemes}/share/themes/gruvbox-dark-hard.yaml";
     };
     catppuccin-macchiato = {
-      base16Scheme =
-        "${pkgs.base16-schemes}/share/themes/catppuccin-macchiato.yaml";
+      base16Scheme = "${pkgs.base16-schemes}/share/themes/catppuccin-macchiato.yaml";
     };
     # Add more themes as needed
   };
@@ -39,14 +42,11 @@ let
   wallpaperPath = "${assetsDir}/wallpapers/${selectedWallpaper}";
 
   themeConfig = themes.${selectedTheme};
-
 in {
-
   # In a separate file or at the top level of your home.nix
-  home.packages = with pkgs;
-    [
-      anki # Just the anki package, not ankiAddons
-    ];
+  home.packages = with pkgs; [
+    anki # Just the anki package, not ankiAddons
+  ];
   stylix = {
     enable = true;
 
@@ -84,8 +84,7 @@ in {
     };
 
     # targets.kitty.enable = false;
+    targets.neovim.enable = false;
     # Override anki to use unstable version that has ankiAddons
-
   };
-
 }

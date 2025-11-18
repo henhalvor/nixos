@@ -3,6 +3,7 @@
   pkgs,
   system,
   nvf,
+  lib,
   inputs,
   unstable,
   pkgs24-11,
@@ -67,7 +68,6 @@ in {
           splitright = true;
           splitbelow = true;
           list = true;
-          listchars = "tab:» ,trail:·,nbsp:␣";
           cursorline = true;
           scrolloff = 10;
           hlsearch = true;
@@ -78,7 +78,7 @@ in {
           enable = true;
           # name = "catppuccin";
           # style = "macchiato"; # This is the "machiato" you mentioned
-          transparent = true; # Enable transparent background
+          # transparent = true; # Enable transparent background
         };
 
         # Statusline using mini.statusline
@@ -584,6 +584,9 @@ in {
             terminal = {
               enabled = true;
             };
+            # picker = {
+            #   enabled = true;
+            # };
           };
         };
 
@@ -1034,6 +1037,11 @@ in {
         # Additional Lua configuration for advanced setups
         luaConfigRC = {
           # Base neovim config
+
+          correct-rendering-of-tabs = ''
+            vim.opt.listchars = { tab = "  ", trail = "·", nbsp = "␣" } -- Tab is two spaces, trailing spaces are shown as dots, non-breaking spaces as a special character
+          '';
+
           restore-cursor-position-in-previous-editing-session-autocmd = ''
             vim.api.nvim_create_autocmd("BufReadPost", {
               callback = function(args)
@@ -1494,6 +1502,13 @@ in {
             '';
           };
 
+          # gruvbox-material = {
+          #   package = pkgs.vimPlugins.gruvbox-material;
+          #   setup = ''
+          #     vim.g.gruvbox_material_transparent_background = 2
+          #   '';
+          # };
+
           neocodeium = {
             package = neocodeium-nvim-plugin;
             # The `build` step for npm install is ignored here; user handles CLI install.
@@ -1539,6 +1554,7 @@ in {
           vimPlugins.grug-far-nvim
           vimPlugins.persistence-nvim
           vimPlugins.gruvbox-baby
+          vimPlugins.gruvbox-material
 
           # Use this if "built in" persistence is not working
           # vimPlugins.persistence-nvim
