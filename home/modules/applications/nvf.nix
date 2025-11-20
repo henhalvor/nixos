@@ -89,6 +89,7 @@ in {
         # Enable web dev icons for better file icons
         visuals = {
           nvim-web-devicons.enable = true;
+          nvim-cursorline.setupOpts.cursorword.hl.underline = lib.mkForce false;
         };
 
         treesitter = {
@@ -437,12 +438,26 @@ in {
         #   };
         # };
 
-        utility.yazi-nvim = {
-          enable = true;
-          mappings.openYazi = "-";
-          setupOpts.open_for_directories = true;
-        };
+        utility = {
+          motion = {
+            flash-nvim = {
+              enable = true;
+              mappings = {
+                jump = "<CR>";
+                treesitter = "<leader><CR>";
+                remote = null;
+                toggle = null;
+                treesitter_search = null;
+              };
+            };
+          };
 
+          yazi-nvim = {
+            enable = true;
+            mappings.openYazi = "-";
+            setupOpts.open_for_directories = true;
+          };
+        };
         # Mini.nvim plugins configuration
         mini = {
           # Mini.files - File explorer
@@ -1037,7 +1052,6 @@ in {
         # Additional Lua configuration for advanced setups
         luaConfigRC = {
           # Base neovim config
-
           correct-rendering-of-tabs = ''
             vim.opt.listchars = { tab = "  ", trail = "·", nbsp = "␣" } -- Tab is two spaces, trailing spaces are shown as dots, non-breaking spaces as a special character
           '';
