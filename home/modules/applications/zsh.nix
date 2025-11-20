@@ -3,6 +3,10 @@
   pkgs,
   ...
 }: {
+  imports = [
+    ../scripts/search-with-zoxide.nix
+  ];
+
   programs.zsh = {
     enable = true;
     oh-my-zsh = {
@@ -13,6 +17,28 @@
       v = "nvim";
       lzg = "lazygit";
       cd = "z";
+      f = "fzf";
+      fman = "compgen -c | fzf | xargs man";
+      nzo = "search-with-zoxide";
+      # Git
+      ga = "git add .";
+      gc = "git commit";
+      gs = "git status";
+      gd = "git diff";
+      gl = "git log";
+      gp = "git push";
+      gpl = "git pull";
+      gco = "git checkout";
+      gb = "git branch";
+    };
+    sessionVariables = {
+      FZF_DEFAULT_COMMAND = "fd --hidden  --strip-cwd-prefix --exclude .git"; # Search for files
+      FZF_CRTL_T_COMMAND = "fd --hidden  --strip-cwd-prefix --exclude .git"; # Same as default
+      FZF_ALT_C_COMMAND = "fd --type d --hidden  --strip-cwd-prefix --exclude .git"; # Search for directories
+      FZF_DEFAULT_OPTS = "--height 50% --layout=default --border";
+      FZF_TMUX_OPTS = " -p90%,70% ";
+      FZF_CTRL_T_OPTS = "--preview 'bat --color=always -n --line-range= :500 {}'";
+      FZF_ALT_C_OPTS = "--preview 'eza --tree --color=always {} | head -n 50'";
     };
     syntaxHighlighting.enable = true;
     autosuggestion.enable = true;
@@ -91,6 +117,8 @@
             # Create an alias for easier use
             alias reload_secrets='load_secrets'
 
+
+
        # Set up a precmd hook that runs once after shell initialization
             load_secrets_once() {
               load_secrets
@@ -108,6 +136,38 @@
       # Disable forward incremental search (conflicts with tmux prefix keybind)
         bindkey -r "^S"
         bindkey -r "^R"
+
+      # Bind Ctrl-F to search-with-zoxide
+      # bindkey -s "^E" "search-with-zoxide\n"
+
+      # Neovim old files picker using fzf
+        nlof() {
+          local oldfiles
+          oldfiles=$(nvim -u NONE --headless +'lua io.write(table.concat(vim.v.oldfiles, "\n"))' +qa)
+
+          [[ -z "$oldfiles" ]] && return
+
+          local files
+          files=$(echo "$oldfiles" | \
+            while read -r file; do
+              [[ -f "$file" ]] && echo "$file"
+            done | \
+            fzf --multi \
+              --preview 'bat -n --color=always --line-range=:500 {} 2>/dev/null || echo "Error previewing file"' \
+              --height=70% \
+              --layout=default)
+
+          [[ -n "$files" ]] && nvim $files
+        }
+
+        # Optional explicit alias (not required since function name matches)
+        alias nlof='nlof'
+      # Bind Ctrl-E to neovim old files
+        bindkey -s "^F" "nlof\n"
+
+
+
+
     '';
     history = {
       size = 10000;
