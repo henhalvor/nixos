@@ -14,6 +14,12 @@
 
   # home.packages = with pkgs; [ unstable.ankiAddons unstable.anki ];
 
+  home.packages = with pkgs; [
+    vim
+  ];
+
+
+
   imports =
     # Window manager (conditional import)
     (if windowManager == "hyprland" then
@@ -37,19 +43,19 @@
       ../../home/modules/applications/${userSettings.term}.nix
       ../../home/modules/applications/${userSettings.browser}.nix
       ../../home/modules/applications/yazi.nix
-      ../../home/modules/applications/aider-chat.nix
+      # ../../home/modules/applications/aider-chat.nix
       ../../home/modules/applications/claude-code.nix # installed via npm
       ../../home/modules/applications/tmux.nix
-      ../../home/modules/applications/vial.nix
+      # ../../home/modules/applications/vial.nix
       ../../home/modules/applications/brave.nix
-      ../../home/modules/applications/vscode.nix
-      ../../home/modules/applications/cursor.nix
+      # ../../home/modules/applications/vscode.nix
+      # ../../home/modules/applications/cursor.nix
       ../../home/modules/applications/mission-center.nix
       ../../home/modules/applications/amazon-q.nix
       # ../../home/modules/applications/google-chrome.nix
       ../../home/modules/applications/gimp.nix
       ../../home/modules/applications/microsoft-edge.nix
-      ../../home/modules/applications/nvim.nix
+      # ../../home/modules/applications/nvim.nix
       ../../home/modules/applications/nautilus.nix
       ../../home/modules/applications/spotify.nix
       # ../../home/modules/applications/nsxiv.nix
@@ -57,7 +63,8 @@
       ../../home/modules/applications/zathura.nix
       ../../home/modules/applications/mpv.nix
       ../../home/modules/applications/libreoffice.nix
-      # ../../home/modules/applications/nvf.nix
+      # ../../home/modules/applications/vivaldi.nix
+      ../../home/modules/applications/nvf.nix
 
       # Environment
       ../../home/modules/environment/dev-tools.nix
@@ -82,6 +89,8 @@
       ../../home/modules/utils/default.nix
 
     ];
+
+
 
   # Create a desktop entry for boot-windows script (Only for workstation system)
   xdg.desktopEntries.boot-windows = {
