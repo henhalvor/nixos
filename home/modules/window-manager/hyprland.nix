@@ -1,11 +1,15 @@
-{ config, pkgs, userSettings, lib, systemName, ... }:
-let
-
+{
+  config,
+  pkgs,
+  userSettings,
+  lib,
+  systemName,
+  ...
+}: let
   # Import the script
-  toggleMonitorsWorkstation =
-    import ../scripts/toggle-monitors-workstation-hyprland.nix {
-      inherit pkgs;
-    };
+  toggleMonitorsWorkstation = import ../scripts/toggle-monitors-workstation-hyprland.nix {
+    inherit pkgs;
+  };
 
   # Define system-specific configurations
   systemConfigs = {
@@ -29,7 +33,6 @@ let
         # Laptop-specific brightness controls
         ",XF86MonBrightnessUp,exec, brightnessctl s +10%"
         ",XF86MonBrightnessDown,exec, brightnessctl s 10%-"
-
       ];
 
       # NEW: Battery-optimized animations (LAPTOP ONLY)
@@ -38,19 +41,19 @@ let
       };
 
       # NEW: Battery-optimized decorations (LAPTOP ONLY)
-      extraDecorations = { };
+      extraDecorations = {};
 
       # NEW: Battery-optimized misc settings (LAPTOP ONLY)
-      extraMisc = { };
+      extraMisc = {};
 
-      extraInput = { touchpad = { natural_scroll = true; }; };
+      extraInput = {touchpad = {natural_scroll = true;};};
 
-      extraPackages = [ ];
+      extraPackages = [];
 
       extraWindowRules = [
-        "workspace 1, class:^(zen)$"
-        "workspace 2, class:^(kitty)$"
-        "workspace 3, class:^(code)$"
+        "workspace 1, class:^(vivaldi)$"
+        # "workspace 2, class:^(kitty)$"
+        # "workspace 3, class:^(code)$"
         # Laptop-specific window rules can go here
       ];
 
@@ -93,10 +96,9 @@ let
         "$mainMod, M, exec, toggle-monitors"
       ];
 
-      extraAnimations = { enabled = true; };
+      extraAnimations = {enabled = true;};
 
       extraDecorations = {
-
         # opacity
         active_opacity = 1.0; # opacity for focused windows (100%)
         inactive_opacity = 1.0; # opacity for unfocused windows (95%)
@@ -123,21 +125,20 @@ let
           render_power = 3;
           # color = "rgba(00000055)";
         };
-
       };
-      extraMisc = { };
+      extraMisc = {};
 
       extraInput = {
         # Workstation-specific input settings
       };
 
-      extraPackages = [ toggleMonitorsWorkstation ];
+      extraPackages = [toggleMonitorsWorkstation];
 
       extraWindowRules = [
         # Workstation-specific workspace assignments
-        "workspace 1, class:^(zen)$"
-        "workspace 2, class:^(kitty)$"
-        "workspace 3, class:^(code)$"
+        "workspace 1, class:^(vivaldi)$"
+        # "workspace 2, class:^(kitty)$"
+        # "workspace 3, class:^(code)$"
       ];
 
       extraExecOnce = [
@@ -160,10 +161,8 @@ let
 
   currentConfig =
     systemConfigs.${systemName} or systemConfigs.lenovo-yoga-pro-7;
-
 in {
-
-  imports = [ ./hyprpanel ./hyprsunset ./rofi ./hypridle ./hyprlock ./kanshi ];
+  imports = [./hyprpanel ./hyprsunset ./rofi ./hypridle ./hyprlock ./kanshi];
 
   home.packages = with pkgs;
     [
@@ -179,7 +178,8 @@ in {
       ddcutil # External monitor brightness control
       bluez # bluetooth
       blueberry
-    ] ++ currentConfig.extraPackages;
+    ]
+    ++ currentConfig.extraPackages;
 
   wayland.windowManager.hyprland = {
     enable = true;
@@ -201,7 +201,7 @@ in {
           "wl-paste --type image --watch clipman store &" # Store images
           # "hyprpanel &"    # Dont manually start hyprpanel, it is started by systemd service
           "hypridle &"
-          "zen" # zen browser
+          "vivaldi"
 
           #   "swaync &"
           #   "hyprctl setcursor Bibata-Modern-Ice 24 &"
@@ -209,7 +209,8 @@ in {
           #
           # "hyprlock"
         ];
-      in baseExecOnce ++ currentConfig.extraExecOnce;
+      in
+        baseExecOnce ++ currentConfig.extraExecOnce;
 
       input = let
         # Base input configuration that applies to all systems
@@ -222,7 +223,8 @@ in {
           mouse_refocus = 0;
           sensitivity = 0;
         };
-      in baseInput // currentConfig.extraInput;
+      in
+        baseInput // currentConfig.extraInput;
 
       general = {
         "$mainMod" = "SUPER";
@@ -251,7 +253,8 @@ in {
           new_window_takes_over_fullscreen = 2;
           middle_click_paste = false;
         };
-      in baseMisc // currentConfig.extraMisc;
+      in
+        baseMisc // currentConfig.extraMisc;
 
       dwindle = {
         # no_gaps_when_only = false;
@@ -273,7 +276,8 @@ in {
         baseDecoration = {
           rounding = 10; # Rounding on all windows
         };
-      in baseDecoration // currentConfig.extraDecorations;
+      in
+        baseDecoration // currentConfig.extraDecorations;
 
       animations = let
         baseAnimations = {
@@ -303,7 +307,8 @@ in {
             "workspaces,  1, 4,   easeOutCubic, fade" # styles: slide, slidevert, fade, slidefade, slidefadevert
           ];
         };
-      in baseAnimations // currentConfig.extraAnimations;
+      in
+        baseAnimations // currentConfig.extraAnimations;
 
       bind = let
         # Base keybindings that apply to all systems
@@ -404,14 +409,13 @@ in {
 
           "$mainMod, mouse_down, workspace, e-1"
           "$mainMod, mouse_up, workspace, e+1"
-
         ];
-      in baseBinds ++ currentConfig.extraBinds;
+      in
+        baseBinds ++ currentConfig.extraBinds;
 
       # binds active in lockscreen
       bindl = [
         # Brightness
-
       ];
 
       # binds that repeat when held
@@ -538,7 +542,8 @@ in {
           # Basic Kitty styling that applies always
           "rounding 10, class:^(kitty)$" # Rounded corners for all Kitty windows
         ];
-      in baseWindowRules ++ currentConfig.extraWindowRules;
+      in
+        baseWindowRules ++ currentConfig.extraWindowRules;
 
       # No gaps when only
       workspace = let
@@ -549,8 +554,9 @@ in {
           "f[1], gapsout:0, gapsin:0"
         ];
         # System-specific workspace rules
-        systemWorkspaceRules = currentConfig.workspaceRules or [ ];
-      in baseWorkspaceRules ++ systemWorkspaceRules;
+        systemWorkspaceRules = currentConfig.workspaceRules or [];
+      in
+        baseWorkspaceRules ++ systemWorkspaceRules;
     };
 
     extraConfig = ''
@@ -583,10 +589,8 @@ in {
   };
 
   # Create the scripts directory and add it to PATH
-  home.sessionPath = [ "${config.home.homeDirectory}/.local/bin" ];
+  home.sessionPath = ["${config.home.homeDirectory}/.local/bin"];
 
   # Ensure the .local/bin directory exists
   home.file.".local/bin/.keep".text = "";
-
 }
-

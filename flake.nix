@@ -26,74 +26,96 @@
     };
   };
 
-  outputs = { nixpkgs, nixpkgs-unstable, home-manager, nixpkgs-24-11
-    , zen-browser, vscode-server, nvf, nvim-nix, stylix, lanzaboote, ... }:
-    let
-      system = "x86_64-linux";
+  outputs = {
+    nixpkgs,
+    nixpkgs-unstable,
+    home-manager,
+    nixpkgs-24-11,
+    zen-browser,
+    vscode-server,
+    nvf,
+    nvim-nix,
+    stylix,
+    lanzaboote,
+    ...
+  }: let
+    system = "x86_64-linux";
 
-      unstablePkgs = import nixpkgs-unstable {
+    unstablePkgs = import nixpkgs-unstable {
+      inherit system;
+      config.allowUnfree = true;
+    };
+
+    # Add nixpkgs 24.11 package set
+    pkgs24-11 = import nixpkgs-24-11 {
+      inherit system;
+      config.allowUnfree = true;
+    };
+
+    pkgsForNixOS = import nixpkgs {
+      inherit system;
+      config.allowUnfree = true;
+      overlays = [
+      ];
+    };
+
+    userHenhal = rec {
+      username = "henhal";
+      name = "Henrik";
+      email = "henhalvor@gmail.com";
+      homeDirectory = "/home/${username}";
+      term = "kitty";
+      browser = "vivaldi";
+      stateVersion = "25.05";
+      stylixTheme = {
+        # scheme = "catppuccin-macchiato"; # Theme name in assets/themes/
+        scheme = "gruvbox-dark-hard"; # Theme name in assets/themes/
+        # wallpaper = "catppuccin_landscape.png";
+        wallpaper = "starry-sky.png"; # Filename in assets/wallpapers/
+        # wallpaper = "futuristic-background-with-green-letters.jpg"; # Filename in assets/wallpapers/
+      };
+    };
+
+    userHenhalDev = rec {
+      username = "henhal-dev";
+      name = "Henrik";
+      email = "henhalvor@gmail.com";
+      homeDirectory = "/home/${username}";
+      stateVersion = "25.05";
+    };
+
+    mkNixosSystem = {
+      systemName,
+      hostname,
+      userSettings,
+      windowManager ? "none",
+      extraModules ? [],
+      extraSpecialArgs ? {},
+    }:
+      nixpkgs.lib.nixosSystem {
         inherit system;
-        config.allowUnfree = true;
-      };
 
-      # Add nixpkgs 24.11 package set
-      pkgs24-11 = import nixpkgs-24-11 {
-        inherit system;
-        config.allowUnfree = true;
-      };
-
-      pkgsForNixOS = import nixpkgs {
-        inherit system;
-        config.allowUnfree = true;
-        overlays = [
-
-        ];
-      };
-
-      userHenhal = rec {
-        username = "henhal";
-        name = "Henrik";
-        email = "henhalvor@gmail.com";
-        homeDirectory = "/home/${username}";
-        term = "kitty";
-        browser = "zen-browser";
-        stateVersion = "25.05";
-        stylixTheme = {
-          # scheme = "catppuccin-macchiato"; # Theme name in assets/themes/
-          scheme = "gruvbox-dark-hard"; # Theme name in assets/themes/
-          # wallpaper = "catppuccin_landscape.png";
-          wallpaper = "starry-sky.png"; # Filename in assets/wallpapers/
-          # wallpaper = "futuristic-background-with-green-letters.jpg"; # Filename in assets/wallpapers/
-        };
-      };
-
-      userHenhalDev = rec {
-        username = "henhal-dev";
-        name = "Henrik";
-        email = "henhalvor@gmail.com";
-        homeDirectory = "/home/${username}";
-        stateVersion = "25.05";
-      };
-
-      mkNixosSystem = { systemName, hostname, userSettings
-        , windowManager ? "none", extraModules ? [ ], extraSpecialArgs ? { }, }:
-        nixpkgs.lib.nixosSystem {
-          inherit system;
-
-          specialArgs = {
+        specialArgs =
+          {
             inherit userSettings;
             unstable = unstablePkgs;
             pkgs24-11 = pkgs24-11;
             inherit zen-browser;
             inherit hostname windowManager systemName;
-          } // extraSpecialArgs;
+          }
+          // extraSpecialArgs;
 
-          modules = [
+        modules =
+          [
             stylix.nixosModules.stylix
             lanzaboote.nixosModules.lanzaboote
             ./systems/${systemName}/configuration.nix
-            { nixpkgs.config.allowUnfree = true; }
-            ({ config, pkgs, ... }: {
+            {nixpkgs.config.allowUnfree = true;}
+            ({
+              config,
+              pkgs,
+              ...
+            }: {
               networking.hostName = hostname;
               time.timeZone = "Europe/Oslo";
               i18n.defaultLocale = "en_US.UTF-8";
@@ -113,7 +135,7 @@
                 ];
                 shell = pkgsForNixOS.zsh;
                 home = userSettings.homeDirectory;
-                packages = with pkgsForNixOS; [ ethtool ];
+                packages = with pkgsForNixOS; [ethtool];
               };
 
               # nixpkgs.pkgs = pkgsForNixOS; -- DEPRECATED IN RECENT VERSION OF HOME MANAGER
@@ -125,7 +147,7 @@
                 unstable = unstablePkgs;
                 pkgs24-11 = pkgs24-11;
                 inherit hostname windowManager systemName;
-                inputs = { inherit zen-browser nvf nvim-nix stylix; };
+                inputs = {inherit zen-browser nvf nvim-nix stylix;};
               };
               home-manager.useGlobalPkgs =
                 false; # NEEDS TO BE FALSE IN RECENT VERSION OF HOME MANAGER
@@ -133,42 +155,47 @@
               home-manager.users.${userSettings.username} =
                 import ./users/${userSettings.username}/home.nix;
             }
-          ] ++ extraModules;
-        };
-    in {
-      nixosConfigurations = {
-        lenovo-yoga-pro-7 = mkNixosSystem {
-          systemName = "lenovo-yoga-pro-7";
-          hostname = "yoga-pro-7";
-          userSettings = userHenhal;
-          windowManager = "hyprland";
-        };
+          ]
+          ++ extraModules;
+      };
+  in {
+    nixosConfigurations = {
+      lenovo-yoga-pro-7 = mkNixosSystem {
+        systemName = "lenovo-yoga-pro-7";
+        hostname = "yoga-pro-7";
+        userSettings = userHenhal;
+        windowManager = "hyprland";
+      };
 
-        workstation = mkNixosSystem {
-          systemName = "workstation";
-          hostname = "workstation";
-          userSettings = userHenhal;
-          windowManager = "hyprland";
-        };
+      workstation = mkNixosSystem {
+        systemName = "workstation";
+        hostname = "workstation";
+        userSettings = userHenhal;
+        windowManager = "hyprland";
+      };
 
-        # Should be deleted
-        desktop = mkNixosSystem {
-          systemName = "desktop";
-          hostname = "desktop-pc";
-          userSettings = userHenhal;
-          windowManager = "hyprland";
-        };
+      # Should be deleted
+      desktop = mkNixosSystem {
+        systemName = "desktop";
+        hostname = "desktop-pc";
+        userSettings = userHenhal;
+        windowManager = "hyprland";
+      };
 
-        hp-server = mkNixosSystem {
-          systemName = "hp-server";
-          hostname = "hp-server";
-          userSettings = userHenhalDev;
-          windowManager = "none";
-          extraModules = [
-            vscode-server.nixosModules.default
-            ({ config, pkgs, ... }: { services.vscode-server.enable = true; })
-          ];
-        };
+      hp-server = mkNixosSystem {
+        systemName = "hp-server";
+        hostname = "hp-server";
+        userSettings = userHenhalDev;
+        windowManager = "none";
+        extraModules = [
+          vscode-server.nixosModules.default
+          ({
+            config,
+            pkgs,
+            ...
+          }: {services.vscode-server.enable = true;})
+        ];
       };
     };
+  };
 }

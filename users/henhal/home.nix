@@ -1,4 +1,12 @@
-{ config, pkgs, windowManager, userSettings, stylix, unstable, ... }: {
+{
+  config,
+  pkgs,
+  windowManager,
+  userSettings,
+  stylix,
+  unstable,
+  ...
+}: {
   home.username = userSettings.username;
   home.homeDirectory = "/home/${userSettings.username}";
 
@@ -18,23 +26,25 @@
     vim
   ];
 
-
-
   imports =
     # Window manager (conditional import)
-    (if windowManager == "hyprland" then
-      [ ../../home/modules/window-manager/hyprland.nix ]
-    else if windowManager == "sway" then
-      [ ../../home/modules/window-manager/sway.nix ]
-    else if windowManager == "gnome" then
-    # Need to add gnome specific home config
-      [ ]
-    else if windowManager == "none" then
-      [ ]
-    else [
-      throw
-      "Unsupported window manager in flake's windowManager: ${windowManager}"
-    ]) ++ [
+    (
+      if windowManager == "hyprland"
+      then [../../home/modules/window-manager/hyprland.nix]
+      else if windowManager == "sway"
+      then [../../home/modules/window-manager/sway.nix]
+      else if windowManager == "gnome"
+      then
+        # Need to add gnome specific home config
+        []
+      else if windowManager == "none"
+      then []
+      else [
+        throw
+        "Unsupported window manager in flake's windowManager: ${windowManager}"
+      ]
+    )
+    ++ [
       # Add this line to import the Stylix Home Manager module
       stylix.homeModules.stylix
 
@@ -63,7 +73,7 @@
       ../../home/modules/applications/zathura.nix
       ../../home/modules/applications/mpv.nix
       ../../home/modules/applications/libreoffice.nix
-      # ../../home/modules/applications/vivaldi.nix
+      ../../home/modules/applications/vivaldi.nix
       ../../home/modules/applications/nvf.nix
 
       # Environment
@@ -87,10 +97,7 @@
 
       # Utils
       ../../home/modules/utils/default.nix
-
     ];
-
-
 
   # Create a desktop entry for boot-windows script (Only for workstation system)
   xdg.desktopEntries.boot-windows = {
@@ -98,7 +105,7 @@
     comment = "Boot into Windows on next reboot";
     exec = "${pkgs.kitty}/bin/kitty -e boot-windows";
     terminal = true;
-    categories = [ "System" ];
+    categories = ["System"];
     icon = "computer";
   };
 }

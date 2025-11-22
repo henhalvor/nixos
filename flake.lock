@@ -785,7 +785,7 @@
         "type": "github"
       }
     },
-    "zen-browser": {
+     "zen-browser": {
       "inputs": {
         "home-manager": "home-manager_2",
         "nixpkgs": "nixpkgs_4"
