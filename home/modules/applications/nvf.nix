@@ -1440,7 +1440,7 @@ in {
           '';
 
           snacks-colorscheme-picker = ''
-            vim.keymap.set("n", "<leader>sc", function()
+            vim.keymap.set("n", "<leader>cs", function()
               Snacks.picker.pick({
                 prompt = "Select Colorscheme",
                 format = "text",
