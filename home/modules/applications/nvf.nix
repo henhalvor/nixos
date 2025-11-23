@@ -76,9 +76,9 @@ in {
         # Theme Configuration - Catppuccin Macchiato with transparency
         theme = {
           enable = true;
-          # name = "catppuccin";
-          # style = "macchiato"; # This is the "machiato" you mentioned
-          # transparent = true; # Enable transparent background
+          name = lib.mkForce "gruvbox";
+          style = "dark"; # This is the "macchiato" you mentioned
+          transparent = lib.mkForce true; # Enable transparent background
         };
 
         # Statusline using mini.statusline
@@ -128,7 +128,8 @@ in {
           ts = {
             enable = true;
             treesitter.enable = true;
-            format.package = pkgs.prettierd;
+            format.type = "prettierd";
+            # format.package = pkgs.prettierd;
           };
           html = {
             enable = true;
@@ -137,7 +138,7 @@ in {
           css = {
             enable = true;
             treesitter.enable = true;
-            format.package = pkgs.prettierd;
+            # format.package = pkgs.prettierd;
           };
           lua = {
             enable = true;
@@ -163,52 +164,60 @@ in {
             enable = true;
             treesitter.enable = true;
           };
+          svelte = {
+            enable = true;
+            treesitter.enable = true;
+            # format.package = pkgs.prettierd;
+            format.enable = true;
+            lsp.enable = true;
+            extraDiagnostics.enable = true;
+          };
         };
 
         # Formatting
-        # formatter."conform-nvim" = {
-        #   enable = true;
-        #   setupOpts = {
-        #     notify_on_error = false;
-        #     format_on_save = {
-        #       _type = "lua-inline";
-        #       expr = ''
-        #         function(bufnr)
-        #           local disable_filetypes = { c = true, cpp = true }
-        #           return {
-        #             timeout_ms = 2000,
-        #             lsp_fallback = not disable_filetypes[vim.bo[bufnr].filetype],
-        #           }
-        #         end
-        #       '';
-        #     };
-        #     formatters = {
-        #       prettier = {
-        #         package = pkgs.prettierd;
-        #         timeout_ms = 3000;
-        #         ignore_errors = true;
-        #       };
-        #     };
-        #
-        #     formatters_by_ft = {
-        #       javascript = ["prettier"];
-        #       typescript = ["prettier"];
-        #       javascriptreact = ["prettier"];
-        #       typescriptreact = ["prettier"];
-        #       svelte = ["prettier"];
-        #       css = ["prettier"];
-        #       html = ["prettier"];
-        #       json = ["prettier"];
-        #       yaml = ["prettier"];
-        #       markdown = ["prettier"];
-        #       graphql = ["prettier"];
-        #       lua = ["stylua"];
-        #       python = ["black"];
-        #       rust = ["rustfmt"];
-        #       nix = ["nixfmt"];
-        #     };
-        #   };
-        # };
+        formatter."conform-nvim" = {
+          enable = true;
+          setupOpts = {
+            notify_on_error = false;
+            format_on_save = {
+              _type = "lua-inline";
+              expr = ''
+                function(bufnr)
+                  local disable_filetypes = { c = true, cpp = true }
+                  return {
+                    timeout_ms = 2000,
+                    lsp_fallback = not disable_filetypes[vim.bo[bufnr].filetype],
+                  }
+                end
+              '';
+            };
+            formatters = {
+              prettier = {
+                package = pkgs.prettierd;
+                timeout_ms = 3000;
+                ignore_errors = true;
+              };
+            };
+
+            formatters_by_ft = {
+              javascript = ["prettier"];
+              typescript = ["prettier"];
+              javascriptreact = ["prettier"];
+              typescriptreact = ["prettier"];
+              svelte = ["prettier"];
+              css = ["prettier"];
+              html = ["prettier"];
+              json = ["prettier"];
+              yaml = ["prettier"];
+              markdown = ["prettier"];
+              graphql = ["prettier"];
+              lua = ["stylua"];
+              python = ["black"];
+              rust = ["rustfmt"];
+              nix = ["nixfmt"];
+            };
+          };
+        };
 
         # Autocomplete with blink-cmp
         autocomplete."blink-cmp" = {
@@ -1520,12 +1529,12 @@ in {
             '';
           };
 
-          gruvbox-baby = {
-            package = pkgs.vimPlugins.gruvbox-baby;
-            setup = ''
-              vim.g.gruvbox_baby_transparent_mode = true
-            '';
-          };
+          # gruvbox-baby = {
+          #   package = pkgs.vimPlugins.gruvbox-baby;
+          #   setup = ''
+          #     vim.g.gruvbox_baby_transparent_mode = true
+          #   '';
+          # };
 
           # gruvbox-material = {
           #   package = pkgs.vimPlugins.gruvbox-material;

@@ -12,7 +12,7 @@
     zen-browser.url = "github:0xc000022070/zen-browser-flake";
     vscode-server.url = "github:nix-community/nixos-vscode-server";
     nvf = {
-      url = "github:notashelf/nvf";
+      url = "github:notashelf/nvf/v0.8";
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
     nvim-nix.url = "github:henhalvor/nvim-nix";
