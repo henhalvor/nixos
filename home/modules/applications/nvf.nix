@@ -1409,6 +1409,63 @@ in {
               })
             end
           '';
+
+          # Colorscheme persistence and dynamic switching
+          colorscheme-persistence = ''
+            local function save_colorscheme(name)
+              local path = vim.fn.stdpath("data") .. "/colorscheme.tmp.lua"
+              local file = io.open(path, "w")
+              if file then
+                file:write("vim.cmd([[colorscheme " .. name .. "]])\n")
+                file:close()
+              end
+            end
+
+            vim.api.nvim_create_autocmd("ColorScheme", {
+              callback = function(args)
+                save_colorscheme(args.match)
+              end,
+            })
+
+            vim.api.nvim_create_autocmd("VimEnter", {
+              callback = function()
+                vim.defer_fn(function()
+                  local colorscheme_config = vim.fn.stdpath("data") .. "/colorscheme.tmp.lua"
+                  if vim.fn.filereadable(colorscheme_config) == 1 then
+                    dofile(colorscheme_config)
+                  end
+                end, 100)
+              end,
+            })
+          '';
+
+          snacks-colorscheme-picker = ''
+            vim.keymap.set("n", "<leader>sc", function()
+              Snacks.picker.pick({
+                prompt = "Select Colorscheme",
+                format = "text",
+                items = {
+                  { text = "catppuccin" },
+                  { text = "gruvbox-baby" },
+                  { text = "gruvbox-material" },
+                  { text = "rose-pine" },
+                },
+                preview = function(picker, item)
+                  if item then
+                    pcall(vim.cmd.colorscheme, item.text)
+                  end
+                end,
+                actions = {
+                  confirm = function(picker, item)
+                    if item then
+                      vim.cmd.colorscheme(item.text)
+                      picker:close()
+                    end
+                  end,
+                },
+              })
+            end, { desc = "[S]earch [T]heme" })
+          '';
         };
 
         extraPlugins = {
@@ -1572,6 +1629,55 @@ in {
               end)
             '';
           };
+
+          # Theme plugins for dynamic switching
+          catppuccin-nvim = {
+            package = pkgs.vimPlugins.catppuccin-nvim;
+            setup = ''
+              require("catppuccin").setup({
+                flavour = "macchiato",
+                background = {
+                  light = "macchiato",
+                  dark = "macchiato",
+                },
+                transparent_background = true,
+                integrations = {
+                  cmp = true,
+                  treesitter = true,
+                  noice = false,
+                  notify = true,
+                  which_key = false,
+                  fidget = true,
+                },
+              })
+            '';
+          };
+
+          rose-pine = {
+            package = pkgs.vimPlugins.rose-pine;
+            setup = ''
+              require("rose-pine").setup({
+                styles = {
+                  transparency = true,
+                },
+                disable_background = true,
+              })
+            '';
+          };
+
+          gruvbox-baby = {
+            package = pkgs.vimPlugins.gruvbox-baby;
+            setup = ''
+              vim.g.gruvbox_baby_transparent_mode = true
+            '';
+          };
+
+          gruvbox-material = {
+            package = pkgs.vimPlugins.gruvbox-material;
+            setup = ''
+              vim.g.gruvbox_material_transparent_background = 2
+            '';
+          };
         };
 
         # Extra packages needed
@@ -1588,8 +1694,6 @@ in {
           vimPlugins.nvim-osc52
           vimPlugins.grug-far-nvim
           vimPlugins.persistence-nvim
-          vimPlugins.gruvbox-baby
-          vimPlugins.gruvbox-material
 
           # Use this if "built in" persistence is not working
           # vimPlugins.persistence-nvim
