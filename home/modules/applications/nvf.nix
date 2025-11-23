@@ -1726,7 +1726,7 @@ in {
           gruvbox-baby = {
             package = pkgs.vimPlugins.gruvbox-baby;
             setup = ''
-              vim.g.gruvbox_baby_transparent_mode = true
+              -- vim.g.gruvbox_baby_transparent_mode = true
             '';
           };
 
