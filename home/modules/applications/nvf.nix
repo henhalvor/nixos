@@ -1060,6 +1060,44 @@ in {
 
         # Additional Lua configuration for advanced setups
         luaConfigRC = {
+          lsp-and-diagnostics-borders = ''
+            -- LSP hover with rounded borders
+            		local hover = vim.lsp.buf.hover
+            		---@diagnostic disable-next-line: duplicate-set-field
+            		vim.lsp.buf.hover = function()
+            			---@diagnostic disable-next-line: redundant-parameter
+            			return hover({
+            				-- max_width = 100,
+            				-- max_height = 14,
+            				border = "rounded",
+            				title = "LSP",
+            				title_pos = "left",
+            			})
+            		end
+
+            		-- Diagnostic config
+            		vim.diagnostic.config({
+            			severity_sort = true,
+            			float = { border = "rounded", source = true },
+            			underline = { severity = vim.diagnostic.severity.ERROR },
+            			signs = vim.g.have_nerd_font and {
+            				text = {
+            					[vim.diagnostic.severity.ERROR] = "󰅚 ",
+            					[vim.diagnostic.severity.WARN] = "󰀪 ",
+            					[vim.diagnostic.severity.INFO] = "󰋽 ",
+            					[vim.diagnostic.severity.HINT] = "󰌶 ",
+            				},
+            			} or {},
+            			virtual_text = {
+            				source = "if_many",
+            				spacing = 2,
+            				format = function(diagnostic)
+            					return diagnostic.message
+            				end,
+            			},
+            		})
+          '';
+
           # Base neovim config
           correct-rendering-of-tabs = ''
             vim.opt.listchars = { tab = "  ", trail = "·", nbsp = "␣" } -- Tab is two spaces, trailing spaces are shown as dots, non-breaking spaces as a special character
