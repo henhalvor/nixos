@@ -47,7 +47,7 @@
   # Additional packages that enhance Vivaldi's functionality
   home.packages = with pkgs; [
     vivaldi-ffmpeg-codecs # Additional codec support for better media playback
-    widevine-cdm # Required for streaming services like Netflix
+    # widevine-cdm # Required for streaming services like Netflix
   ];
 
   # Optional: Configure XDG MIME types to make Vivaldi the default browser
