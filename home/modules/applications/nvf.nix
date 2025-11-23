@@ -131,6 +131,10 @@ in {
             format.type = ["prettierd"];
             # format.package = pkgs.prettierd;
           };
+          tailwind = {
+            enable = true;
+            lsp.enable = true;
+          };
           html = {
             enable = true;
             treesitter.enable = true;
