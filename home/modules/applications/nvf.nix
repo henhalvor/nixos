@@ -128,7 +128,7 @@ in {
           ts = {
             enable = true;
             treesitter.enable = true;
-            format.type = "prettierd";
+            format.type = ["prettierd"];
             # format.package = pkgs.prettierd;
           };
           html = {
@@ -1449,6 +1449,26 @@ in {
                   { text = "gruvbox-baby" },
                   { text = "gruvbox-material" },
                   { text = "rose-pine" },
+                  { text = "tokyonight" },
+                  { text = "kanagawa" },
+                  { text = "nord" },
+                  { text = "nightfox" },
+                  { text = "dawnfox" },
+                  { text = "duskfox" },
+                  { text = "nordfox" },
+                  { text = "terafox" },
+                  { text = "carbonfox" },
+                  { text = "onedark" },
+                  { text = "dracula" },
+                  { text = "everforest" },
+                  { text = "sonokai" },
+                  { text = "oxocarbon" },
+                  { text = "melange" },
+                  { text = "cyberdream" },
+                  { text = "vscode" },
+                  { text = "github_dark" },
+                  { text = "github_dark_dimmed" },
+                  { text = "github_light" },
                 },
                 preview = function(picker, item)
                   if item then
@@ -1676,6 +1696,125 @@ in {
             package = pkgs.vimPlugins.gruvbox-material;
             setup = ''
               vim.g.gruvbox_material_transparent_background = 2
+            '';
+          };
+
+          tokyonight-nvim = {
+            package = pkgs.vimPlugins.tokyonight-nvim;
+            setup = ''
+              require("tokyonight").setup({
+                style = "night",
+                transparent = true,
+                styles = {
+                  sidebars = "transparent",
+                  floats = "transparent",
+                },
+              })
+            '';
+          };
+
+          kanagawa-nvim = {
+            package = pkgs.vimPlugins.kanagawa-nvim;
+            setup = ''
+              require("kanagawa").setup({
+                transparent = true,
+                theme = "wave",
+              })
+            '';
+          };
+
+          nord-nvim = {
+            package = pkgs.vimPlugins.nord-nvim;
+            setup = ''
+              vim.g.nord_disable_background = true
+            '';
+          };
+
+          nightfox-nvim = {
+            package = pkgs.vimPlugins.nightfox-nvim;
+            setup = ''
+              require("nightfox").setup({
+                options = {
+                  transparent = true,
+                },
+              })
+            '';
+          };
+
+          onedark-nvim = {
+            package = pkgs.vimPlugins.onedark-nvim;
+            setup = ''
+              require("onedark").setup({
+                style = "dark",
+                transparent = true,
+              })
+            '';
+          };
+
+          dracula-nvim = {
+            package = pkgs.vimPlugins.dracula-nvim;
+            setup = ''
+              require("dracula").setup({
+                transparent_bg = true,
+              })
+            '';
+          };
+
+          everforest = {
+            package = pkgs.vimPlugins.everforest;
+            setup = ''
+              vim.g.everforest_background = "hard"
+              vim.g.everforest_transparent_background = 2
+            '';
+          };
+
+          sonokai = {
+            package = pkgs.vimPlugins.sonokai;
+            setup = ''
+              vim.g.sonokai_style = "atlantis"
+              vim.g.sonokai_transparent_background = 2
+            '';
+          };
+
+          oxocarbon-nvim = {
+            package = pkgs.vimPlugins.oxocarbon-nvim;
+            setup = ''
+              vim.opt.background = "dark"
+            '';
+          };
+
+          melange-nvim = {
+            package = pkgs.vimPlugins.melange-nvim;
+            setup = "";
+          };
+
+          cyberdream-nvim = {
+            package = pkgs.vimPlugins.cyberdream-nvim;
+            setup = ''
+              require("cyberdream").setup({
+                transparent = true,
+                italic_comments = true,
+              })
+            '';
+          };
+
+          vscode-nvim = {
+            package = pkgs.vimPlugins.vscode-nvim;
+            setup = ''
+              require("vscode").setup({
+                transparent = true,
+              })
+            '';
+          };
+
+          github-nvim-theme = {
+            package = pkgs.vimPlugins.github-nvim-theme;
+            setup = ''
+              require("github-theme").setup({
+                options = {
+                  transparent = true,
+                },
+              })
             '';
           };
         };
