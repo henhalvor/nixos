@@ -1,5 +1,9 @@
-{ config, pkgs, userSettings, ... }: {
-
+{
+  config,
+  pkgs,
+  userSettings,
+  ...
+}: {
   # Fix for allowing openssh.authorizedKeys to work (does not work without this)
   # fileSystems."/" = { options = [ "mode=755" ]; };
 
@@ -32,7 +36,6 @@
         "diffie-hellman-group-exchange-sha256"
       ];
       # MACs = "hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com";
-
     };
     extraConfig = ''
       IPQoS lowdelay throughput
@@ -59,14 +62,16 @@
 
       # Lenovo Yoga Pro 7 laptop_id pub key
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICbU4sdXQwBdx/k/usv9DO6WByxwu6zYodYGfsGrHpbX henhal@yoga-pro-7"
+
+      # galaxy tab 10 ultra
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEs49ICQp01DqPO/Mwxl13fEsYjM+ghwZWp/orbTZrV3 tablet@android"
     ];
   };
 
   # Add essential server packages
-  environment.systemPackages = with pkgs;
-    [
-      fail2ban # Protection against brute force attacks
-    ];
+  environment.systemPackages = with pkgs; [
+    fail2ban # Protection against brute force attacks
+  ];
 
   # Enable fail2ban for SSH protection
   services.fail2ban = {
@@ -74,5 +79,4 @@
     maxretry = 100; # Number of attempts before ban
     bantime = "24h";
   };
-
 }
