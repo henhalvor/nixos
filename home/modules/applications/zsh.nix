@@ -15,6 +15,7 @@
     };
     shellAliases = {
       v = "nvim";
+      c = "clear";
       lzg = "lazygit";
       cd = "z";
       f = "fzf";

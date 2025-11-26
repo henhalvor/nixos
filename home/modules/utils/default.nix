@@ -9,6 +9,7 @@
     bat # Improved cat replacement
     fd # Simple, fast and user-friendly alternative to find
     tree # Display directories as trees
+    btop
   ];
 
   # Nix search tv alias
