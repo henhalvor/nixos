@@ -4,6 +4,9 @@
   userSettings,
   ...
 }: {
+  # Mosh (faster ssh alternative for bad connections)
+  programs.mosh.enable = true;
+
   # Fix for allowing openssh.authorizedKeys to work (does not work without this)
   # fileSystems."/" = { options = [ "mode=755" ]; };
 
