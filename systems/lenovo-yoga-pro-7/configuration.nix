@@ -33,6 +33,9 @@
       ../../nixos/modules/server/ssh.nix
       ../../nixos/modules/server/tailscale.nix
 
+      # Android development
+      ../../nixos/modules/android.nix
+
     ];
 
   # logitect wireless dongle

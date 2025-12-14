@@ -55,6 +55,19 @@
         # "workspace 2, class:^(kitty)$"
         # "workspace 3, class:^(code)$"
         # Laptop-specific window rules can go here
+        
+        # Android emulator windows - force floating for tiling WM compatibility
+        "float, class:^(emulator64-crash-service)$"
+        "float, class:^(qemu-system-x86_64)$"
+        "float, class:^(Emulator)$"
+        "float, title:^(Android Emulator)$"
+        "float, title:^(Emulator)$"
+        "size 400 800, class:^(qemu-system-x86_64)$"
+        
+        # Emulator toolbar/extended controls - critical for side panel buttons
+        "float, title:^(Extended controls)$"
+        "pin, title:^(Extended controls)$"
+        "stayfocused, title:^(Extended controls)$"
       ];
 
       extraExecOnce = [
@@ -139,6 +152,19 @@
         "workspace 1, class:^(vivaldi)$"
         # "workspace 2, class:^(kitty)$"
         # "workspace 3, class:^(code)$"
+        
+        # Android emulator windows - force floating for tiling WM compatibility
+        "float, class:^(emulator64-crash-service)$"
+        "float, class:^(qemu-system-x86_64)$"
+        "float, class:^(Emulator)$"
+        "float, title:^(Android Emulator)$"
+        "float, title:^(Emulator)$"
+        "size 400 800, class:^(qemu-system-x86_64)$"
+        
+        # Emulator toolbar/extended controls - critical for side panel buttons
+        "float, title:^(Extended controls)$"
+        "pin, title:^(Extended controls)$"
+        "stayfocused, title:^(Extended controls)$"
       ];
 
       extraExecOnce = [

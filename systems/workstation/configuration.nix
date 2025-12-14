@@ -36,6 +36,9 @@
       # Scripts
       ./scripts/boot-windows.nix
 
+      # Android development
+      ../../nixos/modules/android.nix
+
     ];
   # logitect wireless dongle
   hardware.logitech.wireless.enable = true;
