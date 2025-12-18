@@ -1,6 +1,10 @@
-{ config, pkgs, userSettings, unstable, ... }:
-
 {
+  config,
+  pkgs,
+  userSettings,
+  unstable,
+  ...
+}: {
   home.username = userSettings.username;
   home.homeDirectory = userSettings.homeDirectory;
   home.stateVersion = "24.05";
@@ -24,6 +28,9 @@
     ../../home/modules/environment/dev-tools.nix
     ../../home/modules/environment/session-variables.nix
     ../../home/modules/environment/direnv.nix
+
+    # utils
+    ../../home/modules/utils/default.nix
 
     # Settings
     ../../home/modules/settings/git.nix
