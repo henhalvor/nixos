@@ -27,6 +27,9 @@
   # Set default shell to zsh
   user.shell = "${pkgs.zsh}/bin/zsh";
 
+  # Set terminal font to Hack Nerd Font
+  terminal.font = "${pkgs.nerd-fonts.hack}/share/fonts/truetype/NerdFonts/HackNerdFont-Regular.ttf";
+
   # Home-manager integration
   home-manager = {
     config = ../users/henhal-android/home.nix;

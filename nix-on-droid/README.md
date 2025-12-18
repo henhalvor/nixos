@@ -43,6 +43,7 @@ Declarative Android tablet development environment using nix-on-droid.
    - Configure tmux with session persistence
    - Install and configure git + gh CLI
    - Setup yazi file manager
+   - Install Hack Nerd Font for proper icon/glyph rendering
 
 5. **Post-installation**:
    
@@ -146,14 +147,20 @@ These are intentionally excluded (require GUI/systemd):
 ### Zsh not starting automatically
 If you land in bash instead of zsh, the config sets `user.shell` to zsh. After running `nix-on-droid switch`, close and reopen the app. Zsh should now be the default shell.
 
+### Fonts don't render correctly
+The configuration automatically sets the terminal font to Hack Nerd Font. After `nix-on-droid switch`, **close and reopen the app** for the font to take effect. Icons in powerlevel10k, nvim, and file managers should render properly.
+
+If glyphs still don't render:
+1. Verify font is installed: `ls ~/.nix-profile/share/fonts/truetype/NerdFonts/`
+2. Check font is set: `nix eval ".#nixOnDroidConfigurations.default.config.terminal.font" --impure`
+
 ### Build fails with proot error
 This is expected on x86_64. The config can only be fully built on Android (aarch64). Evaluation works fine:
 ```bash
 nix eval ".#nixOnDroidConfigurations.default.config.system.stateVersion"
 ```
 
-### Fonts don't render correctly
-Make sure termux uses the Nerd Font installed via nix. Check termux settings.
+
 
 ### LSP not working
 First activation may take time to download LSP servers. Wait for completion.
