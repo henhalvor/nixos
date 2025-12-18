@@ -259,10 +259,33 @@ in {
                   };
                 };
               };
+              menu = {
+                border = "rounded"; # Match diagnostics/LSP windows
+              };
+              documentation = {
+                window = {
+                  border = "rounded"; # Match diagnostics/LSP windows
+                };
+              };
             };
             sources = {
+              default = ["lsp" "buffer" "path" "snippets"]; # LSP first
+              providers = {
+                lsp = {
+                  score_offset = 100; # Prioritize LSP
+                };
+                buffer = {
+                  score_offset = 50;
+                };
+                path = {
+                  score_offset = 3;
+                };
+                snippets = {
+                  score_offset = -3;
+                };
+              };
               per_filetype = {
-                codecompanion = ["codecompanion" "buffer"]; # Include all desired sources
+                codecompanion = ["codecompanion" "buffer"];
               };
             };
           };
