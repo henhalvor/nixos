@@ -143,6 +143,9 @@ These are intentionally excluded (require GUI/systemd):
 
 ## Troubleshooting
 
+### Zsh not starting automatically
+If you land in bash instead of zsh, the config sets `user.shell` to zsh. After running `nix-on-droid switch`, close and reopen the app. Zsh should now be the default shell.
+
 ### Build fails with proot error
 This is expected on x86_64. The config can only be fully built on Android (aarch64). Evaluation works fine:
 ```bash

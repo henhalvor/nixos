@@ -24,6 +24,9 @@
   # Time zone
   time.timeZone = "Europe/Oslo";
 
+  # Set default shell to zsh
+  user.shell = "${pkgs.zsh}/bin/zsh";
+
   # Home-manager integration
   home-manager = {
     config = ../users/henhal-android/home.nix;
