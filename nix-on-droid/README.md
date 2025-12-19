@@ -147,12 +147,22 @@ These are intentionally excluded (require GUI/systemd):
 ### Zsh not starting automatically
 If you land in bash instead of zsh, the config sets `user.shell` to zsh. After running `nix-on-droid switch`, close and reopen the app. Zsh should now be the default shell.
 
-### Fonts don't render correctly
-The configuration automatically sets the terminal font to Hack Nerd Font. After `nix-on-droid switch`, **close and reopen the app** for the font to take effect. Icons in powerlevel10k, nvim, and file managers should render properly.
+### Shell prompt shows "localhost" instead of hostname
+The hostname is configured via `home.sessionVariables.HOSTNAME`. After `nix-on-droid switch`:
+1. Close and reopen the app
+2. Check hostname: `echo $HOSTNAME` (should show "galaxy-tab-s10-ultra")
+3. If still showing "localhost", run: `source ~/.zshrc`
 
-If glyphs still don't render:
+### Fonts don't render correctly / Missing symbols
+The configuration automatically sets the terminal font to Hack Nerd Font. After `nix-on-droid switch`, **close and reopen the app** for the font to take effect.
+
+If glyphs/symbols still don't render (git branch symbol, powerline arrows, etc.):
 1. Verify font is installed: `ls ~/.nix-profile/share/fonts/truetype/NerdFonts/`
-2. Check font is set: `nix eval ".#nixOnDroidConfigurations.default.config.terminal.font" --impure`
+2. Check terminal font is set: `nix eval ".#nixOnDroidConfigurations.default.config.terminal.font" --impure`
+3. Verify fontconfig is enabled: Check that `~/.config/fontconfig/` directory exists
+4. Restart the app completely (force close from Android settings)
+
+**Note:** Some symbols require the app to fully restart. Simply closing and reopening may not be enough.
 
 ### Build fails with proot error
 This is expected on x86_64. The config can only be fully built on Android (aarch64). Evaluation works fine:

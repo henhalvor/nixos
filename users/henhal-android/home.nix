@@ -12,6 +12,14 @@
 
   programs.home-manager.enable = true;
 
+  # Session variables - Set hostname for zsh prompt
+  home.sessionVariables = {
+    HOSTNAME = "galaxy-tab-s10-ultra";
+  };
+
+  # Font configuration for terminal applications
+  fonts.fontconfig.enable = true;
+
   # Termux configuration - Copy termux.properties (can't be symlinked)
   # Termux doesn't follow symlinks, so we need to copy the file
   home.activation.termuxConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
