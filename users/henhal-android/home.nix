@@ -1,6 +1,7 @@
 {
   config,
   pkgs,
+  lib,
   userSettings,
   unstable,
   ...
@@ -11,10 +12,11 @@
 
   programs.home-manager.enable = true;
 
-  # Termux configuration - Disable virtual keyboard extra keys row
-  home.file.".termux/termux.properties".text = ''
-    # Disable the extra keys row above keyboard
-    extra-keys = []
+  # Termux configuration - Copy termux.properties (can't be symlinked)
+  # Termux doesn't follow symlinks, so we need to copy the file
+  home.activation.termuxConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    $DRY_RUN_CMD mkdir -p ~/.termux/
+    $DRY_RUN_CMD cp -f ${../../nix-on-droid/termux.properties} ~/.termux/termux.properties
   '';
 
   # Core packages
