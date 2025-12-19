@@ -69,6 +69,9 @@
     # utils
     ../../home/modules/utils/default.nix
 
+    # Android/Termux-specific
+    ../../nix-on-droid/modules/basic-cli-tools.nix
+
     # Settings
     ../../home/modules/settings/git.nix
     ../../home/modules/settings/nerd-fonts.nix
