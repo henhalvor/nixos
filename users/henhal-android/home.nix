@@ -11,6 +11,12 @@
 
   programs.home-manager.enable = true;
 
+  # Termux configuration - Disable virtual keyboard extra keys row
+  home.file.".termux/termux.properties".text = ''
+    # Disable the extra keys row above keyboard
+    extra-keys = []
+  '';
+
   # Core packages
   home.packages = with pkgs; [
     vim

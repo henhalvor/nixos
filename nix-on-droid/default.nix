@@ -58,12 +58,6 @@ in
   # Set terminal colors from theme
   terminal.colors = terminalColors;
 
-  # Disable virtual keyboard extra keys row
-  environment.etc."termux/termux.properties".text = ''
-    # Disable the extra keys row above keyboard
-    extra-keys = []
-  '';
-
   # Home-manager integration
   home-manager = {
     config = ../users/henhal-android/home.nix;
