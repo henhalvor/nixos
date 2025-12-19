@@ -37,14 +37,9 @@
     # Skip: ssh.nix (uses home.activation - test later)
     # Skip: secrets.nix (per user request)
     # Skip: udiskie.nix (GUI daemon)
-
-    # Style
-    ../../home/modules/themes/stylix/default.nix
+    # Skip: stylix (desktop-only - terminal colors configured in nix-on-droid/theme.nix)
 
     # Scripts
     ../../home/modules/scripts/search-with-zoxide.nix
-
-    # Utils
-    ../../home/modules/utils/default.nix
   ];
 }

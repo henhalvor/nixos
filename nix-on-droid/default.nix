@@ -4,7 +4,17 @@
   pkgs,
   inputs,
   ...
-}: {
+}:
+let
+  # Import theme definitions
+  themeConfig = import ./theme.nix;
+  
+  # Select theme (can be changed to any theme from theme.nix)
+  selectedTheme = "gruvbox-dark-hard";  # Options: catppuccin-mocha, catppuccin-macchiato, nord, dracula, gruvbox-dark-medium, gruvbox-dark-hard, rose-pine-moon
+  
+  terminalColors = themeConfig.themes.${selectedTheme};
+in
+{
   # Essential system packages
   environment.packages = with pkgs; [
     vim # Fallback editor
@@ -38,6 +48,9 @@
   # Set terminal font to Hack Nerd Font
   terminal.font = "${pkgs.nerd-fonts.hack}/share/fonts/truetype/NerdFonts/HackNerdFont-Regular.ttf";
 
+  # Set terminal colors from theme
+  terminal.colors = terminalColors;
+
   # Home-manager integration
   home-manager = {
     config = ../users/henhal-android/home.nix;
@@ -63,7 +76,7 @@
       system = "aarch64-linux";
 
       userSettings = {
-        username = "henhal";
+        username = "nix-on-droid";
         name = "Henrik";
         email = "henhalvor@gmail.com";
         homeDirectory = config.user.home;
@@ -75,3 +88,6 @@
     };
   };
 }
+# How to use ephemeral environment
+# nix shell nixpkgs#cmatrix
+
