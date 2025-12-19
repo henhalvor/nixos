@@ -42,6 +42,13 @@ in
     HOSTNAME = "galaxy-tab-s10-ultra"; # or whatever you prefer
   };
 
+  # Android integration - Enable opening links and files
+  android-integration = {
+    termux-open-url.enable = true;  # Open URLs in Android browser
+    xdg-open.enable = true;          # Provides xdg-open command (standard Linux)
+    termux-reload-settings.enable = true;  # Reload terminal settings without restart
+  };
+
   # Set default shell to zsh
   user.shell = "${pkgs.zsh}/bin/zsh";
 
@@ -50,6 +57,12 @@ in
 
   # Set terminal colors from theme
   terminal.colors = terminalColors;
+
+  # Disable virtual keyboard extra keys row
+  environment.etc."termux/termux.properties".text = ''
+    # Disable the extra keys row above keyboard
+    extra-keys = []
+  '';
 
   # Home-manager integration
   home-manager = {
