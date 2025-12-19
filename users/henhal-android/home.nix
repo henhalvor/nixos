@@ -46,11 +46,8 @@
     }
   '';
 
-  # Override powerlevel10k hostname - must be set BEFORE p10k loads
-  # Using localVariables to ensure it's set early in the zsh init
-  programs.zsh.localVariables = {
-    POWERLEVEL9K_HOST_TEMPLATE = "galaxy-tab-s10-ultra";
-  };
+  # Use Android-specific p10k config (with hardcoded hostname)
+  home.file.".p10k.zsh".source = lib.mkForce ../../nix-on-droid/.p10k-android.zsh;
 
   # Core packages
   home.packages = with pkgs; [
