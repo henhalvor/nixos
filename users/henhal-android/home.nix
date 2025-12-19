@@ -34,10 +34,16 @@
     $DRY_RUN_CMD cp -f ${pkgs.nerd-fonts.hack}/share/fonts/truetype/NerdFonts/Hack/*.ttf ~/.termux/fonts/
   '';
 
-  # Ensure HOSTNAME is set in shell profile
+  # Ensure HOSTNAME is set in shell profile and override system hostname
   home.file.".zshenv".text = ''
     # Set hostname for zsh prompt
     export HOSTNAME="galaxy-tab-s10-ultra"
+    
+    # Override hostname command for powerlevel10k
+    # On Android, hostname returns "localhost", so we override it
+    function hostname() {
+      echo "galaxy-tab-s10-ultra"
+    }
   '';
 
   # Core packages
