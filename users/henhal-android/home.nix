@@ -44,10 +44,13 @@
     function hostname() {
       echo "galaxy-tab-s10-ultra"
     }
-    
-    # Override powerlevel10k hostname template (must be set before p10k loads)
-    typeset -g POWERLEVEL9K_HOST_TEMPLATE="galaxy-tab-s10-ultra"
   '';
+
+  # Override powerlevel10k hostname - must be set BEFORE p10k loads
+  # Using localVariables to ensure it's set early in the zsh init
+  programs.zsh.localVariables = {
+    POWERLEVEL9K_HOST_TEMPLATE = "galaxy-tab-s10-ultra";
+  };
 
   # Core packages
   home.packages = with pkgs; [
