@@ -38,6 +38,9 @@
     # Skip: secrets.nix (per user request)
     # Skip: udiskie.nix (GUI daemon)
 
+    # Style
+    ../../home/modules/themes/stylix/default.nix
+
     # Scripts
     ../../home/modules/scripts/search-with-zoxide.nix
 
