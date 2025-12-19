@@ -27,6 +27,19 @@
     $DRY_RUN_CMD cp -f ${../../nix-on-droid/termux.properties} ~/.termux/termux.properties
   '';
 
+  # Copy all Nerd Font files so terminal can find all glyphs
+  home.activation.copyNerdFonts = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    $VERBOSE_ECHO "Copying Nerd Fonts to ~/.termux/fonts/"
+    $DRY_RUN_CMD mkdir -p ~/.termux/fonts/
+    $DRY_RUN_CMD cp -f ${pkgs.nerd-fonts.hack}/share/fonts/truetype/NerdFonts/Hack/*.ttf ~/.termux/fonts/
+  '';
+
+  # Ensure HOSTNAME is set in shell profile
+  home.file.".zshenv".text = ''
+    # Set hostname for zsh prompt
+    export HOSTNAME="galaxy-tab-s10-ultra"
+  '';
+
   # Core packages
   home.packages = with pkgs; [
     vim

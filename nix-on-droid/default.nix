@@ -52,8 +52,8 @@ in
   # Set default shell to zsh
   user.shell = "${pkgs.zsh}/bin/zsh";
 
-  # Set terminal font to Hack Nerd Font
-  terminal.font = "${pkgs.nerd-fonts.hack}/share/fonts/truetype/NerdFonts/HackNerdFont-Regular.ttf";
+  # Set terminal font to Hack Nerd Font (using Mono variant for better terminal rendering)
+  terminal.font = "${pkgs.nerd-fonts.hack}/share/fonts/truetype/NerdFonts/Hack/HackNerdFontMono-Regular.ttf";
 
   # Set terminal colors from theme
   terminal.colors = terminalColors;
