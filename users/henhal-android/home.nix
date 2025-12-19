@@ -44,6 +44,9 @@
     function hostname() {
       echo "galaxy-tab-s10-ultra"
     }
+    
+    # Override powerlevel10k hostname template (must be set before p10k loads)
+    typeset -g POWERLEVEL9K_HOST_TEMPLATE="galaxy-tab-s10-ultra"
   '';
 
   # Core packages
