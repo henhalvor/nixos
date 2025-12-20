@@ -71,6 +71,7 @@
 
     # Android/Termux-specific
     ../../nix-on-droid/modules/basic-cli-tools.nix
+    ../../nix-on-droid/modules/ssh-client.nix
 
     # Settings
     ../../home/modules/settings/git.nix

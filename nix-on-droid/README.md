@@ -12,6 +12,7 @@ Declarative Android tablet development environment using nix-on-droid.
 - **Git**: Configured with GitHub CLI (gh)
 - **Direnv**: Per-directory development environments
 - **Clipboard**: OSC52 integration (copy from nvim/tmux, paste anywhere)
+- **SSH/Mosh**: Pre-configured workstation connections (local + Tailscale) with port forwarding
 
 ## Prerequisites
 
@@ -65,6 +66,20 @@ Declarative Android tablet development environment using nix-on-droid.
    # LSP should work, clipboard (yank/paste) should work via OSC52
    ```
 
+   **Connect to workstation** (optional):
+   ```bash
+   # SSH with tmux auto-attach
+   ws              # Local network
+   wst             # Tailscale
+   
+   # Mosh (better mobile connectivity)
+   wsm             # Local network
+   wstm            # Tailscale
+   ```
+   
+   Note: Your tablet's SSH key is already authorized on the workstation:
+   `ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEs49ICQp01DqPO/Mwxl13fEsYjM+ghwZWp/orbTZrV3 tablet@android`
+
 ## Updates
 
 After making changes to the configuration:
@@ -105,6 +120,7 @@ nix-on-droid rollback
 ### Settings
 - `home/modules/settings/git.nix` - Git configuration
 - `home/modules/settings/nerd-fonts.nix` - Patched fonts
+- `nix-on-droid/modules/ssh-client.nix` - SSH/Mosh workstation connections
 
 ### Scripts
 - `home/modules/scripts/search-with-zoxide.nix` - Directory jumper
@@ -141,6 +157,21 @@ These are intentionally excluded (require GUI/systemd):
 - `<leader>sg` - Live grep
 - `<leader>sc` - Find files
 - `-` - Open yazi file manager
+
+### SSH/Mosh Connections
+- `ws` - SSH to workstation (local network) with tmux auto-attach
+- `wsm` - Mosh to workstation (local network)
+- `wst` - SSH to workstation (Tailscale) with tmux auto-attach
+- `wstm` - Mosh to workstation (Tailscale)
+
+**Port Forwarding** (all connections):
+- Next.js/React: 3000, 8081 (Metro)
+- Sveltekit: 5173
+- Supabase: 54320-54324, 54327, 54329, 8083
+- Expo: 19000-19003
+- ADB: 5037
+- AWS SSO: 38215
+- SOCKS proxy: 8888 (dynamic)
 
 ## Troubleshooting
 
