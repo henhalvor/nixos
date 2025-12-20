@@ -68,6 +68,8 @@
 
       # galaxy tab 10 ultra
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEs49ICQp01DqPO/Mwxl13fEsYjM+ghwZWp/orbTZrV3 tablet@android"
+
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINpF0P3LVOGnhKsTo1jchRDvcE4YefAou2MMxTF8TkfN henhalvor@gmail.com"
     ];
   };
 
