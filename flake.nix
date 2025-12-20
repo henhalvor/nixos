@@ -24,6 +24,11 @@
       url = "github:nix-community/lanzaboote/v0.4.2";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    nix-on-droid = {
+      url = "github:nix-community/nix-on-droid/release-24.05";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.home-manager.follows = "home-manager";
+    };
   };
 
   outputs = {
@@ -37,8 +42,9 @@
     nvim-nix,
     stylix,
     lanzaboote,
+    nix-on-droid,
     ...
-  }: let
+  } @ inputs: let
     system = "x86_64-linux";
 
     unstablePkgs = import nixpkgs-unstable {
@@ -196,6 +202,22 @@
           }: {services.vscode-server.enable = true;})
         ];
       };
+    };
+
+    nixOnDroidConfigurations.default = nix-on-droid.lib.nixOnDroidConfiguration {
+      modules = [ ./nix-on-droid/default.nix ];
+
+      extraSpecialArgs = {
+        inherit inputs;
+      };
+
+      pkgs = import nixpkgs {
+        system = "aarch64-linux";
+        config.allowUnfree = true;
+        overlays = [ nix-on-droid.overlays.default ];
+      };
+
+      home-manager-path = home-manager.outPath;
     };
   };
 }
