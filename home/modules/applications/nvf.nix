@@ -19,6 +19,16 @@
       sha256 = "sha256-UemmcgQbdTDYYh8BCCjHgr/wQ8M7OH0ef6MBMHfOJv8=";
     };
   };
+
+  agentic-nvim-plugin = pkgs24-11.vimUtils.buildVimPlugin {
+    name = "agentic-nvim-from-source";
+    src = pkgs24-11.fetchFromGitHub {
+      owner = "carlos-algms";
+      repo = "agentic.nvim";
+      rev = "7267e166abd3db6a087a337df8cda4765d87e7aa";
+      sha256 = "sha256-4gH+098OhzSDy9UQFvkfr/G/Tyt0tXnMxE+/lNgTQl4=";
+    };
+  };
 in {
   # Import the nvf home-manager module directly
   imports = [
@@ -869,27 +879,27 @@ in {
           }
 
           # CodeCompanion Global Keymaps
-          {
-            key = "<leader>ac";
-            action = "<cmd>CodeCompanionActions<CR>";
-            mode = ["n" "v"];
-            silent = true;
-            desc = "CodeCompanion actions";
-          }
-          {
-            key = "<leader>aa";
-            action = "<cmd>CodeCompanionChat Toggle<CR>";
-            mode = ["n" "v"];
-            silent = true;
-            desc = "CodeCompanion chat";
-          }
-          {
-            key = "<leader>ad";
-            action = "<cmd>CodeCompanionChat Add<CR>";
-            mode = ["v"];
-            silent = true;
-            desc = "CodeCompanion add to chat";
-          }
+          # {
+          #   key = "<leader>ac";
+          #   action = "<cmd>CodeCompanionActions<CR>";
+          #   mode = ["n" "v"];
+          #   silent = true;
+          #   desc = "CodeCompanion actions";
+          # }
+          # {
+          #   key = "<leader>aa";
+          #   action = "<cmd>CodeCompanionChat Toggle<CR>";
+          #   mode = ["n" "v"];
+          #   silent = true;
+          #   desc = "CodeCompanion chat";
+          # }
+          # {
+          #   key = "<leader>ad";
+          #   action = "<cmd>CodeCompanionChat Add<CR>";
+          #   mode = ["v"];
+          #   silent = true;
+          #   desc = "CodeCompanion add to chat";
+          # }
 
           # Snacks Picker keybindings
           {
@@ -1711,6 +1721,29 @@ in {
               end)
               vim.keymap.set('i', '<A-c>', function()
                 require('neocodeium').clear()
+              end)
+            '';
+          };
+
+          agentic-nvim = {
+            package = agentic-nvim-plugin;
+            setup = ''
+              opts = {
+                provider = "opencode-acp"
+              }
+
+              require("agentic").setup(opts)
+
+              vim.keymap.set({ "n", "i"}, '<leader>aa', function()
+                require('agentic').toggle()
+              end)
+
+              vim.keymap.set({ "n", "v"}, '<leader>a+', function()
+                require('agentic').add_selection_or_file_to_context()
+              end)
+
+              vim.keymap.set({ "n", "i"}, '<leader>an', function()
+                require('agentic').new_session()
               end)
             '';
           };
