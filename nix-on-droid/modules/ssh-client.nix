@@ -1,5 +1,8 @@
-{ config, pkgs, ... }:
-let
+{
+  config,
+  pkgs,
+  ...
+}: let
   portsToForward = [
     {
       # Next.js
@@ -123,7 +126,7 @@ in {
         extraOptions = {
           RequestTTY = "yes";
           RemoteCommand = "tmux new-session -A -s ssh";
-          
+
           # Connection optimization
           Compression = "yes";
           ControlMaster = "auto";
@@ -131,23 +134,25 @@ in {
           ControlPersist = "10m";
           IPQoS = "lowdelay throughput";
           TCPKeepAlive = "yes";
-          
+
           # Optimized ciphers for performance
           Ciphers = "chacha20-poly1305@openssh.com,aes128-ctr,aes192-ctr,aes256-ctr";
           KexAlgorithms = "curve25519-sha256@libssh.org,diffie-hellman-group-exchange-sha256";
           MACs = "hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com";
         };
-        
+
         compression = true;
         serverAliveInterval = 15;
         serverAliveCountMax = 6;
-        
+
         # Dynamic SOCKS proxy
-        dynamicForwards = [{
-          port = 8888;
-          address = "localhost";
-        }];
-        
+        dynamicForwards = [
+          {
+            port = 8888;
+            address = "localhost";
+          }
+        ];
+
         localForwards = portsToForward;
       };
 
@@ -157,7 +162,7 @@ in {
         user = "henhal";
         extraOptions = {
           # Note: No RemoteCommand - mosh is incompatible with it
-          
+
           # Connection optimization
           Compression = "yes";
           ControlMaster = "auto";
@@ -165,92 +170,99 @@ in {
           ControlPersist = "10m";
           IPQoS = "lowdelay throughput";
           TCPKeepAlive = "yes";
-          
+
           # Optimized ciphers for performance
           Ciphers = "chacha20-poly1305@openssh.com,aes128-ctr,aes192-ctr,aes256-ctr";
           KexAlgorithms = "curve25519-sha256@libssh.org,diffie-hellman-group-exchange-sha256";
           MACs = "hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com";
         };
-        
+
         compression = true;
         serverAliveInterval = 15;
         serverAliveCountMax = 6;
-        
+
         # Dynamic SOCKS proxy
-        dynamicForwards = [{
-          port = 8888;
-          address = "localhost";
-        }];
-        
+        dynamicForwards = [
+          {
+            port = 8888;
+            address = "localhost";
+          }
+        ];
+
         localForwards = portsToForward;
       };
 
       # Tailscale connection with SSH + tmux auto-attach
       "workstation-ts-ssh" = {
-        hostname = "workstation.tail37a5eb.ts.net";
+        hostname = "100.73.24.108";
         user = "henhal";
         extraOptions = {
           RequestTTY = "yes";
           RemoteCommand = "tmux new-session -A -s ssh";
-          
+
           # Connection optimization
           Compression = "yes";
-          ControlMaster = "auto";
+          ControlMaster = "no";
           ControlPath = "~/.ssh/control:%h:%p:%r";
-          ControlPersist = "10m";
+          ControlPersist = "30s";
           IPQoS = "lowdelay throughput";
           TCPKeepAlive = "yes";
-          
+
           # Optimized ciphers for performance
           Ciphers = "chacha20-poly1305@openssh.com,aes128-ctr,aes192-ctr,aes256-ctr";
           KexAlgorithms = "curve25519-sha256@libssh.org,diffie-hellman-group-exchange-sha256";
           MACs = "hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com";
         };
-        
+
         compression = true;
         serverAliveInterval = 30;
         serverAliveCountMax = 3;
-        
+
         # Dynamic SOCKS proxy
-        dynamicForwards = [{
-          port = 8888;
-          address = "localhost";
-        }];
-        
+        dynamicForwards = [
+          {
+            port = 8888;
+            address = "localhost";
+          }
+        ];
+
         localForwards = portsToForward;
       };
 
       # Tailscale connection with Mosh (no tmux auto-attach - incompatible)
       "workstation-ts-mosh" = {
-        hostname = "workstation.tail37a5eb.ts.net";
+        hostname = "100.73.24.108"; #"workstation.tail37a5eb.ts.net";
+
         user = "henhal";
         extraOptions = {
           # Note: No RemoteCommand - mosh is incompatible with it
-          
+
           # Connection optimization
           Compression = "yes";
-          ControlMaster = "auto";
+          ControlMaster = "no";
           ControlPath = "~/.ssh/control:%h:%p:%r";
-          ControlPersist = "10m";
+          ControlPersist = "30s";
           IPQoS = "lowdelay throughput";
           TCPKeepAlive = "yes";
-          
+
           # Optimized ciphers for performance
           Ciphers = "chacha20-poly1305@openssh.com,aes128-ctr,aes192-ctr,aes256-ctr";
           KexAlgorithms = "curve25519-sha256@libssh.org,diffie-hellman-group-exchange-sha256";
           MACs = "hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com";
         };
-        
+
         compression = true;
         serverAliveInterval = 30;
         serverAliveCountMax = 3;
-        
+
         # Dynamic SOCKS proxy
-        dynamicForwards = [{
-          port = 8888;
-          address = "localhost";
-        }];
-        
+        dynamicForwards = [
+          {
+            port = 8888;
+            address = "localhost";
+          }
+        ];
+
         localForwards = portsToForward;
       };
     };
@@ -259,11 +271,11 @@ in {
   # Shell aliases for quick access
   programs.zsh.shellAliases = {
     # SSH connections (with tmux auto-attach)
-    ws = "ssh workstation-ssh";          # Local network
-    wst = "ssh workstation-ts-ssh";      # Tailscale
-    
+    ws = "ssh workstation-ssh"; # Local network
+    wst = "ssh workstation-ts-ssh"; # Tailscale
+
     # Mosh connections (manual tmux attach required)
-    wsm = "mosh workstation-mosh";       # Local network
-    wstm = "mosh workstation-ts-mosh";   # Tailscale
+    wsm = "mosh workstation-mosh"; # Local network
+    wstm = "mosh workstation-ts-mosh"; # Tailscale
   };
 }
