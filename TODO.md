@@ -2,18 +2,23 @@
 
 ### Config:
 
+**Prioority**
+
+- [ ] **Fix** non local network ssh access (currently not working with
+      tailscale)
+- [ ] Nvim tiny inline diagnostics + vscode diff + see how agentic nvim works
+- [ ] Mosh auto attach to tmux session
+- [ ] System clipboard for nix-on-droid
+- [ ] Sops nix for secrets
+
+Low priority:
+
 - [ ] Rofi entry for brightness control (sudo ddcutil etc......)
 - [ ] Correct monitor orientation in sddm
 - [ ] Proper VM setup
-- [x] Remove home-manager standalone rebuild config from flake.nix. This breaks system config since home-manager rebuild relies on variables from nixos so it cant be fully independent.
-- [ ] Sort out gpu issues on workstation
-- [x] Update install script to actually work
-- [x] Update README
-- [ ] Fix github ssh key loading on workstation
 
 - [ ] Lazygit Theming
 - [ ] Yazi config + theming
-- [x] Project syncing all files
 
 ## Other
 
