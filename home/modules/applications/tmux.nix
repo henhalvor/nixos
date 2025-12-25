@@ -1,5 +1,9 @@
-{ config, lib, pkgs, ... }:
-let
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}: let
   # Status bar configuration using Machiato colors
   # statusBar = ''
   #   # Status bar styling
@@ -8,7 +12,8 @@ let
   #   set -g status-justify "left"
   # '';
   #
-  is_vim = pkgs.writeShellScriptBin "is_vim.sh"
+  is_vim =
+    pkgs.writeShellScriptBin "is_vim.sh"
     # bash
     ''
       pane_pid=$(tmux display -p "#{pane_pid}")
@@ -190,6 +195,12 @@ in {
 
        # Save sessions every 15 minutes
        set -g @continuum-save-interval '15'
+
+
+      # MOSH
+      # When detaching, kill the client
+      # Added for auto killing mosh session when detaching
+      set -g detach-on-destroy on
     '';
   };
 }

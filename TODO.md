@@ -4,8 +4,9 @@
 
 **Prioority**
 
-- [ ] **Fix** non local network ssh access (currently not working with
+- [x] **Fix** non local network ssh access (currently not working with
       tailscale)
+- [ ] Sunshine remote desktop
 - [ ] Nvim tiny inline diagnostics + vscode diff + see how agentic nvim works
 - [ ] Mosh auto attach to tmux session
 - [ ] System clipboard for nix-on-droid

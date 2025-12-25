@@ -51,121 +51,128 @@
       }
     ];
     initContent = ''
-            # First source the theme
-            source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme
-            # Then source your configuration
-            [[ -f ~/.p10k.zsh ]] && source ~/.p10k.zsh
+              # First source the theme
+              source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme
+              # Then source your configuration
+              [[ -f ~/.p10k.zsh ]] && source ~/.p10k.zsh
 
-       # Define a function to load secrets with better debugging
-            load_secrets() {
-              local secrets_file="$HOME/.dotfiles/home/modules/settings/secrets/secrets.env"
+         # Define a function to load secrets with better debugging
+              load_secrets() {
+                local secrets_file="$HOME/.dotfiles/home/modules/settings/secrets/secrets.env"
 
-              #echo "Attempting to load secrets from: $secrets_file"
+                #echo "Attempting to load secrets from: $secrets_file"
 
-              # Check if file exists
-              if [[ ! -f "$secrets_file" ]]; then
-                echo "Error: Secrets file does not exist"
-                return 1
-              fi
-
-              # Check if file is readable
-              if [[ ! -r "$secrets_file" ]]; then
-                echo "Error: Secrets file is not readable"
-                return 1
-              fi
-
-              # Check file permissions
-              local file_perms=$(stat -c %a "$secrets_file")
-
-              #echo "Current file permissions: $file_perms"
-
-              if [[ "$file_perms" != "600" ]]; then
-                echo "Warning: Secrets file should have permissions 600"
-              fi
-
-              # Read and process the file with debugging
-
-              #echo "Reading secrets file..."
-
-              while IFS= read -r line || [[ -n "$line" ]]; do
-                # Skip empty lines and comments
-                if [[ "$line" =~ ^[[:space:]]*$ ]] || [[ "$line" =~ ^[[:space:]]*# ]]; then
-                  echo "Skipping comment or empty line"
-                  continue
+                # Check if file exists
+                if [[ ! -f "$secrets_file" ]]; then
+                  echo "Error: Secrets file does not exist"
+                  return 1
                 fi
 
-                # Debug: Show what we're about to export (but mask the actual value)
-                local key=$(echo "$line" | cut -d'=' -f1)
+                # Check if file is readable
+                if [[ ! -r "$secrets_file" ]]; then
+                  echo "Error: Secrets file is not readable"
+                  return 1
+                fi
 
-                # echo "Exporting: $key"
+                # Check file permissions
+                local file_perms=$(stat -c %a "$secrets_file")
 
-                # Export the variable
-                export "$line"
-              done < "$secrets_file"
+                #echo "Current file permissions: $file_perms"
 
-              # Verify the export worked
-              if [[ -n "$ANTHROPIC_API_KEY" ]]; then
+                if [[ "$file_perms" != "600" ]]; then
+                  echo "Warning: Secrets file should have permissions 600"
+                fi
 
-                # echo "ANTHROPIC_API_KEY was successfully loaded"
+                # Read and process the file with debugging
 
-              else
-                echo "Warning: ANTHROPIC_API_KEY was not found or is empty"
-              fi
+                #echo "Reading secrets file..."
 
-              # echo "Secrets loading complete"
-            }
+                while IFS= read -r line || [[ -n "$line" ]]; do
+                  # Skip empty lines and comments
+                  if [[ "$line" =~ ^[[:space:]]*$ ]] || [[ "$line" =~ ^[[:space:]]*# ]]; then
+                    echo "Skipping comment or empty line"
+                    continue
+                  fi
 
-            # Create an alias for easier use
-            alias reload_secrets='load_secrets'
+                  # Debug: Show what we're about to export (but mask the actual value)
+                  local key=$(echo "$line" | cut -d'=' -f1)
+
+                  # echo "Exporting: $key"
+
+                  # Export the variable
+                  export "$line"
+                done < "$secrets_file"
+
+                # Verify the export worked
+                if [[ -n "$ANTHROPIC_API_KEY" ]]; then
+
+                  # echo "ANTHROPIC_API_KEY was successfully loaded"
+
+                else
+                  echo "Warning: ANTHROPIC_API_KEY was not found or is empty"
+                fi
+
+                # echo "Secrets loading complete"
+              }
+
+              # Create an alias for easier use
+              alias reload_secrets='load_secrets'
 
 
 
-       # Set up a precmd hook that runs once after shell initialization
-            load_secrets_once() {
-              load_secrets
-              # Remove this function from precmd hooks after it runs
-              local hook_index
-              hook_index=''${precmd_functions[(i)load_secrets_once]}
-              if [[ $hook_index -le ''${#precmd_functions} ]]; then
-                unset "precmd_functions[$hook_index]"
-              fi
-            }
+         # Set up a precmd hook that runs once after shell initialization
+              load_secrets_once() {
+                load_secrets
+                # Remove this function from precmd hooks after it runs
+                local hook_index
+                hook_index=''${precmd_functions[(i)load_secrets_once]}
+                if [[ $hook_index -le ''${#precmd_functions} ]]; then
+                  unset "precmd_functions[$hook_index]"
+                fi
+              }
 
-            # Add our loading function to precmd hooks
-            precmd_functions+=( load_secrets_once )
+              # Add our loading function to precmd hooks
+              precmd_functions+=( load_secrets_once )
 
-      # Disable forward incremental search (conflicts with tmux prefix keybind)
-        bindkey -r "^S"
-        bindkey -r "^R"
+        # Disable forward incremental search (conflicts with tmux prefix keybind)
+          bindkey -r "^S"
+          bindkey -r "^R"
 
-      # Bind Ctrl-F to search-with-zoxide
-      # bindkey -s "^E" "search-with-zoxide\n"
+        # Bind Ctrl-F to search-with-zoxide
+        # bindkey -s "^E" "search-with-zoxide\n"
 
-      # Neovim old files picker using fzf
-        nlof() {
-          local oldfiles
-          oldfiles=$(nvim -u NONE --headless +'lua io.write(table.concat(vim.v.oldfiles, "\n"))' +qa)
+        # Neovim old files picker using fzf
+          nlof() {
+            local oldfiles
+            oldfiles=$(nvim -u NONE --headless +'lua io.write(table.concat(vim.v.oldfiles, "\n"))' +qa)
 
-          [[ -z "$oldfiles" ]] && return
+            [[ -z "$oldfiles" ]] && return
 
-          local files
-          files=$(echo "$oldfiles" | \
-            while read -r file; do
-              [[ -f "$file" ]] && echo "$file"
-            done | \
-            fzf --multi \
-              --preview 'bat -n --color=always --line-range=:500 {} 2>/dev/null || echo "Error previewing file"' \
-              --height=70% \
-              --layout=default)
+            local files
+            files=$(echo "$oldfiles" | \
+              while read -r file; do
+                [[ -f "$file" ]] && echo "$file"
+              done | \
+              fzf --multi \
+                --preview 'bat -n --color=always --line-range=:500 {} 2>/dev/null || echo "Error previewing file"' \
+                --height=70% \
+                --layout=default)
 
-          [[ -n "$files" ]] && nvim $files
-        }
+            [[ -n "$files" ]] && nvim $files
+          }
 
-        # Optional explicit alias (not required since function name matches)
-        alias nlof='nlof'
-      # Bind Ctrl-E to neovim old files
-        bindkey -s "^F" "nlof\n"
+          # Optional explicit alias (not required since function name matches)
+          alias nlof='nlof'
+        # Bind Ctrl-E to neovim old files
+          bindkey -s "^F" "nlof\n"
 
+
+
+      # MOSH
+      # Auto-attach tmux when connecting via mosh
+      if [ -n "$MOSH_CLIENT" ] && [ -z "$TMUX" ]; then
+        exec tmux new-session -A -s mosh
+      fi
 
 
 
