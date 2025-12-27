@@ -158,6 +158,7 @@
               home-manager.useGlobalPkgs =
                 false; # NEEDS TO BE FALSE IN RECENT VERSION OF HOME MANAGER
               home-manager.useUserPackages = true;
+              home-manager.backupFileExtension = "backup";
               home-manager.users.${userSettings.username} =
                 import ./users/${userSettings.username}/home.nix;
             }

@@ -1,0 +1,18 @@
+
+{
+  "env": {
+    "PATH": "$(PATH):$(HOME)/.local/bin:/etc/profiles/per-user/henhal/bin"
+  },
+  "apps": [
+    {
+      "name": "Desktop (Landscape ASUS)",
+      "prep-cmd": [
+        {
+          "do": "sunshine-monitor-setup",
+          "undo": "sunshine-monitor-restore"
+        }
+      ],
+      "image-path": "desktop.png"
+    }
+  ]
+}

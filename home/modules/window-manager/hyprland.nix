@@ -6,8 +6,14 @@
   systemName,
   ...
 }: let
-  # Import the script
+  # Import scripts
   toggleMonitorsWorkstation = import ../scripts/toggle-monitors-workstation-hyprland.nix {
+    inherit pkgs;
+  };
+  sunshineMonitorSetup = import ../../../nixos/modules/server/sunshine/sunshine-monitor-setup.nix {
+    inherit pkgs;
+  };
+  sunshineMonitorRestore = import ../../../nixos/modules/server/sunshine/sunshine-monitor-restore.nix {
     inherit pkgs;
   };
 
@@ -55,7 +61,7 @@
         # "workspace 2, class:^(kitty)$"
         # "workspace 3, class:^(code)$"
         # Laptop-specific window rules can go here
-        
+
         # Android emulator windows - force floating for tiling WM compatibility
         "float, class:^(emulator64-crash-service)$"
         "float, class:^(qemu-system-x86_64)$"
@@ -63,7 +69,7 @@
         "float, title:^(Android Emulator)$"
         "float, title:^(Emulator)$"
         "size 400 800, class:^(qemu-system-x86_64)$"
-        
+
         # Emulator toolbar/extended controls - critical for side panel buttons
         "float, title:^(Extended controls)$"
         "pin, title:^(Extended controls)$"
@@ -102,6 +108,7 @@
 
         # ASUS monitor (DP-1) - Portrait mode to the left
         monitor=HDMI-A-1,1920x1080@144,0x-180,1,transform,1
+
       '';
 
       extraBinds = [
@@ -145,14 +152,18 @@
         # Workstation-specific input settings
       };
 
-      extraPackages = [toggleMonitorsWorkstation];
+      extraPackages = [
+        toggleMonitorsWorkstation
+        sunshineMonitorSetup
+        sunshineMonitorRestore
+      ];
 
       extraWindowRules = [
         # Workstation-specific workspace assignments
         "workspace 1, class:^(vivaldi)$"
         # "workspace 2, class:^(kitty)$"
         # "workspace 3, class:^(code)$"
-        
+
         # Android emulator windows - force floating for tiling WM compatibility
         "float, class:^(emulator64-crash-service)$"
         "float, class:^(qemu-system-x86_64)$"
@@ -160,7 +171,7 @@
         "float, title:^(Android Emulator)$"
         "float, title:^(Emulator)$"
         "size 400 800, class:^(qemu-system-x86_64)$"
-        
+
         # Emulator toolbar/extended controls - critical for side panel buttons
         "float, title:^(Extended controls)$"
         "pin, title:^(Extended controls)$"
@@ -181,6 +192,9 @@
         # Samsung monitor (main display) - DP-1
         "2, monitor:DP-1"
         "3, monitor:DP-1"
+
+        # Virtual headless monitor for Sunshine remote desktop
+        "10, monitor:HEADLESS-1"
       ];
     };
   };
