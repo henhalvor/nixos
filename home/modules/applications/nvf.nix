@@ -122,6 +122,40 @@ in {
           formatOnSave = true;
         };
 
+        diagnostics = {
+          enable = true;
+          nvim-lint = {
+            enable = true;
+            lint_after_save = true;
+            
+            # Configure linters by filetype
+            linters_by_ft = {
+              typescript = ["eslint"];
+              typescriptreact = ["eslint"];
+              javascript = ["eslint"];
+              javascriptreact = ["eslint"];
+            };
+            
+            # Configure ESLint linter
+            linters = {
+              eslint = {
+                # Only lint if eslint config file exists in project
+                required_files = [
+                  "eslint.config.js"
+                  "eslint.config.mjs"
+                  "eslint.config.cjs"
+                  ".eslintrc.js"
+                  ".eslintrc.cjs"
+                  ".eslintrc.yaml"
+                  ".eslintrc.yml"
+                  ".eslintrc.json"
+                  ".eslintrc"
+                ];
+              };
+            };
+          };
+        };
+
         languages = {
           # Enable formatting for enabled languages
           enableFormat = true;
@@ -1560,6 +1594,56 @@ in {
                 },
               })
             end, { desc = "[S]earch [T]heme" })
+          '';
+
+          snacks-rename-folder = ''
+            -- Function to rename a folder using snacks rename file recursively
+            local uv = vim.loop
+            local Snacks = require("snacks")
+
+            local function scandir(dir)
+              local files = {}
+              local handle = uv.fs_scandir(dir)
+              if not handle then return files end
+
+              while true do
+                local name, t = uv.fs_scandir_next(handle)
+                if not name then break end
+
+                local path = dir .. "/" .. name
+                if t == "directory" then
+                  vim.list_extend(files, scandir(path))
+                else
+                  table.insert(files, path)
+                end
+              end
+
+              return files
+            end
+
+            local function rename_folder(old_dir, new_dir)
+              -- 1. Collect all files BEFORE move
+              local old_files = scandir(old_dir)
+
+              -- 2. Move directory
+              assert(uv.fs_rename(old_dir, new_dir))
+
+              -- 3. Notify LSP per file
+              for _, old_path in ipairs(old_files) do
+                local new_path = old_path:gsub("^" .. vim.pesc(old_dir), new_dir)
+                Snacks.rename.on_rename_file(old_path, new_path)
+              end
+            end
+
+              -- Keymap
+            vim.keymap.set("n", "<leader>rf", function()
+              local old = vim.fn.input("From folder: ", vim.fn.expand("%:p:h"))
+              local new = vim.fn.input("To folder: ", old)
+              if old ~= "" and new ~= "" then
+                rename_folder(old, new)
+              end
+            end, { desc = "Rename folder with LSP support" })
+
           '';
         };
 
