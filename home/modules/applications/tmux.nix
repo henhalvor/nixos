@@ -68,53 +68,26 @@ in {
       # Essential plugins
       sensible
       vim-tmux-navigator
-      resurrect
-      continuum
-      catppuccin
+      {
+        plugin = resurrect;
+        extraConfig = ''
+          set -g @resurrect-strategy-nvim 'session'
+          set -g @resurrect-capture-pane-contents 'on'
+        '';
+      }
+      {
+        plugin = tmux-sessionx;
+        extraConfig = ''
+          set -g @sessionx-bind 'o'
+          set -g @sessionx-x-path '$HOME'
+          set -g @sessionx-custom-paths '/home/henhal/code,/home/henhal/dotfiles'
+          set -g @sessionx-custom-paths-subdirectories 'true'
+          set -g @sessionx-zoxide-mode 'on'
+        '';
+      }
     ];
 
     extraConfig = ''
-       # Theme
-       # set -g @catppuccin_flavor 'macchiato' # latte, frappe, macchiato or mocha
-
-       #
-       # Old commented out config
-       #
-
-       # Status bar styling
-
-       # set -g status "on"
-       # set -g status-position top
-       #
-       # set -g @catppuccin_window_left_separator ""
-       # set -g @catppuccin_window_right_separator " "
-       # set -g @catppuccin_window_middle_separator " █"
-       # set -g @catppuccin_window_number_position "right"
-       #
-       # set -g @catppuccin_window_default_fill "number"
-       # set -g @catppuccin_window_default_text "#W"
-       #
-       # set -g @catppuccin_window_current_fill "number"
-       # set -g @catppuccin_window_current_text "#W"
-       #
-       # set -g @catppuccin_status_modules_right "directory session"
-       # set -g @catppuccin_status_left_separator  " "
-       # set -g @catppuccin_status_right_separator ""
-       # set -g @catppuccin_status_right_separator_inverse "no"
-       # set -g @catppuccin_status_fill "icon"
-       # set -g @catppuccin_status_connect_separator "no"
-       #
-       # set -g @catppuccin_directory_text "#{pane_current_path}"
-
-       #
-       #
-       #
-
-
-      #
-      # New config
-      #
-
       # Options
       set -sg terminal-overrides ",*:RGB"  # true color support
       set -g escape-time 0  # disable delays on escape sequences
@@ -143,10 +116,6 @@ in {
       set -g window-status-current-format "●"
        # set -g window-status-current-style "#{?window_zoomed_flag,fg=yellow,fg=#89b4fa,nobold}"
       # set -g window-status-bell-style "fg=red,nobold"
-
-      #
-      #
-      #
 
       # Enable OSC52 clipboard integration
       set-option -g set-clipboard on
@@ -182,7 +151,7 @@ in {
 
        # Additional quality of life settings
        set -g focus-events on
-       # set -sa terminal-features ',xterm-256color:RGB'
+       set -sa terminal-features ',xterm-256color:RGB'
        set -g automatic-rename on
        set -g renumber-windows on
 
@@ -190,17 +159,6 @@ in {
        bind | split-window -h -c "#{pane_current_path}"
        bind - split-window -v -c "#{pane_current_path}"
 
-       # Automatically restore last saved environment when tmux is started
-       set -g @continuum-restore 'on'
-
-       # Save sessions every 15 minutes
-       set -g @continuum-save-interval '15'
-
-
-      # MOSH
-      # When detaching, kill the client
-      # Added for auto killing mosh session when detaching
-      set -g detach-on-destroy on
     '';
   };
 }
