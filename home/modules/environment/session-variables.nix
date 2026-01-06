@@ -1,8 +1,16 @@
-{ config, pkgs, ... }:
-
 {
+  config,
+  pkgs,
+  lib,
+  ...
+}: {
   # Configure all package managers to use our organized directory structure
   home.sessionVariables = {
+    # Default editor
+    EDITOR = lib.mkForce "nvim";
+    SUDO_EDITOR = lib.mkForce "nvim";
+    VISUAL = lib.mkForce "nvim";
+
     # Base directory for all development tools
     DEV_HOME = "$HOME/.local/dev";
 

@@ -10,6 +10,7 @@
     fd # Simple, fast and user-friendly alternative to find
     tree # Display directories as trees
     btop
+    ripgrep
   ];
 
   # Nix search tv alias

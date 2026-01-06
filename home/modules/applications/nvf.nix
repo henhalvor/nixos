@@ -19,16 +19,15 @@
       sha256 = "sha256-UemmcgQbdTDYYh8BCCjHgr/wQ8M7OH0ef6MBMHfOJv8=";
     };
   };
-
-  agentic-nvim-plugin = pkgs24-11.vimUtils.buildVimPlugin {
-    name = "agentic-nvim-from-source";
-    src = pkgs24-11.fetchFromGitHub {
-      owner = "carlos-algms";
-      repo = "agentic.nvim";
-      rev = "7267e166abd3db6a087a337df8cda4765d87e7aa";
-      sha256 = "sha256-4gH+098OhzSDy9UQFvkfr/G/Tyt0tXnMxE+/lNgTQl4=";
-    };
-  };
+  # agentic-nvim-plugin = pkgs24-11.vimUtils.buildVimPlugin {
+  #   name = "agentic-nvim-from-source";
+  #   src = pkgs24-11.fetchFromGitHub {
+  #     owner = "carlos-algms";
+  #     repo = "agentic.nvim";
+  #     rev = "7267e166abd3db6a087a337df8cda4765d87e7aa";
+  #     sha256 = "sha256-4gH+098OhzSDy9UQFvkfr/G/Tyt0tXnMxE+/lNgTQl4=";
+  #   };
+  # };
 in {
   # Import the nvf home-manager module directly
   imports = [
@@ -127,7 +126,7 @@ in {
           nvim-lint = {
             enable = true;
             lint_after_save = true;
-            
+
             # Configure linters by filetype
             linters_by_ft = {
               typescript = ["eslint"];
@@ -135,7 +134,7 @@ in {
               javascript = ["eslint"];
               javascriptreact = ["eslint"];
             };
-            
+
             # Configure ESLint linter
             linters = {
               eslint = {
@@ -681,6 +680,9 @@ in {
             };
             picker = {
               enabled = true;
+            };
+            explorer = {
+              enabled = false;
             };
           };
         };
@@ -1373,6 +1375,19 @@ in {
 
           '';
 
+          # # Snacks picker
+          # snacks-explorer = ''
+          #   Snacks.explorer.config = {
+          #     replace_netrw = true, -- Replace netrw with the snacks explorer
+          #     trash = true, -- Use the system trash when deleting files
+          #   }
+          #
+          #   -- Custom snacks.picker functions
+          #   vim.keymap.set('n', '-', function()
+          #     Snacks.explorer()
+          #   end, { desc = 'Open Snacks Explorer' })
+          # '';
+
           # Setup ts-context-commentstring for better JSX/TSX comments
           mini-comment-setup = ''
             -- Comment setup "ts-context-commentstring" is needed for jsx comments
@@ -1597,19 +1612,22 @@ in {
           '';
 
           snacks-rename-folder = ''
-            -- Function to rename a folder using snacks rename file recursively
+
             local uv = vim.loop
             local Snacks = require("snacks")
 
+            -- Recursive file scanner
             local function scandir(dir)
               local files = {}
-              local handle = uv.fs_scandir(dir)
-              if not handle then return files end
+              local handle, err = uv.fs_scandir(dir)
+              if not handle then
+                vim.notify("Failed to scan dir: " .. err, vim.log.levels.ERROR)
+                return files
+              end
 
               while true do
                 local name, t = uv.fs_scandir_next(handle)
                 if not name then break end
-
                 local path = dir .. "/" .. name
                 if t == "directory" then
                   vim.list_extend(files, scandir(path))
@@ -1621,28 +1639,73 @@ in {
               return files
             end
 
+            -- Save all loaded buffers
+            local function save_all_buffers()
+              vim.cmd("wa") -- write all modified buffers
+            end
+
+            -- LSP-safe folder rename
             local function rename_folder(old_dir, new_dir)
-              -- 1. Collect all files BEFORE move
-              local old_files = scandir(old_dir)
+              local ok, err = pcall(function()
+                local old_files = scandir(old_dir)
+                if #old_files == 0 then
+                  vim.notify("No files found in " .. old_dir, vim.log.levels.WARN)
+                  return
+                end
 
-              -- 2. Move directory
-              assert(uv.fs_rename(old_dir, new_dir))
+                -- Move the directory
+                local rename_ok, rename_err = uv.fs_rename(old_dir, new_dir)
+                if not rename_ok then
+                  error("Failed to rename folder: " .. rename_err)
+                end
 
-              -- 3. Notify LSP per file
-              for _, old_path in ipairs(old_files) do
-                local new_path = old_path:gsub("^" .. vim.pesc(old_dir), new_dir)
-                Snacks.rename.on_rename_file(old_path, new_path)
+                vim.notify("Renaming " .. #old_files .. " files...", vim.log.levels.INFO)
+
+                -- Save all buffers before starting
+                save_all_buffers()
+
+                -- Notify LSP for each file and save buffers after each
+                for i, old_path in ipairs(old_files) do
+                  local new_path = old_path:gsub("^" .. vim.pesc(old_dir), new_dir)
+                  Snacks.rename.on_rename_file(old_path, new_path)
+
+                  -- Save buffers after LSP updates
+                  save_all_buffers()
+
+                  if i % 10 == 0 or i == #old_files then
+                    vim.notify(string.format("Renamed %d/%d files...", i, #old_files), vim.log.levels.INFO)
+                  end
+                end
+
+                vim.notify("Folder renamed successfully: " .. old_dir .. " → " .. new_dir, vim.log.levels.INFO)
+              end)
+
+              if not ok then
+                vim.notify("Error during folder rename: " .. err, vim.log.levels.ERROR)
               end
             end
 
-              -- Keymap
-            vim.keymap.set("n", "<leader>rf", function()
-              local old = vim.fn.input("From folder: ", vim.fn.expand("%:p:h"))
-              local new = vim.fn.input("To folder: ", old)
-              if old ~= "" and new ~= "" then
-                rename_folder(old, new)
-              end
-            end, { desc = "Rename folder with LSP support" })
+            -- Command-line interactive folder rename
+            local function input_and_rename_folder()
+              vim.ui.input({ prompt = "Folder to rename: " }, function(old_dir)
+                if not old_dir or old_dir == "" then
+                  vim.notify("Rename cancelled", vim.log.levels.WARN)
+                  return
+                end
+
+                vim.ui.input({ prompt = "New folder name: ", default = old_dir }, function(new_dir)
+                  if not new_dir or new_dir == "" or new_dir == old_dir then
+                    vim.notify("Rename cancelled", vim.log.levels.WARN)
+                    return
+                  end
+
+                  rename_folder(old_dir, new_dir)
+                end)
+              end)
+            end
+
+            -- Keymap
+            vim.keymap.set("n", "<leader>rf", input_and_rename_folder, { desc = "Rename folder (LSP-safe)" })
 
           '';
         };
@@ -1809,28 +1872,28 @@ in {
             '';
           };
 
-          agentic-nvim = {
-            package = agentic-nvim-plugin;
-            setup = ''
-              opts = {
-                provider = "opencode-acp"
-              }
-
-              require("agentic").setup(opts)
-
-              vim.keymap.set({ "n", "i"}, '<leader>aa', function()
-                require('agentic').toggle()
-              end)
-
-              vim.keymap.set({ "n", "v"}, '<leader>a+', function()
-                require('agentic').add_selection_or_file_to_context()
-              end)
-
-              vim.keymap.set({ "n", "i"}, '<leader>an', function()
-                require('agentic').new_session()
-              end)
-            '';
-          };
+          # agentic-nvim = {
+          #   package = agentic-nvim-plugin;
+          #   setup = ''
+          #     opts = {
+          #       provider = "opencode-acp"
+          #     }
+          #
+          #     require("agentic").setup(opts)
+          #
+          #     vim.keymap.set({ "n", "i"}, '<leader>aa', function()
+          #       require('agentic').toggle()
+          #     end)
+          #
+          #     vim.keymap.set({ "n", "v"}, '<leader>a+', function()
+          #       require('agentic').add_selection_or_file_to_context()
+          #     end)
+          #
+          #     vim.keymap.set({ "n", "i"}, '<leader>an', function()
+          #       require('agentic').new_session()
+          #     end)
+          #   '';
+          # };
 
           # Theme plugins for dynamic switching
           catppuccin-nvim = {
