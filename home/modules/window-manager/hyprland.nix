@@ -161,8 +161,6 @@
       extraWindowRules = [
         # Workstation-specific workspace assignments
         "workspace 1, class:^(vivaldi)$"
-        # "workspace 2, class:^(kitty)$"
-        # "workspace 3, class:^(code)$"
 
         # Android emulator windows - force floating for tiling WM compatibility
         "float, class:^(emulator64-crash-service)$"
@@ -180,7 +178,7 @@
 
       extraExecOnce = [
         # Workstation-specific startup commands
-        "${userSettings.term}"
+        "[workspace 2 silent] ${userSettings.term}"
       ];
 
       workspaceRules = [
@@ -188,10 +186,13 @@
 
         # ASUS monitor (portrait mode) - HDMI-A-1
         "1, monitor:HDMI-A-1"
+        "3, monitor:HDMI-A-1"
 
         # Samsung monitor (main display) - DP-1
         "2, monitor:DP-1"
-        "3, monitor:DP-1"
+        "4, monitor:DP-1"
+        "5, monitor:DP-1"
+        "6, monitor:DP-1"
 
         # Virtual headless monitor for Sunshine remote desktop
         "10, monitor:HEADLESS-1"
