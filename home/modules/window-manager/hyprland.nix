@@ -16,6 +16,9 @@
   sunshineMonitorRestore = import ../../../nixos/modules/server/sunshine/sunshine-monitor-restore.nix {
     inherit pkgs;
   };
+  brightnessExternal = import ../scripts/brightness-external.nix {
+    inherit pkgs;
+  };
 
   # Define system-specific configurations
   systemConfigs = {
@@ -114,6 +117,9 @@
       extraBinds = [
         # Workstation-specific monitor toggle
         "$mainMod, M, exec, toggle-monitors"
+        # Workstation-specific brightness controls for external monitors
+        ",XF86MonBrightnessUp,exec, brightness-external --increase"
+        ",XF86MonBrightnessDown,exec, brightness-external --decrease"
       ];
 
       extraAnimations = {enabled = true;};
@@ -156,6 +162,7 @@
         toggleMonitorsWorkstation
         sunshineMonitorSetup
         sunshineMonitorRestore
+        brightnessExternal
       ];
 
       extraWindowRules = [
