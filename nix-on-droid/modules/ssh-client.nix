@@ -125,7 +125,7 @@ in {
         user = "henhal";
         extraOptions = {
           RequestTTY = "yes";
-          RemoteCommand = "tmux new-session -A -s ssh";
+          RemoteCommand = "tmux new-session -A -s main";
 
           # Connection optimization
           Compression = "yes";
@@ -198,7 +198,7 @@ in {
         user = "henhal";
         extraOptions = {
           RequestTTY = "yes";
-          RemoteCommand = "tmux new-session -A -s ssh";
+          RemoteCommand = "tmux new-session -A -s main";
 
           # Connection optimization
           Compression = "yes";

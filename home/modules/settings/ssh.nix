@@ -1,6 +1,8 @@
-{ config, pkgs, ... }:
-let
-
+{
+  config,
+  pkgs,
+  ...
+}: let
   portsToForward = [
     {
       # Next.js
@@ -124,7 +126,7 @@ in {
         user = "henhal-dev";
         extraOptions = {
           RequestTTY = "yes";
-          RemoteCommand = "tmux new-session -A -s ssh";
+          RemoteCommand = "tmux new-session -A -s main";
           # Improve connection reliability for proxied services
           ExitOnForwardFailure = "yes";
 
@@ -137,12 +139,9 @@ in {
           TCPKeepAlive = "yes";
 
           # Optimized ciphers and algorithms for better performance
-          Ciphers =
-            "chacha20-poly1305@openssh.com,aes128-ctr,aes192-ctr,aes256-ctr";
-          KexAlgorithms =
-            "curve25519-sha256@libssh.org,diffie-hellman-group-exchange-sha256";
+          Ciphers = "chacha20-poly1305@openssh.com,aes128-ctr,aes192-ctr,aes256-ctr";
+          KexAlgorithms = "curve25519-sha256@libssh.org,diffie-hellman-group-exchange-sha256";
           MACs = "hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com";
-
         };
         # Compression can help with web applications
         compression = true;
@@ -153,10 +152,12 @@ in {
         serverAliveCountMax = 6;
 
         # Add a dynamic SOCKS proxy for flexible forwarding
-        dynamicForwards = [{
-          port = 8888;
-          address = "localhost";
-        }];
+        dynamicForwards = [
+          {
+            port = 8888;
+            address = "localhost";
+          }
+        ];
 
         # Forward all necessary ports for Next.js and Supabase
         localForwards = portsToForward;
@@ -167,7 +168,7 @@ in {
         user = "henhal";
         extraOptions = {
           RequestTTY = "yes";
-          RemoteCommand = "tmux new-session -A -s ssh";
+          RemoteCommand = "tmux new-session -A -s main";
           Compression = "yes";
           ControlMaster = "auto";
           ControlPath = "~/.ssh/control:%h:%p:%r";
@@ -181,12 +182,11 @@ in {
       };
 
       "workstation-tailscale" = {
-        hostname =
-          "workstation.tail37a5eb.ts.net"; # Adjust this to your workstation's tailscale address
+        hostname = "workstation.tail37a5eb.ts.net"; # Adjust this to your workstation's tailscale address
         user = "henhal";
         extraOptions = {
           RequestTTY = "yes";
-          RemoteCommand = "tmux new-session -A -s ssh";
+          RemoteCommand = "tmux new-session -A -s main";
           Compression = "yes";
           ControlMaster = "auto";
           ControlPath = "~/.ssh/control:%h:%p:%r";
@@ -204,11 +204,10 @@ in {
       "laptop" = {
         hostname = "10.0.0.25"; # Adjust this to your laptop's IP
         user = "henhal";
-        identityFile =
-          "~/.ssh/id_workstation"; # Had trouble connecting from workstation to laptop, so explicitly set identity file to use my workstation key
+        identityFile = "~/.ssh/id_workstation"; # Had trouble connecting from workstation to laptop, so explicitly set identity file to use my workstation key
         extraOptions = {
           RequestTTY = "yes";
-          RemoteCommand = "tmux new-session -A -s ssh";
+          RemoteCommand = "tmux new-session -A -s main";
           Compression = "yes";
           ControlMaster = "auto";
           ControlPath = "~/.ssh/control:%h:%p:%r";

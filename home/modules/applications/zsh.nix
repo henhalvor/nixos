@@ -168,10 +168,9 @@
 
 
 
-      # MOSH
-      # Auto-attach tmux when connecting via mosh
-      if [ -n "$MOSH_CLIENT" ] && [ -z "$TMUX" ]; then
-        exec tmux new-session -A -s mosh
+      # Auto-attach tmux for local shells (not in SSH)
+      if [ -z "$TMUX" ] && [ -z "$SSH_CONNECTION" ]; then
+        exec tmux new-session -A -s main
       fi
 
 

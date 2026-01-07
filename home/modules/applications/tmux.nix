@@ -76,6 +76,13 @@ in {
         '';
       }
       {
+        plugin = continuum;
+        extraConfig = ''
+          set -g @continuum-restore 'on'
+          set -g @continuum-save-interval '15'
+        '';
+      }
+      {
         plugin = tmux-sessionx;
         extraConfig = ''
           set -g @sessionx-bind 'o'
@@ -129,7 +136,7 @@ in {
 
         # --- Dynamic sizing between different terminals ---
         set -g aggressive-resize on
-        set-hook -g client-attached 'refresh-client -A'
+        set-hook -g client-attached 'refresh-client -S'
 
         # (optional) ensure the first attached client defines window size
         set-option -g allow-rename off
