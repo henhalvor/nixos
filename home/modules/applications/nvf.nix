@@ -2078,6 +2078,7 @@ in {
           vimPlugins.nvim-osc52
           vimPlugins.grug-far-nvim
           vimPlugins.persistence-nvim
+          vimPlugins.nvim-ts-context-commentstring # used for mini.comment jsx comment strings
 
           # Use this if "built in" persistence is not working
           # vimPlugins.persistence-nvim
