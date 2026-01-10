@@ -1176,6 +1176,11 @@ in {
             vim.opt.listchars = { tab = "  ", trail = "·", nbsp = "␣" } -- Tab is two spaces, trailing spaces are shown as dots, non-breaking spaces as a special character
           '';
 
+          jumplist-config = ''
+            -- Clears closed buffers from the jumplist
+            vim.opt.jumpoptions = "clean"
+          '';
+
           restore-cursor-position-in-previous-editing-session-autocmd = ''
             vim.api.nvim_create_autocmd("BufReadPost", {
               callback = function(args)
