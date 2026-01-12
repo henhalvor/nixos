@@ -1,19 +1,29 @@
-{ config, pkgs, userSettings, windowManager, ... }: {
+{
+  config,
+  pkgs,
+  userSettings,
+  windowManager,
+  ...
+}: {
   imports =
     # Window manager (conditional import)
-    (if windowManager == "hyprland" then
-      [ ../../nixos/modules/window-manager/hyrpland.nix ]
-    else if windowManager == "sway" then
-      [ ../../nixos/modules/window-manager/sway.nix ]
-    else if windowManager == "gnome" then
-    # Need to add gnome specific home config
-      [ ../../nixos/modules/window-manager/gnome.nix ]
-    else if windowManager == "none" then
-      [ ]
-    else [
-      throw
-      "Unsupported window manager in flake's windowManager: ${windowManager}"
-    ]) ++ [
+    (
+      if windowManager == "hyprland"
+      then [../../nixos/modules/window-manager/hyrpland.nix]
+      else if windowManager == "sway"
+      then [../../nixos/modules/window-manager/sway.nix]
+      else if windowManager == "gnome"
+      then
+        # Need to add gnome specific home config
+        [../../nixos/modules/window-manager/gnome.nix]
+      else if windowManager == "none"
+      then []
+      else [
+        throw
+        "Unsupported window manager in flake's windowManager: ${windowManager}"
+      ]
+    )
+    ++ [
       ./hardware-configuration.nix
       ../../nixos/default.nix
       ../../nixos/modules/external-io.nix
@@ -23,6 +33,7 @@
       ../../nixos/modules/networking.nix
       ../../nixos/modules/printer.nix
       ../../nixos/modules/systemd-loginhd.nix
+      ../../nixos/modules/virtualization.nix
       ../../nixos/modules/syncthing.nix
       ./amd-graphics.nix
       ./battery.nix
@@ -35,7 +46,6 @@
 
       # Android development
       ../../nixos/modules/android.nix
-
     ];
 
   # logitect wireless dongle
@@ -46,5 +56,5 @@
   services.upower.enable = true;
 
   # Drivers for usb-c to ethernet adapter
-  boot.kernelModules = [ "ax88179_178a" ];
+  boot.kernelModules = ["ax88179_178a"];
 }
