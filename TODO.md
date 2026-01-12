@@ -4,17 +4,12 @@
 
 **Prioority**
 
-- [x] **Fix** non local network ssh access (currently not working with
-      tailscale)
-- [ ] Sunshine remote desktop
-- [ ] Nvim tiny inline diagnostics + vscode diff + see how agentic nvim works
-- [ ] Mosh auto attach to tmux session
-- [ ] System clipboard for nix-on-droid
+- [ ] Sunshine Improvements: better resolution, montior should stay off while
+      sunshine is remotely using machine
 - [ ] Sops nix for secrets
 
 Low priority:
 
-- [ ] Rofi entry for brightness control (sudo ddcutil etc......)
 - [ ] Correct monitor orientation in sddm
 - [ ] Proper VM setup
 
@@ -22,9 +17,6 @@ Low priority:
 - [ ] Yazi config + theming
 
 ## Other
-
-- [x] Fix secrets loading
-- [ ] Dev environments
 
 <!---->
 <!-- - [ ] check bluetooth config -->
