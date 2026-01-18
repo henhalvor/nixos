@@ -19,6 +19,16 @@
       sha256 = "sha256-UemmcgQbdTDYYh8BCCjHgr/wQ8M7OH0ef6MBMHfOJv8=";
     };
   };
+
+  codecompanion-nvim-plugin = pkgs24-11.vimUtils.buildVimPlugin {
+    name = "codecompanion-nvim-from-source";
+    src = pkgs24-11.fetchFromGitHub {
+      owner = "olimorris";
+      repo = "codecompanion.nvim";
+      rev = "v18.4.1";
+      sha256 = "sha256-f3Fin46KtArc5XxA2whagloFxPev/bThCTK+52fzQoM=";
+    };
+  };
   # agentic-nvim-plugin = pkgs24-11.vimUtils.buildVimPlugin {
   #   name = "agentic-nvim-from-source";
   #   src = pkgs24-11.fetchFromGitHub {
@@ -313,20 +323,20 @@ in {
             };
             sources = {
               default = ["lsp" "buffer" "path" "snippets"]; # LSP first
-              providers = {
-                lsp = {
-                  score_offset = 100; # Prioritize LSP
-                };
-                buffer = {
-                  score_offset = 50;
-                };
-                path = {
-                  score_offset = 3;
-                };
-                snippets = {
-                  score_offset = -3;
-                };
-              };
+              # providers = {
+              #   lsp = {
+              #     score_offset = 100; # Prioritize LSP
+              #   };
+              #   buffer = {
+              #     score_offset = 50;
+              #   };
+              #   path = {
+              #     score_offset = 3;
+              #   };
+              #   snippets = {
+              #     score_offset = -3;
+              #   };
+              # };
               per_filetype = {
                 codecompanion = ["codecompanion" "buffer"];
               };
@@ -1878,6 +1888,216 @@ in {
               vim.keymap.set('i', '<A-c>', function()
                 require('neocodeium').clear()
               end)
+            '';
+          };
+
+          codecompanion = {
+            package = codecompanion-nvim-plugin;
+            setup = ''
+              local codecompanion = require('codecompanion')
+              codecompanion.setup({
+                adapters = {
+                  copilot = function()
+                    return require('codecompanion.adapters').extend('copilot', {
+                      schema = {
+                        model = {
+                          default = 'gpt-4',
+                          options = { 'gpt-4', 'gpt-4o' },
+                        },
+                      },
+                    })
+                  end,
+                },
+                prompt_library = {
+                  ["Code Review (Selection)"] = {
+                      strategy = "chat",
+                      description = "Review visually selected code",
+                      opts = {
+                          modes = { "v" },
+                          short_name = "cr_selection",
+                          adapter = "copilot",
+                          auto_submit = true,
+                          stop_context_insertion = true,
+                      },
+                      prompts = {
+                          {
+                              role = "system",
+                              content = function(context)
+                                  local selected_code = require("codecompanion.helpers.actions").get_code(
+                                      context.start_line,
+                                      context.end_line
+                                  )
+                                  return string.format(
+                                      "You are an expert code reviewer for %s. Review the following code selection:\n\n```%s\n%s\n```",
+                                      context.filetype,
+                                      context.filetype,
+                                      selected_code
+                                  )
+                              end,
+                          },
+                          {
+                              role = "user",
+                              content = "Please analyze the code for:\n\n1. **Code Quality**: Structure, readability, maintainability\n2. **Logic & Correctness**: Potential bugs, edge cases\n3. **Best Practices**: Language-specific conventions\n4. **Initial Observations**: What stands out immediately?\n\nProvide detailed feedback with specific line references where applicable.",
+                              opts = { auto_submit = true },
+                          },
+                          {
+                              role = "user",
+                              content = "Now let's dive deeper into security and performance:\n\n1. **Security Analysis**: Look for vulnerabilities, input validation issues, etc.\n2. **Performance Review**: Identify bottlenecks, inefficient algorithms, etc.\n3. **Error Handling**: Evaluate exception handling and edge case management.\n4. **Dependencies**: Comment on external library usage and potential risks.\n\nProvide specific recommendations for each area.",
+                              opts = { auto_submit = true },
+                          },
+                          {
+                              role = "user",
+                              content = "Based on your analysis, please provide:\n\n1. **Priority Rankings**: Rate issues from critical to minor\n2. **Concrete Solutions**: Specific code examples for improvements\n3. **Refactoring Opportunities**: Suggest better patterns or structures\n4. **Testing Recommendations**: What should be tested and how?\n\nFocus on actionable feedback that can be implemented immediately.",
+                              opts = { auto_submit = true },
+                          },
+                          {
+                              role = "user",
+                              content = "Finally, provide a concise summary:\n\n1. **Overall Assessment**: Rate code quality (1-10) with justification\n2. **Top 3 Action Items**: Most important changes\n3. **Strengths**: What the code does well\n4. **Long-term Recommendations**: Architectural suggestions.\n\nKeep this summary focused and actionable.",
+                              opts = { auto_submit = false },
+                          },
+                      },
+                  },
+                  ["Review Full Buffer"] = {
+                      strategy = "chat",
+                      description = "Review the entire current file",
+                      opts = {
+                          modes = { "n" },
+                          short_name = "cr_file",
+                          adapter = "copilot",
+                          auto_submit = true,
+                      },
+                      prompts = {
+                          {
+                              role = "system",
+                              content = function(context)
+                                  local end_line = vim.api.nvim_buf_line_count(context.bufnr)
+                                  local buffer_content = require("codecompanion.helpers.actions").get_code(1, end_line)
+                                  return string.format(
+                                      "You are an expert code reviewer for %s. Review the following file content:\n\n```%s\n%s\n```",
+                                      context.filetype,
+                                      context.filetype,
+                                      buffer_content
+                                  )
+                              end,
+                          },
+                          {
+                              role = "user",
+                              content = "Please analyze the code for:\n\n1. **Code Quality**: Structure, readability, maintainability\n2. **Logic & Correctness**: Potential bugs, edge cases\n3. **Best Practices**: Language-specific conventions\n4. **Initial Observations**: What stands out immediately?\n\nProvide detailed feedback with specific line references where applicable.",
+                              opts = { auto_submit = true },
+                          },
+                          {
+                              role = "user",
+                              content = "Now let's dive deeper into security and performance:\n\n1. **Security Analysis**: Look for vulnerabilities, input validation issues, etc.\n2. **Performance Review**: Identify bottlenecks, inefficient algorithms, etc.\n3. **Error Handling**: Evaluate exception handling and edge case management.\n4. **Dependencies**: Comment on external library usage and potential risks.\n\nProvide specific recommendations for each area.",
+                              opts = { auto_submit = true },
+                          },
+                          {
+                              role = "user",
+                              content = "Based on your analysis, please provide:\n\n1. **Priority Rankings**: Rate issues from critical to minor\n2. **Concrete Solutions**: Specific code examples for improvements\n3. **Refactoring Opportunities**: Suggest better patterns or structures\n4. **Testing Recommendations**: What should be tested and how?\n\nFocus on actionable feedback that can be implemented immediately.",
+                              opts = { auto_submit = true },
+                          },
+                          {
+                              role = "user",
+                              content = "Finally, provide a concise summary:\n\n1. **Overall Assessment**: Rate code quality (1-10) with justification\n2. **Top 3 Action Items**: Most important changes\n3. **Strengths**: What the code does well\n4. **Long-term Recommendations**: Architectural suggestions.\n\nKeep this summary focused and actionable.",
+                              opts = { auto_submit = false },
+                          },
+                      },
+                  },
+                  ["Meticulous Documentation"] = {
+                      strategy = "chat",
+                      description = "Generate meticulous documentation for the current file",
+                      opts = {
+                          modes = { "n" },
+                          short_name = "doc_file",
+                          adapter = "copilot",
+                          auto_submit = true,
+                      },
+                      prompts = {
+                          {
+                              role = "system",
+                              content = function(context)
+                                  local end_line = vim.api.nvim_buf_line_count(context.bufnr)
+                                  local buffer_content = require("codecompanion.helpers.actions").get_code(1, end_line)
+                                  return string.format(
+                                      "You are an expert technical writer for %s. Your task is to generate meticulous documentation for the following file content:\n\n```%s\n%s\n```",
+                                      context.filetype,
+                                      context.filetype,
+                                      buffer_content
+                                  )
+                              end,
+                          },
+                          {
+                              role = "user",
+                              content = "Please generate documentation covering the following aspects:\n\n1. **Overall Summary**: A high-level overview of the file's purpose.\n2. **Modules/Classes/Functions**: Detailed explanation of each component, including its parameters, return values, and any side effects.\n3. **Usage Examples**: Provide clear code snippets demonstrating how to use the code.\n4. **Error Handling**: Describe how errors are handled.\n5. **Dependencies**: List any external or internal dependencies.\n\nEnsure the documentation is clear, concise, and easy to understand for other developers. @{insert_edit_into_file} #{buffer}",
+                              opts = { auto_submit = false },
+                          },
+                      },
+                  },
+                },
+                display = {
+                  chat = {
+                    intro_message = "Welcome to CodeCompanion ✨! Press ? for options",
+                    show_header_separator = true,
+                    auto_scroll = true,
+                    show_settings = true,
+                    show_token_count = true,
+                    show_references = true,
+                    token_count = function(tokens, adapter)
+                      return string.format(" 🤖 %s (%d tokens)", adapter.formatted_name, tokens)
+                    end,
+                    separator = "─",
+                    window = {
+                      layout = "vertical",
+                      border = "rounded",
+                      height = 0.8,
+                      width = 0.45,
+                    },
+                  },
+                },
+                strategies = {
+                  chat = {
+                    adapter = "copilot",
+                    roles = {
+                      llm = function(adapter)
+                        return string.format("🤖 %s (%s)", adapter.formatted_name, adapter.schema.model.default)
+                      end,
+                      user = "👤 Me"
+                    },
+                    keymaps = {
+                      close = {
+                        modes = {n = "q"},
+                        index = 3,
+                        callback = "keymaps.close",
+                        description = "Close Chat",
+                      },
+                      stop = {
+                        modes = {n = "<C-c>"},
+                        index = 4,
+                        callback = "keymaps.stop",
+                        description = "Stop Request",
+                      },
+                    },
+                  },
+                  inline = {
+                    adapter = "copilot",
+                  },
+                },
+                -- extensions = {
+                --   mcphub = {
+                --     callback = "mcphub.extensions.codecompanion",
+                --     opts = {
+                --       show_result_in_chat = true,
+                --       make_vars = true,
+                --       make_slash_commands = true,
+                --       auto_register_servers = true,
+                --     },
+                --   },
+                -- },
+              })
+
+              -- CodeCompanion Global Keymaps
+              vim.keymap.set({"n", "v"}, "<leader>ac", "<cmd>CodeCompanionActions<CR>", { silent = true, desc = "CodeCompanion actions" })
+              vim.keymap.set({"n", "v"}, "<leader>aa", "<cmd>CodeCompanionChat Toggle<CR>", { silent = true, desc = "CodeCompanion chat" })
+              vim.keymap.set({"v"}, "<leader>ad", "<cmd>CodeCompanionChat Add<CR>", { silent = true, desc = "CodeCompanion add to chat" })
             '';
           };
 

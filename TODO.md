@@ -2,7 +2,9 @@
 
 ### Config:
 
-**Prioority**
+**Priority**
+
+- [ ] Syncthing for android phone and tablet
 
 - [ ] Sunshine Improvements: better resolution, montior should stay off while
       sunshine is remotely using machine
