@@ -7,6 +7,8 @@
 
   programs.gamemode.enable = true; # for performance mode
 
+  programs.nix-ld.enable = true;
+
   programs.steam = {
     enable = true; # install steam
     remotePlay.openFirewall =
@@ -16,6 +18,9 @@
   };
 
   environment.systemPackages = with pkgs; [
+    wineWowPackages.staging
+    winetricks
+
     heroic # install heroic launcher
     lutris # install lutris launcher
     mumble # install voice-chat
