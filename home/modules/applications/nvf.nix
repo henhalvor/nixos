@@ -2291,6 +2291,17 @@ in {
               })
             '';
           };
+
+          rustaceanvim = {
+            package = pkgs.vimPlugins.rustaceanvim;
+            setup = ''
+              vim.g.rustaceanvim = {
+                  server = {
+                    capabilities = require('blink.cmp').get_lsp_capabilities(),
+                  },
+                }
+            '';
+          };
         };
 
         # Extra packages needed
@@ -2308,6 +2319,7 @@ in {
           vimPlugins.grug-far-nvim
           vimPlugins.persistence-nvim
           vimPlugins.nvim-ts-context-commentstring # used for mini.comment jsx comment strings
+          vimPlugins.rustaceanvim
           unstable.vimPlugins.vscode-diff-nvim
 
           # Use this if "built in" persistence is not working
