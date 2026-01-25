@@ -69,7 +69,7 @@
         description: "Generate commit message with OpenCode"
         command: |
           DIFF=$(git diff --staged)
-          ${config.home.homeDirectory}/.local/dev/npm/global/bin/opencode run -m anthropic/claude-3-5-haiku-latest --format json "Generate a concise git commit message for these changes. Output ONLY the commit message text with no markdown, code blocks, or explanations. Use conventional commit format:\n\n$DIFF" | jq -r 'select(.type == "text") | .part.text' | paste -sd ' ' - > /tmp/commit_msg && GIT_EDITOR=vim git commit -e -F /tmp/commit_msg
+          ${config.home.homeDirectory}/.local/dev/npm/global/bin/opencode run -m github-copilot/gpt-5-mini --format json "Generate a concise git commit message for these changes. Output ONLY the commit message text with no markdown, code blocks, or explanations. Use conventional commit format:\n\n$DIFF" | jq -r 'select(.type == "text") | .part.text' | paste -sd ' ' - > /tmp/commit_msg && GIT_EDITOR=vim git commit -e -F /tmp/commit_msg
         output: terminal
   '';
 
