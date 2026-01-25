@@ -375,7 +375,8 @@ in {
           "$mainMod SHIFT, O, exec, clipman clear --all"
           "$mainMod, X, togglesplit,"
           "$mainMod, E, exec, hyprctl dispatch exec '[float; size 1111 650] kitty -e yazi'"
-          "$mainMod, B, exec, hyprctl dispatch exec '[float; size 1111 650] kitty -e btop'"
+          "$mainMod, I, exec, hyprctl dispatch exec '[float; size 1111 650] kitty -e btop'"
+          "$mainMod, B, exec, hyprctl dispatch exec '[float; size 1111 650] kitty -e bluetui'"
           # "$mainMod, SHIFT, L, exec, ${pkgs.hyprlock}/bin/hyprlock"
           # "$mainMod SHIFT, B, exec, toggle_waybar"
 
