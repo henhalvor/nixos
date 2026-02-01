@@ -1,5 +1,12 @@
-{ config, lib, pkgs, userSettings, desktop, hostConfig, ... }:
-let
+{
+  config,
+  lib,
+  pkgs,
+  userSettings,
+  desktop,
+  hostConfig,
+  ...
+}: let
   # Import scripts
   toggleMonitorsWorkstation = import ../../scripts/toggle-monitors-workstation-hyprland.nix {
     inherit pkgs;
@@ -18,90 +25,118 @@ let
   monitors = hostConfig.desktop.monitors or [];
   workspaceRules = hostConfig.desktop.workspaceRules or [];
   extraConfig = hostConfig.desktop.extraConfig or "";
-  
+
   # Convert monitor list to Hyprland format
   monitorsConfig = lib.concatMapStringsSep "\n" (m: "monitor=${m}") monitors;
 
   # Determine lock command
-  lockBin = {
-    hyprlock = "${pkgs.hyprlock}/bin/hyprlock";
-    swaylock = "${pkgs.swaylock}/bin/swaylock";
-    loginctl = "loginctl lock-session";
-  }.${desktop.lock} or "loginctl lock-session";
+  lockBin =
+    {
+      hyprlock = "${pkgs.hyprlock}/bin/hyprlock";
+      swaylock = "${pkgs.swaylock}/bin/swaylock";
+      loginctl = "loginctl lock-session";
+    }.${
+      desktop.lock
+    } or "loginctl lock-session";
 
   # Host-specific packages based on hostname
-  hostPackages = if hostConfig.hostname == "workstation" then [
-    toggleMonitorsWorkstation
-    sunshineMonitorSetup
-    sunshineMonitorRestore
-    brightnessExternal
-  ] else [];
+  hostPackages =
+    if hostConfig.hostname == "workstation"
+    then [
+      toggleMonitorsWorkstation
+      sunshineMonitorSetup
+      sunshineMonitorRestore
+      brightnessExternal
+    ]
+    else [];
 
   # Host-specific keybinds based on hostname
-  hostBinds = if hostConfig.hostname == "workstation" then [
-    "$mainMod, M, exec, toggle-monitors"
-    ",XF86MonBrightnessUp,exec, brightness-external --increase"
-    ",XF86MonBrightnessDown,exec, brightness-external --decrease"
-  ] else if hostConfig.hostname == "lenovo-yoga-pro-7" then [
-    ",XF86MonBrightnessUp,exec, brightnessctl s +10%"
-    ",XF86MonBrightnessDown,exec, brightnessctl s 10%-"
-  ] else [];
+  hostBinds =
+    if hostConfig.hostname == "workstation"
+    then [
+      "$mainMod, M, exec, toggle-monitors"
+      ",XF86MonBrightnessUp,exec, brightness-external --increase"
+      ",XF86MonBrightnessDown,exec, brightness-external --decrease"
+    ]
+    else if hostConfig.hostname == "lenovo-yoga-pro-7"
+    then [
+      ",XF86MonBrightnessUp,exec, brightnessctl s +10%"
+      ",XF86MonBrightnessDown,exec, brightnessctl s 10%-"
+    ]
+    else [];
 
   # Host-specific input settings
-  hostInput = if hostConfig.hostname == "lenovo-yoga-pro-7" then {
-    touchpad = { natural_scroll = true; };
-  } else {};
+  hostInput =
+    if hostConfig.hostname == "lenovo-yoga-pro-7"
+    then {
+      touchpad = {natural_scroll = true;};
+    }
+    else {};
 
   # Host-specific decorations (battery optimization for laptops)
-  hostDecorations = if hostConfig.hostname == "lenovo-yoga-pro-7" then {
-    # Minimal decorations for battery life
-  } else {
-    # Full decorations for workstation
-    active_opacity = 1.0;
-    inactive_opacity = 1.0;
-    fullscreen_opacity = 1.0;
+  hostDecorations =
+    if hostConfig.hostname == "lenovo-yoga-pro-7"
+    then {
+      # Minimal decorations for battery life
+    }
+    else {
+      # Full decorations for workstation
+      active_opacity = 1.0;
+      inactive_opacity = 1.0;
+      fullscreen_opacity = 1.0;
 
-    blur = {
-      enabled = true;
-      size = 3;
-      passes = 2;
-      brightness = 1;
-      contrast = 1.4;
-      ignore_opacity = true;
-      noise = 0;
-      new_optimizations = true;
-      xray = true;
-    };
+      blur = {
+        enabled = true;
+        size = 3;
+        passes = 2;
+        brightness = 1;
+        contrast = 1.4;
+        ignore_opacity = true;
+        noise = 0;
+        new_optimizations = true;
+        xray = true;
+      };
 
-    shadow = {
-      enabled = true;
-      ignore_window = true;
-      offset = "0 2";
-      range = 20;
-      render_power = 3;
+      shadow = {
+        enabled = true;
+        ignore_window = true;
+        offset = "0 2";
+        range = 20;
+        render_power = 3;
+      };
     };
-  };
 
   # Host-specific animations (battery optimization for laptops)
-  hostAnimations = if hostConfig.hostname == "lenovo-yoga-pro-7" then {
-    enabled = false;  # Disable for battery life
-  } else {
-    # Full animations for workstation
-  };
+  hostAnimations =
+    if hostConfig.hostname == "lenovo-yoga-pro-7"
+    then {
+      enabled = false; # Disable for battery life
+    }
+    else {
+      # Full animations for workstation
+    };
 
   # Host-specific exec-once commands
-  hostExecOnce = if hostConfig.hostname == "workstation" then [
-    "[workspace 2 silent] ${userSettings.term}"
-  ] else [];
+  hostExecOnce =
+    if hostConfig.hostname == "workstation"
+    then [
+      "[workspace 2 silent] ${userSettings.term}"
+    ]
+    else [];
 
   # Bar-specific exec-once commands
-  barExecOnce = if desktop.bar == "hyprpanel" then [
-    "hyprpanel"
-  ] else if desktop.bar == "waybar" then [
-    "waybar"
-  ] else [];
+  barExecOnce =
+    if desktop.bar == "hyprpanel"
+    then [
+      "hyprpanel &"
+    ]
+    else if desktop.bar == "waybar"
+    then [
+      "waybar &"
+    ]
+    else [];
 in {
-  imports = [ ../rofi ../idle/hypridle.nix ../lock/hyprlock.nix ];
+  imports = [../rofi ../idle/hypridle.nix ../lock/hyprlock.nix];
 
   home.packages = with pkgs;
     [
@@ -114,7 +149,8 @@ in {
       ddcutil
       bluez
       blueberry
-    ] ++ hostPackages;
+    ]
+    ++ hostPackages;
 
   wayland.windowManager.hyprland = {
     enable = true;
@@ -123,23 +159,27 @@ in {
 
     settings = {
       # Startup commands
-      exec-once = [
-        "wl-paste --type text --watch clipman store &"
-        "wl-paste --type image --watch clipman store &"
-        "hypridle &"
-        "${userSettings.browser}"
-      ] ++ hostExecOnce ++ barExecOnce;
+      exec-once =
+        [
+          "wl-paste --type text --watch clipman store &"
+          "wl-paste --type image --watch clipman store &"
+          "hypridle &"
+          "${userSettings.browser}"
+        ]
+        ++ hostExecOnce ++ barExecOnce;
 
       # Input configuration
-      input = {
-        kb_layout = "no";
-        kb_options = "grp:alt_caps_toggle";
-        numlock_by_default = true;
-        follow_mouse = 1;
-        float_switch_override_focus = 0;
-        mouse_refocus = 0;
-        sensitivity = 0;
-      } // hostInput;
+      input =
+        {
+          kb_layout = "no";
+          kb_options = "grp:alt_caps_toggle";
+          numlock_by_default = true;
+          follow_mouse = 1;
+          float_switch_override_focus = 0;
+          mouse_refocus = 0;
+          sensitivity = 0;
+        }
+        // hostInput;
 
       general = {
         "$mainMod" = "SUPER";
@@ -179,124 +219,130 @@ in {
         special_scale_factor = 1;
       };
 
-      decoration = {
-        rounding = 10;
-      } // hostDecorations;
+      decoration =
+        {
+          rounding = 10;
+        }
+        // hostDecorations;
 
-      animations = {
-        bezier = [
-          "fluent_decel, 0, 0.2, 0.4, 1"
-          "easeOutCirc, 0, 0.55, 0.45, 1"
-          "easeOutCubic, 0.33, 1, 0.68, 1"
-          "fade_curve, 0, 0.55, 0.45, 1"
-        ];
+      animations =
+        {
+          bezier = [
+            "fluent_decel, 0, 0.2, 0.4, 1"
+            "easeOutCirc, 0, 0.55, 0.45, 1"
+            "easeOutCubic, 0.33, 1, 0.68, 1"
+            "fade_curve, 0, 0.55, 0.45, 1"
+          ];
 
-        animation = [
-          "windowsIn,   0, 4, easeOutCubic,  popin 20%"
-          "windowsOut,  0, 4, fluent_decel,  popin 80%"
-          "windowsMove, 1, 2, fluent_decel, slide"
-          "fadeIn,      1, 3,   fade_curve"
-          "fadeOut,     1, 3,   fade_curve"
-          "fadeSwitch,  0, 1,   easeOutCirc"
-          "fadeShadow,  1, 10,  easeOutCirc"
-          "fadeDim,     1, 4,   fluent_decel"
-          "workspaces,  1, 4,   easeOutCubic, fade"
-        ];
-      } // hostAnimations;
+          animation = [
+            "windowsIn,   0, 4, easeOutCubic,  popin 20%"
+            "windowsOut,  0, 4, fluent_decel,  popin 80%"
+            "windowsMove, 1, 2, fluent_decel, slide"
+            "fadeIn,      1, 3,   fade_curve"
+            "fadeOut,     1, 3,   fade_curve"
+            "fadeSwitch,  0, 1,   easeOutCirc"
+            "fadeShadow,  1, 10,  easeOutCirc"
+            "fadeDim,     1, 4,   fluent_decel"
+            "workspaces,  1, 4,   easeOutCubic, fade"
+          ];
+        }
+        // hostAnimations;
 
-      bind = [
-        # Core keybindings
-        "$mainMod, Return, exec, ${userSettings.term}"
-        "$mainMod SHIFT, C, exec, hyprctl reload"
-        "$mainMod SHIFT, Q, killactive,"
-        "$mainMod, F, fullscreen, 0"
-        "$mainMod, Space, exec, toggle_float"
-        "$mainMod, D, exec, ${pkgs.rofi-wayland}/bin/rofi -show drun -theme ${config.home.homeDirectory}/.config/rofi/theme.rasi"
-        "$mainMod, O, exec, clipman pick -t rofi -T'-theme ${config.home.homeDirectory}/.config/rofi/theme.rasi'"
-        "$mainMod SHIFT, O, exec, clipman clear --all"
-        "$mainMod, X, togglesplit,"
-        "$mainMod, E, exec, hyprctl dispatch exec '[float; size 1111 650] kitty -e yazi'"
-        "$mainMod, I, exec, hyprctl dispatch exec '[float; size 1111 650] kitty -e btop'"
-        "$mainMod, B, exec, hyprctl dispatch exec '[float; size 1111 650] kitty -e bluetui'"
-        "$mainMod SHIFT, L, exec, ${lockBin}"
+      bind =
+        [
+          # Core keybindings
+          "$mainMod, Return, exec, ${userSettings.term}"
+          "$mainMod SHIFT, C, exec, hyprctl reload"
+          "$mainMod SHIFT, Q, killactive,"
+          "$mainMod, F, fullscreen, 0"
+          "$mainMod, Space, exec, toggle_float"
+          "$mainMod, D, exec, ${pkgs.rofi-wayland}/bin/rofi -show drun -theme ${config.home.homeDirectory}/.config/rofi/theme.rasi"
+          "$mainMod, O, exec, clipman pick -t rofi -T'-theme ${config.home.homeDirectory}/.config/rofi/theme.rasi'"
+          "$mainMod SHIFT, O, exec, clipman clear --all"
+          "$mainMod, X, togglesplit,"
+          "$mainMod, E, exec, hyprctl dispatch exec '[float; size 1111 650] kitty -e yazi'"
+          "$mainMod, I, exec, hyprctl dispatch exec '[float; size 1111 650] kitty -e btop'"
+          "$mainMod, B, exec, hyprctl dispatch exec '[float; size 1111 650] kitty -e bluetui'"
+          "$mainMod SHIFT, L, exec, ${lockBin}"
 
-        # Screenshot
-        ",Print, exec, screenshot --copy"
-        "$mainMod, Print, exec, screenshot --save"
-        "$mainMod SHIFT, Print, exec, screenshot --swappy"
+          # Screenshot
+          ",Print, exec, screenshot --copy"
+          "$mainMod, Print, exec, screenshot --save"
+          "$mainMod SHIFT, Print, exec, screenshot --swappy"
 
-        # Focus movement
-        "$mainMod, left, movefocus, l"
-        "$mainMod, right, movefocus, r"
-        "$mainMod, up, movefocus, u"
-        "$mainMod, down, movefocus, d"
-        "$mainMod, h, movefocus, l"
-        "$mainMod, j, movefocus, d"
-        "$mainMod, k, movefocus, u"
-        "$mainMod, l, movefocus, r"
+          # Focus movement
+          "$mainMod, left, movefocus, l"
+          "$mainMod, right, movefocus, r"
+          "$mainMod, up, movefocus, u"
+          "$mainMod, down, movefocus, d"
+          "$mainMod, h, movefocus, l"
+          "$mainMod, j, movefocus, d"
+          "$mainMod, k, movefocus, u"
+          "$mainMod, l, movefocus, r"
 
-        # Workspace switching
-        "$mainMod, 1, workspace, 1"
-        "$mainMod, 2, workspace, 2"
-        "$mainMod, 3, workspace, 3"
-        "$mainMod, 4, workspace, 4"
-        "$mainMod, 5, workspace, 5"
-        "$mainMod, 6, workspace, 6"
-        "$mainMod, 7, workspace, 7"
-        "$mainMod, 8, workspace, 8"
-        "$mainMod, 9, workspace, 9"
-        "$mainMod, 0, workspace, 10"
+          # Workspace switching
+          "$mainMod, 1, workspace, 1"
+          "$mainMod, 2, workspace, 2"
+          "$mainMod, 3, workspace, 3"
+          "$mainMod, 4, workspace, 4"
+          "$mainMod, 5, workspace, 5"
+          "$mainMod, 6, workspace, 6"
+          "$mainMod, 7, workspace, 7"
+          "$mainMod, 8, workspace, 8"
+          "$mainMod, 9, workspace, 9"
+          "$mainMod, 0, workspace, 10"
 
-        # Move to workspace
-        "$mainMod SHIFT, 1, movetoworkspacesilent, 1"
-        "$mainMod SHIFT, 2, movetoworkspacesilent, 2"
-        "$mainMod SHIFT, 3, movetoworkspacesilent, 3"
-        "$mainMod SHIFT, 4, movetoworkspacesilent, 4"
-        "$mainMod SHIFT, 5, movetoworkspacesilent, 5"
-        "$mainMod SHIFT, 6, movetoworkspacesilent, 6"
-        "$mainMod SHIFT, 7, movetoworkspacesilent, 7"
-        "$mainMod SHIFT, 8, movetoworkspacesilent, 8"
-        "$mainMod SHIFT, 9, movetoworkspacesilent, 9"
-        "$mainMod SHIFT, 0, movetoworkspacesilent, 10"
-        "$mainMod CTRL, c, movetoworkspace, empty"
+          # Move to workspace
+          "$mainMod SHIFT, 1, movetoworkspacesilent, 1"
+          "$mainMod SHIFT, 2, movetoworkspacesilent, 2"
+          "$mainMod SHIFT, 3, movetoworkspacesilent, 3"
+          "$mainMod SHIFT, 4, movetoworkspacesilent, 4"
+          "$mainMod SHIFT, 5, movetoworkspacesilent, 5"
+          "$mainMod SHIFT, 6, movetoworkspacesilent, 6"
+          "$mainMod SHIFT, 7, movetoworkspacesilent, 7"
+          "$mainMod SHIFT, 8, movetoworkspacesilent, 8"
+          "$mainMod SHIFT, 9, movetoworkspacesilent, 9"
+          "$mainMod SHIFT, 0, movetoworkspacesilent, 10"
+          "$mainMod CTRL, c, movetoworkspace, empty"
 
-        # Window control
-        "$mainMod SHIFT, left, movewindow, l"
-        "$mainMod SHIFT, right, movewindow, r"
-        "$mainMod SHIFT, up, movewindow, u"
-        "$mainMod SHIFT, down, movewindow, d"
-        "$mainMod SHIFT, h, movewindow, l"
-        "$mainMod SHIFT, j, movewindow, d"
-        "$mainMod SHIFT, k, movewindow, u"
-        "$mainMod SHIFT, l, movewindow, r"
+          # Window control
+          "$mainMod SHIFT, left, movewindow, l"
+          "$mainMod SHIFT, right, movewindow, r"
+          "$mainMod SHIFT, up, movewindow, u"
+          "$mainMod SHIFT, down, movewindow, d"
+          "$mainMod SHIFT, h, movewindow, l"
+          "$mainMod SHIFT, j, movewindow, d"
+          "$mainMod SHIFT, k, movewindow, u"
+          "$mainMod SHIFT, l, movewindow, r"
 
-        "$mainMod CTRL, left, resizeactive, -80 0"
-        "$mainMod CTRL, right, resizeactive, 80 0"
-        "$mainMod CTRL, up, resizeactive, 0 -80"
-        "$mainMod CTRL, down, resizeactive, 0 80"
-        "$mainMod CTRL, h, resizeactive, -80 0"
-        "$mainMod CTRL, j, resizeactive, 0 80"
-        "$mainMod CTRL, k, resizeactive, 0 -80"
-        "$mainMod CTRL, l, resizeactive, 80 0"
+          "$mainMod CTRL, left, resizeactive, -80 0"
+          "$mainMod CTRL, right, resizeactive, 80 0"
+          "$mainMod CTRL, up, resizeactive, 0 -80"
+          "$mainMod CTRL, down, resizeactive, 0 80"
+          "$mainMod CTRL, h, resizeactive, -80 0"
+          "$mainMod CTRL, j, resizeactive, 0 80"
+          "$mainMod CTRL, k, resizeactive, 0 -80"
+          "$mainMod CTRL, l, resizeactive, 80 0"
 
-        "$mainMod ALT, left, moveactive,  -80 0"
-        "$mainMod ALT, right, moveactive, 80 0"
-        "$mainMod ALT, up, moveactive, 0 -80"
-        "$mainMod ALT, down, moveactive, 0 80"
-        "$mainMod ALT, h, moveactive,  -80 0"
-        "$mainMod ALT, j, moveactive, 0 80"
-        "$mainMod ALT, k, moveactive, 0 -80"
-        "$mainMod ALT, l, moveactive, 80 0"
+          "$mainMod ALT, left, moveactive,  -80 0"
+          "$mainMod ALT, right, moveactive, 80 0"
+          "$mainMod ALT, up, moveactive, 0 -80"
+          "$mainMod ALT, down, moveactive, 0 80"
+          "$mainMod ALT, h, moveactive,  -80 0"
+          "$mainMod ALT, j, moveactive, 0 80"
+          "$mainMod ALT, k, moveactive, 0 -80"
+          "$mainMod ALT, l, moveactive, 80 0"
 
-        # Media controls
-        ",XF86AudioPlay,exec, playerctl play-pause"
-        ",XF86AudioNext,exec, playerctl next"
-        ",XF86AudioPrev,exec, playerctl previous"
-        ",XF86AudioStop,exec, playerctl stop"
+          # Media controls
+          ",XF86AudioPlay,exec, playerctl play-pause"
+          ",XF86AudioNext,exec, playerctl next"
+          ",XF86AudioPrev,exec, playerctl previous"
+          ",XF86AudioStop,exec, playerctl stop"
 
-        "$mainMod, mouse_down, workspace, e-1"
-        "$mainMod, mouse_up, workspace, e+1"
-      ] ++ hostBinds;
+          "$mainMod, mouse_down, workspace, e-1"
+          "$mainMod, mouse_up, workspace, e+1"
+        ]
+        ++ hostBinds;
 
       bindl = [];
 
@@ -423,11 +469,13 @@ in {
         "workspace 1, class:^(vivaldi)$"
       ];
 
-      workspace = [
-        "w[t1], gapsout:0, gapsin:0"
-        "w[tg1], gapsout:0, gapsin:0"
-        "f[1], gapsout:0, gapsin:0"
-      ] ++ workspaceRules;
+      workspace =
+        [
+          "w[t1], gapsout:0, gapsin:0"
+          "w[tg1], gapsout:0, gapsin:0"
+          "f[1], gapsout:0, gapsin:0"
+        ]
+        ++ workspaceRules;
     };
 
     extraConfig = ''

@@ -354,20 +354,4 @@ in {
       }
     '';
   };
-
-  # Mako is now configured in desktop/common.nix, but keep the old one for backward compat
-  # Remove this if mako is already configured elsewhere
-  services.mako = {
-    enable = true;
-    font = "${config.stylix.fonts.monospace.name} ${toString config.stylix.fonts.sizes.popups}";
-    padding = "10";
-    margin = "10";
-    borderSize = 1;
-    borderRadius = 5;
-    defaultTimeout = 5000;
-    layer = "overlay";
-    backgroundColor = "#${colors.base00}F0";
-    textColor = "#${colors.base05}";
-    borderColor = "#${colors.base02}";
-  };
 }

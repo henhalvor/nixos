@@ -20,8 +20,9 @@
   };
 
   # Mako notification daemon - Stylix handles the theming
+  # Don't enable mako when using hyprpanel (it has its own notification daemon)
   services.mako = {
-    enable = true;
+    enable = desktop.bar != "hyprpanel";
     # Let Stylix handle colors and fonts
     # Only configure behavior settings
     defaultTimeout = 5000;
