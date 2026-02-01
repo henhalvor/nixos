@@ -93,6 +93,13 @@ let
   hostExecOnce = if hostConfig.hostname == "workstation" then [
     "[workspace 2 silent] ${userSettings.term}"
   ] else [];
+
+  # Bar-specific exec-once commands
+  barExecOnce = if desktop.bar == "hyprpanel" then [
+    "hyprpanel"
+  ] else if desktop.bar == "waybar" then [
+    "waybar"
+  ] else [];
 in {
   imports = [ ../rofi ../idle/hypridle.nix ../lock/hyprlock.nix ];
 
@@ -121,7 +128,7 @@ in {
         "wl-paste --type image --watch clipman store &"
         "hypridle &"
         "${userSettings.browser}"
-      ] ++ hostExecOnce;
+      ] ++ hostExecOnce ++ barExecOnce;
 
       # Input configuration
       input = {
