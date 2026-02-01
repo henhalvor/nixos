@@ -18,4 +18,14 @@
     TERMINAL = userSettings.term;
     BROWSER = userSettings.browser;
   };
+
+  # Mako notification daemon - Stylix handles the theming
+  services.mako = {
+    enable = true;
+    # Let Stylix handle colors and fonts
+    # Only configure behavior settings
+    defaultTimeout = 5000;
+    anchor = "top-right";
+    maxVisible = 5;
+  };
 }

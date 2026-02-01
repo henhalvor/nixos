@@ -123,7 +123,7 @@ in {
       "server" = {
         # hostname = "10.0.0.120"; # WIFI connection to server
         hostname = "10.0.0.2"; # LAN connection to server
-        user = "henhal-dev";
+        user = "henhal";
         extraOptions = {
           RequestTTY = "yes";
           RemoteCommand = "tmux new-session -A -s main";

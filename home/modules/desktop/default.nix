@@ -26,11 +26,9 @@ let
 in {
   imports = lib.optionals enabled ([
     ./common.nix
-    # Temporarily commented - these are in old WM modules that we're importing
-    # ./launchers/rofi.nix
   ] ++ lib.optional (sessionModules ? ${desktop.session}) sessionModules.${desktop.session}
     ++ lib.optional (barModules ? ${desktop.bar}) barModules.${desktop.bar}
-    # ++ lib.optional (lockModules ? ${desktop.lock}) lockModules.${desktop.lock}
-    # ++ lib.optional (idleModules ? ${desktop.idle}) idleModules.${desktop.idle}
+    ++ lib.optional (lockModules ? ${desktop.lock}) lockModules.${desktop.lock}
+    ++ lib.optional (idleModules ? ${desktop.idle}) idleModules.${desktop.idle}
   );
 }

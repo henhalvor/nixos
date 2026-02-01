@@ -1,14 +1,13 @@
-{ config, pkgs, userSettings, windowManager ? "hyprland", ... }:
+{ config, pkgs, userSettings, desktop, ... }:
 let
   inherit (config.lib.stylix) colors;
 
-  # Choose lock command based on window manager
-  lockCommand = if windowManager == "hyprland" then
-    "${pkgs.hyprlock}/bin/hyprlock"
-  else if windowManager == "sway" then
-    "${pkgs.swaylock}/bin/swaylock -f"
-  else
-    "loginctl lock-session";
+  # Choose lock command based on desktop config
+  lockCommand = {
+    hyprlock = "${pkgs.hyprlock}/bin/hyprlock";
+    swaylock = "${pkgs.swaylock}/bin/swaylock -f";
+    loginctl = "loginctl lock-session";
+  }.${desktop.lock} or "loginctl lock-session";
 in {
   home.packages = with pkgs; [ rofi-wayland ];
 
@@ -16,7 +15,7 @@ in {
     enable = true;
     package = pkgs.rofi-wayland;
   };
-  #
+
   home.file.".config/rofi/theme.rasi".text = ''
 
       /*****----- Configuration -----*****/
@@ -104,7 +103,7 @@ in {
       textbox-prompt-colon {
           enabled:                     true;
           expand:                      false;
-          str:                         "";
+          str:                         "";
           background-color:            inherit;
           text-color:                  inherit;
       }
@@ -285,6 +284,5 @@ in {
       Terminal=false
       NoDisplay=false
     '';
-
   };
 }

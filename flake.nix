@@ -67,13 +67,6 @@
           wallpaper = "starry-sky.png";
         };
       };
-      henhal-dev = rec {
-        username = "henhal-dev";
-        name = "Henrik";
-        email = "henhalvor@gmail.com";
-        homeDirectory = "/home/${username}";
-        stateVersion = "25.05";
-      };
     };
 
     # System builder
@@ -98,7 +91,7 @@
 
       hp-server = mkSystem {
         hostConfig = hosts.hp-server;
-        userSettings = users.henhal-dev;
+        userSettings = users.henhal;
         extraModules = [
           vscode-server.nixosModules.default
           ({
