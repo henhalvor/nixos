@@ -33,7 +33,7 @@
       ../../nixos/modules/networking.nix
       ../../nixos/modules/gaming.nix
       ../../nixos/modules/virtualization.nix
-      ../../nixos/modules/syncthing.nix
+      # ../../nixos/modules/syncthing.nix
       ../../nixos/modules/printer.nix
       # ./bootloader.nix
       ./secure-boot.nix # Secore boot overrides bootloader settings
