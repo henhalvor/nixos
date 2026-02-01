@@ -26,26 +26,11 @@
     vim
   ];
 
-  imports =
-    # Window manager (conditional import)
-    (
-      if windowManager == "hyprland"
-      then [../../home/modules/window-manager/hyprland.nix]
-      else if windowManager == "sway"
-      then [../../home/modules/window-manager/sway.nix]
-      else if windowManager == "gnome"
-      then
-        # Need to add gnome specific home config
-        []
-      else if windowManager == "none"
-      then []
-      else [
-        throw
-        "Unsupported window manager in flake's windowManager: ${windowManager}"
-      ]
-    )
-    ++ [
-      # Applications
+  imports = [
+    # Desktop components (dispatcher handles all desktop-related imports)
+    ../../home/modules/desktop/default.nix
+
+    # Applications
       ../../home/modules/applications/zsh.nix
       ../../home/modules/applications/${userSettings.term}.nix
       ../../home/modules/applications/${userSettings.browser}.nix
