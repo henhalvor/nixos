@@ -34,8 +34,6 @@ let
   # Fallback if unknown system
   currentConfig = systemConfigs.${hostConfig.hostname} or systemConfigs.lenovo-yoga-pro-7;
 
-  configTarget = "${config.home.homeDirectory}/.config/hyprpanel/config.json";
-
   # Dynamic theme selection based on stylix theme
   currentTheme = ./hyprpanel-configs/themes/${selectedHyprpanelTheme}.json;
 
@@ -44,19 +42,15 @@ let
   themeConfig = builtins.fromJSON (builtins.readFile currentTheme);
   mergedConfig = lib.recursiveUpdate themeConfig baseConfig;
 
-  combinedConfigJson = pkgs.writeText "hyprpanel-merged-config.json"
-    (builtins.toJSON mergedConfig);
+  # Write merged config to a file
+  mergedConfigFile = pkgs.writeText "hyprpanel-config.json" (builtins.toJSON mergedConfig);
 in {
   home.packages = with pkgs; [
+    hyprpanel  # Install hyprpanel package directly
     grimblast   # Screenshot tool for Hyprland
     wf-recorder # Screen recorder
   ] ++ currentConfig.extraPackages;
 
-  programs.hyprpanel.enable = true;
-
-  home.activation.copyHyprpanelConfig =
-    lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      mkdir -p "$(dirname "${configTarget}")"
-      cp -f "${combinedConfigJson}" "${configTarget}"
-    '';
+  # Provide the merged configuration file
+  xdg.configFile."hyprpanel/config.json".source = mergedConfigFile;
 }
