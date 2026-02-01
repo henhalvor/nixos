@@ -45,9 +45,6 @@
       ]
     )
     ++ [
-      # Add this line to import the Stylix Home Manager module
-      stylix.homeModules.stylix
-
       # Applications
       ../../home/modules/applications/zsh.nix
       ../../home/modules/applications/${userSettings.term}.nix

@@ -41,6 +41,7 @@ nixpkgs.lib.nixosSystem {
     stylix.nixosModules.stylix
     lanzaboote.nixosModules.lanzaboote
     ../systems/${hostConfig.hostname}/configuration.nix
+    ../nixos/modules/theme/stylix.nix  # Shared theme configuration
     {nixpkgs.config.allowUnfree = true;}
 
     # Base system config
