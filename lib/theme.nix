@@ -24,6 +24,6 @@ in {
     monospace = { package = pkgs.nerd-fonts.hack; name = "Hack Nerd Font"; };
     sansSerif = { package = pkgs.inter; name = "Inter"; };
     serif = { package = pkgs.noto-fonts; name = "Noto Serif"; };
-    sizes = { applications = 11; desktop = 11; popups = 11; terminal = 12; };
+    sizes = { applications = 11; desktop = 11; popups = 11; terminal = 10; };
   };
 }
