@@ -249,7 +249,7 @@ in {
           "wl-paste --type image --watch clipman store &" # Store images
           # "hyprpanel &"    # Dont manually start hyprpanel, it is started by systemd service
           "hypridle &"
-          "vivaldi"
+          "${userSettings.browser}"
 
           #   "swaync &"
           #   "hyprctl setcursor Bibata-Modern-Ice 24 &"

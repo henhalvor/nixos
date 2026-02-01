@@ -112,7 +112,7 @@ in {
       };
       autoLogin = {
         enable = false;
-        user = "henhal";
+        user = userSettings.username;
       };
     };
   };

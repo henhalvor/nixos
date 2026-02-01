@@ -2,7 +2,7 @@
   imports =
     # Window manager (conditional import)
     (if windowManager == "hyprland" then
-      [ ../../nixos/modules/window-manager/hyrpland.nix ]
+      [ ../../nixos/modules/window-manager/hyprland.nix ]
     else if windowManager == "sway" then
       [ ../../nixos/modules/window-manager/sway.nix ]
     else if windowManager == "gnome" then

@@ -211,10 +211,9 @@ in {
       #   names = [ "RobotoMono" ];
       #   size = 9.0;
       # };
-      terminal = "{userSettings.term}";
+      terminal = "${userSettings.term}";
       startup = [
-        # TODO change to userSettings.browser
-        { command = "zen"; }
+        { command = "${userSettings.browser}"; }
         {
           command = "waybar";
         }
