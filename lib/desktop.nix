@@ -2,10 +2,10 @@
 rec {
   # Per-session defaults - what each session uses by default
   sessionDefaults = {
-    hyprland = { bar = "hyprpanel"; lock = "hyprlock"; idle = "hypridle"; notifications = "hyprpanel"; dm = "sddm"; };
-    sway     = { bar = "waybar";    lock = "swaylock"; idle = "swayidle"; notifications = "mako"; dm = "sddm"; };
-    gnome    = { bar = "none";      lock = "loginctl"; idle = "none";     notifications = "none"; dm = "gdm"; };
-    none     = { bar = "none";      lock = "none";     idle = "none";     notifications = "none"; dm = "none"; };
+    hyprland = { bar = "hyprpanel"; lock = "hyprlock"; idle = "hypridle"; notifications = "none"; dm = "sddm"; clipboard = "clipman"; screenshotTool = "grimblast"; trayApplets = "wayland"; nightLight = "gammastep"; };
+    sway     = { bar = "waybar";    lock = "swaylock"; idle = "swayidle"; notifications = "mako"; dm = "sddm"; clipboard = "clipman"; screenshotTool = "grim"; trayApplets = "wayland"; nightLight = "gammastep"; };
+    gnome    = { bar = "none";      lock = "loginctl"; idle = "none";     notifications = "none"; dm = "gdm"; clipboard = "none"; screenshotTool = "none"; trayApplets = "none"; nightLight = "none"; };
+    none     = { bar = "none";      lock = "none";     idle = "none";     notifications = "none"; dm = "none"; clipboard = "none"; screenshotTool = "none"; trayApplets = "none"; nightLight = "none"; };
   };
 
   # Resolve null values to session defaults
@@ -18,6 +18,10 @@ rec {
       lock = if desktop.lock or null != null then desktop.lock else defaults.lock;
       idle = if desktop.idle or null != null then desktop.idle else defaults.idle;
       notifications = if desktop.notifications or null != null then desktop.notifications else defaults.notifications;
+      clipboard = if desktop.clipboard or null != null then desktop.clipboard else defaults.clipboard;
+      screenshotTool = if desktop.screenshotTool or null != null then desktop.screenshotTool else defaults.screenshotTool;
+      trayApplets = if desktop.trayApplets or null != null then desktop.trayApplets else defaults.trayApplets;
+      nightLight = if desktop.nightLight or null != null then desktop.nightLight else defaults.nightLight;
       dm = defaults.dm;
     };
 }

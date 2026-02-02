@@ -44,8 +44,6 @@ in {
   home.packages = with pkgs;
     [
       sway
-      wl-clipboard
-      clipman
       brightnessctl
       pamixer
       playerctl
@@ -124,8 +122,6 @@ in {
         { command = "waybar"; }
         { command = "${pkgs.swaybg}/bin/swaybg -i ~/.dotfiles/assets/wallpapers/catpuccin_landscape.png -m fill"; }
         { command = "autotiling-rs"; }
-        { command = "wl-paste --type text --watch clipman store &"; }
-        { command = "wl-paste --type image --watch clipman store &"; }
         { command = "blueman-applet"; }
       ];
 
@@ -140,8 +136,8 @@ in {
           "${modifier}+Shift+q" = "kill";
           "${modifier}+d" = "exec ${menu}";
           "${modifier}+Shift+c" = "exec reload";
-          "${modifier}+o" = "exec clipman pick -t rofi -T'-theme ${config.home.homeDirectory}/.config/rofi/theme.rasi'";
-          "${modifier}+Shift+o" = "exec clipman clear --all";
+          "${modifier}+o" = "exec clipboard-history";
+          "${modifier}+Shift+o" = "exec clipboard-clear";
           "${modifier}+e" = "exec ${pkgs.kitty}/bin/kitty --class=kitty-yazi -o background_opacity=1.0 -e yazi";
           "${modifier}+Shift+l" = "exec ${lockBin}";
 

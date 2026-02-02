@@ -22,13 +22,106 @@ let
     swayidle = ./idle/swayidle.nix;
   };
 
+  clipboardModules = {
+    clipman = ./clipboard/clipman.nix;
+    cliphist = ./clipboard/cliphist.nix;
+    none = ./clipboard/none.nix;
+  };
+
+  screenshotModules = {
+    grimblast = ./screenshot/grimblast.nix;
+    grim = ./screenshot/grim.nix;
+    none = ./screenshot/none.nix;
+  };
+
+  notificationModules = {
+    mako = ./notifications/mako.nix;
+    dunst = ./notifications/dunst.nix;
+    none = ./notifications/none.nix;
+  };
+
+  trayAppletModules = {
+    wayland = ./applets/wayland.nix;
+    none = ./applets/none.nix;
+  };
+
+  nightLightModules = {
+    gammastep = ./nightlight/gammastep.nix;
+    redshift = ./nightlight/redshift.nix;
+    none = ./nightlight/none.nix;
+  };
+
   enabled = desktop.session != "none";
+  
+  # Helper for safe module imports - handle null/missing options
+  importModule = modules: key:
+    lib.optional (key != null && builtins.hasAttr key modules) modules.${key};
 in {
   imports = lib.optionals enabled ([
     ./common.nix
-  ] ++ lib.optional (sessionModules ? ${desktop.session}) sessionModules.${desktop.session}
-    ++ lib.optional (barModules ? ${desktop.bar}) barModules.${desktop.bar}
-    ++ lib.optional (lockModules ? ${desktop.lock}) lockModules.${desktop.lock}
-    ++ lib.optional (idleModules ? ${desktop.idle}) idleModules.${desktop.idle}
+  ] 
+  ++ importModule sessionModules desktop.session
+  ++ importModule barModules desktop.bar
+  ++ importModule lockModules desktop.lock
+  ++ importModule idleModules desktop.idle
+  ++ importModule clipboardModules desktop.clipboard
+  ++ importModule screenshotModules desktop.screenshotTool
+  ++ importModule notificationModules desktop.notifications
+  ++ importModule trayAppletModules desktop.trayApplets
+  ++ importModule nightLightModules desktop.nightLight
   );
+
+  # Validation
+  config = lib.mkIf enabled {
+    assertions = [
+      # Clipboard validation
+      {
+        assertion = builtins.hasAttr desktop.clipboard clipboardModules;
+        message = "Unknown desktop.clipboard: '${desktop.clipboard}'. Valid: ${lib.concatStringsSep ", " (builtins.attrNames clipboardModules)}";
+      }
+      
+      # Screenshot validation
+      {
+        assertion = builtins.hasAttr desktop.screenshotTool screenshotModules;
+        message = "Unknown desktop.screenshotTool: '${desktop.screenshotTool}'. Valid: ${lib.concatStringsSep ", " (builtins.attrNames screenshotModules)}";
+      }
+      
+      # Notifications validation
+      {
+        assertion = builtins.hasAttr desktop.notifications notificationModules;
+        message = "Unknown desktop.notifications: '${desktop.notifications}'. Valid: ${lib.concatStringsSep ", " (builtins.attrNames notificationModules)}";
+      }
+      
+      # Tray applets validation
+      {
+        assertion = builtins.hasAttr desktop.trayApplets trayAppletModules;
+        message = "Unknown desktop.trayApplets: '${desktop.trayApplets}'. Valid: ${lib.concatStringsSep ", " (builtins.attrNames trayAppletModules)}";
+      }
+      
+      # Night light validation
+      {
+        assertion = builtins.hasAttr desktop.nightLight nightLightModules;
+        message = "Unknown desktop.nightLight: '${desktop.nightLight}'. Valid: ${lib.concatStringsSep ", " (builtins.attrNames nightLightModules)}";
+      }
+      
+      # ===== CRITICAL: Hyprpanel/Mako Conflict =====
+      {
+        assertion = !(desktop.bar == "hyprpanel" && desktop.notifications == "mako");
+        message = ''
+          Incompatible configuration: desktop.bar = "hyprpanel" and desktop.notifications = "mako".
+          
+          Hyprpanel includes its own notification daemon (AGS notifications) and conflicts with mako.
+          Both try to claim the D-Bus notification interface.
+          
+          Fix by choosing one:
+            1. Use hyprpanel's built-in notifications:
+               desktop.notifications = "none"  (or remove it - this is the default)
+            
+            2. Use a different bar with mako:
+               desktop.bar = "waybar"
+               desktop.notifications = "mako"
+        '';
+      }
+    ];
+  };
 }

@@ -4,6 +4,13 @@
 
 **Priority**
 
+- More modularity and flexibility in config. for example dont hardcode
+  services.mako in common.nix, and add configurations for clipboard manager,
+  audio etcc, this way the current hardcoded config wont interfer if a switch to
+  another desktop enviroment such a gnome or kde
+
+## Other
+
 - [ ] Syncthing for android phone and tablet
 - [ ] Make opencode agents config declarative
 
@@ -18,8 +25,6 @@ Low priority:
 
 - [ ] Lazygit Theming
 - [ ] Yazi config + theming
-
-## Other
 
 <!---->
 <!-- - [ ] check bluetooth config -->

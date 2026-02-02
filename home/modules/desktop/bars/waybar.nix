@@ -2,50 +2,12 @@
 let
   # Use Stylix colors instead of hardcoded Catppuccin
   colors = config.lib.stylix.colors;
-  
-  # Gammastep toggle script
-  gamma-toggle-script = pkgs.writeShellScriptBin "gamma-toggle" ''
-    #!${pkgs.bash}/bin/bash
-    set -e
-
-    STATE_HOME="''${XDG_STATE_HOME:-$HOME/.local/state}"
-    gammastepStateDir="$STATE_HOME/gammastep"
-    gammastepStateFile="$gammastepStateDir/default_temp.sh"
-    mkdir -p "$gammastepStateDir"
-    
-    # Robust check: Use pgrep -af and filter for the specific executable path
-    if ${pkgs.procps}/bin/pgrep -af gammastep | ${pkgs.gnugrep}/bin/grep -v 'grep\|nvim\|pkill\|pgrep\|gamma-' | ${pkgs.gnugrep}/bin/grep -q "${pkgs.gammastep}/bin/gammastep"; then
-      # Kill gammastep
-      pkill -f gammastep
-      
-      # Check again after delay
-      sleep 0.5
-      if ${pkgs.procps}/bin/pgrep -af gammastep | ${pkgs.gnugrep}/bin/grep -v 'grep\|nvim\|pkill\|pgrep\|gamma-' | ${pkgs.gnugrep}/bin/grep -q "${pkgs.gammastep}/bin/gammastep"; then
-         ${pkgs.libnotify}/bin/notify-send --expire-time=4000 "ERROR: RedGlow process still detected after pkill!"
-      else
-         ${pkgs.libnotify}/bin/notify-send --expire-time=2000 "RedGlow Stopped."
-      fi
-    else
-      # Start gammastep
-      if [ ! -f "$gammastepStateFile" ]; then echo "default_temp=3400" > "$gammastepStateFile"; fi
-      ${pkgs.gammastep}/bin/gammastep -O 3400 &
-      disown
-      ${pkgs.libnotify}/bin/notify-send --expire-time=1500 "RedGlow ON (3400K)"
-    fi
-  '';
 in {
   # Add necessary packages
   home.packages = with pkgs; [
     pavucontrol
     wlogout
-    blueman
-    gammastep
-    gamma-toggle-script
   ];
-
-  # Enable blueman and network manager applets
-  services.blueman-applet.enable = true;
-  services.network-manager-applet.enable = true;
 
   # Configure Waybar
   programs.waybar = {
@@ -191,7 +153,7 @@ in {
         format = "{icon}";
         format-icons = [ "󰔎" ];
         tooltip = false;
-        on-click = "${gamma-toggle-script}/bin/gamma-toggle";
+        on-click = "nightlight-toggle";
       };
     }];
 

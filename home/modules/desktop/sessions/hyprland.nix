@@ -141,8 +141,6 @@ in {
   home.packages = with pkgs;
     [
       hyprland
-      wl-clipboard
-      clipman
       brightnessctl
       pamixer
       playerctl
@@ -161,8 +159,6 @@ in {
       # Startup commands
       exec-once =
         [
-          "wl-paste --type text --watch clipman store &"
-          "wl-paste --type image --watch clipman store &"
           "hypridle &"
           "${userSettings.browser}"
         ]
@@ -257,8 +253,8 @@ in {
           "$mainMod, F, fullscreen, 0"
           "$mainMod, Space, exec, toggle_float"
           "$mainMod, D, exec, ${pkgs.rofi-wayland}/bin/rofi -show drun -theme ${config.home.homeDirectory}/.config/rofi/theme.rasi"
-          "$mainMod, O, exec, clipman pick -t rofi -T'-theme ${config.home.homeDirectory}/.config/rofi/theme.rasi'"
-          "$mainMod SHIFT, O, exec, clipman clear --all"
+          "$mainMod, O, exec, clipboard-history"
+          "$mainMod SHIFT, O, exec, clipboard-clear"
           "$mainMod, X, togglesplit,"
           "$mainMod, E, exec, hyprctl dispatch exec '[float; size 1111 650] kitty -e yazi'"
           "$mainMod, I, exec, hyprctl dispatch exec '[float; size 1111 650] kitty -e btop'"
