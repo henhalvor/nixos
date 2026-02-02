@@ -1,287 +1,838 @@
 # Desktop Configuration System
 
-This document describes the modular desktop configuration system for NixOS + Home Manager. It allows per-host selection of desktop sessions, bars, lock screens, and idle daemons with full theming integration.
+Complete modular desktop configuration for NixOS + Home Manager with per-host customization, smart defaults, and full theming integration.
+
+---
+
+## Quick Start
+
+### 5-Minute Setup
+
+**Important:** A complete system configuration is defined in **3 different places**:
+1. **`hosts/my-pc.nix`** - Host-specific settings (hostname, desktop session, hardware)
+2. **`systems/my-pc/**`** - NixOS system configuration (configuration.nix, hardware-configuration.nix)
+3. **`users/my-user/home.nix`** - User-specific Home Manager configuration
+
+---
+
+**1. Create a host configuration:**
+
+```nix
+# hosts/my-pc.nix
+{
+  hostname = "my-pc";
+  
+  desktop = {
+    session = "hyprland";  # hyprland | sway | gnome
+  };
+  
+  hardware = {};
+}
+```
+
+**2. Create system configuration directory:**
+
+```bash
+# Create the systems directory for your host
+mkdir -p systems/my-pc
+
+# Generate hardware configuration
+nixos-generate-config --show-hardware-config > systems/my-pc/hardware-configuration.nix
+
+# Create basic configuration.nix (or copy from existing host)
+# systems/my-pc/configuration.nix
+```
+
+**3. Configure your user:**
+
+```nix
+# users/my-user/home.nix
+{ config, pkgs, ... }: {
+  home.username = "my-user";
+  home.homeDirectory = "/home/my-user";
+  
+  # Additional user-specific configuration
+  # Terminal, browser, editor preferences, etc.
+}
+```
+
+**4. Add to flake.nix:**
+
+```nix
+nixosConfigurations = {
+  my-pc = mkSystem {
+    hostConfig = hosts.my-pc;
+    userSettings = users.my-user;
+  };
+};
+```
+
+**5. Build and switch:**
+
+```bash
+sudo nixos-rebuild switch --flake .#my-pc
+```
+
+**That's it!** Your system will use intelligent defaults for everything:
+- ✅ Bar, lock screen, idle daemon auto-selected for your session
+- ✅ Clipboard, screenshots, notifications configured automatically  
+- ✅ Unified commands work regardless of backend tool
+- ✅ Full theme integration via Stylix
+
+### Override Specific Components
+
+```nix
+desktop = {
+  session = "hyprland";
+  bar = "waybar";              # Override default (hyprpanel)
+  clipboard = "cliphist";      # Override default (clipman)
+  screenshotTool = "grim";     # Override default (grimblast)
+  notifications = "mako";      # Override default (none - hyprpanel has built-in)
+};
+```
+
+### Available Options
+
+```nix
+desktop = {
+  # Core
+  session = "hyprland";           # hyprland | sway | gnome | none
+  bar = null;                     # hyprpanel | waybar | none | null
+  lock = null;                    # hyprlock | swaylock | loginctl | null
+  idle = null;                    # hypridle | swayidle | none | null
+  
+  # Desktop Tools (NEW - fully modular)
+  clipboard = null;               # clipman | cliphist | none | null
+  screenshotTool = null;          # grimblast | grim | none | null
+  notifications = null;           # mako | dunst | none | null
+  trayApplets = null;             # wayland | none | null
+  nightLight = null;              # gammastep | redshift | none | null
+};
+```
+
+**Note**: `null` uses smart defaults based on your session type.
 
 ---
 
 ## Table of Contents
 
-1. [Overview](#overview)
-2. [Architecture](#architecture)
-3. [Directory Structure](#directory-structure)
-4. [Quick Start](#quick-start)
-5. [Host Configuration Reference](#host-configuration-reference)
-6. [User Configuration Reference](#user-configuration-reference)
-7. [Adding a New Host](#adding-a-new-host)
-8. [Modifying an Existing Host](#modifying-an-existing-host)
-9. [Component Reference](#component-reference)
-10. [Theming](#theming)
+1. [Architecture](#architecture)
+2. [Design Philosophy](#design-philosophy)
+3. [Implementation Details](#implementation-details)
+4. [Directory Structure](#directory-structure)
+5. [Session Defaults](#session-defaults)
+6. [Module System](#module-system)
+7. [Unified Commands](#unified-commands)
+8. [Configuration Reference](#configuration-reference)
+9. [Adding Components](#adding-components)
+10. [Theming System](#theming-system)
 11. [Examples](#examples)
 12. [Troubleshooting](#troubleshooting)
 
 ---
 
-## Overview
-
-### Design Principles
-
-1. **Pure data in `hosts/`** - Host files contain only data (attrsets), no imports or modules
-2. **Modules consume data** - NixOS and Home Manager modules read host data and apply logic
-3. **Lookup tables over conditionals** - No scattered if/else chains
-4. **Defaults with overrides** - Sensible defaults; only specify what differs
-5. **Single source of truth** - Each setting defined in exactly one place
-
-### What You Can Configure Per Host
-
-| Component | Options | Default |
-|-----------|---------|---------|
-| Session | `hyprland`, `sway`, `gnome`, `none` | `none` |
-| Status Bar | `hyprpanel`, `waybar`, `none` | Per-session |
-| Lock Screen | `hyprlock`, `swaylock`, `loginctl` | Per-session |
-| Idle Daemon | `hypridle`, `swayidle`, `none` | Per-session |
-| Display Manager | `sddm`, `gdm`, `none` | Per-session |
-| Monitors | List of monitor configs | Auto-detect |
-| Workspaces | Workspace-to-monitor mapping | Default |
-
----
-
 ## Architecture
+
+### High-Level Overview
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Pure Data Layer                          │
+│                  hosts/<hostname>.nix                       │
+│              (No imports, no logic, just data)              │
+└─────────────────────┬───────────────────────────────────────┘
+                      │
+                      ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  Resolution Layer                           │
+│               lib/mk-nixos-system.nix                       │
+│   • Imports host config & user settings                    │
+│   • Resolves null → session defaults (lib/desktop.nix)     │
+│   • Creates specialArgs (desktop, hostConfig, userSettings) │
+└─────────────────────┬───────────────────────────────────────┘
+                      │
+        ┌─────────────┴─────────────┐
+        ▼                           ▼
+┌──────────────────┐      ┌──────────────────────┐
+│  NixOS Modules   │      │ Home Manager Modules │
+│                  │      │                      │
+│ • Display Mgr    │      │ • Sessions           │
+│ • Sessions       │      │ • Bars               │
+│ • Common         │      │ • Lock screens       │
+│                  │      │ • Idle daemons       │
+│                  │      │ • Clipboard          │
+│                  │      │ • Screenshots        │
+│                  │      │ • Notifications      │
+│                  │      │ • Applets            │
+│                  │      │ • Night light        │
+└──────────────────┘      └──────────────────────┘
+        │                           │
+        └─────────────┬─────────────┘
+                      ▼
+          ┌──────────────────────┐
+          │   Stylix Theming     │
+          │  (Colors, Fonts,     │
+          │   Wallpapers)        │
+          └──────────────────────┘
+```
 
 ### Data Flow
 
-```
-hosts/<hostname>.nix (pure data)
-         │
-         ▼
-    flake.nix
-    imports host, creates nixosConfiguration
-         │
-         ▼
-lib/mk-nixos-system.nix
-  ├── Imports host config
-  ├── Resolves null values to session defaults (lib/desktop.nix)
-  ├── Passes resolved `desktop` + `hostConfig` via specialArgs
-         │
-         ├────────────────────────────────┐
-         ▼                                ▼
-┌─────────────────────┐      ┌─────────────────────────┐
-│ NixOS Modules       │      │ Home Manager Modules    │
-│                     │      │                         │
-│ desktop/default.nix │      │ desktop/default.nix     │
-│  ├── common.nix     │      │  ├── common.nix         │
-│  ├── sessions/*     │      │  ├── sessions/*         │
-│  └── display-mgrs/* │      │  ├── bars/*             │
-│                     │      │  ├── lock/*             │
-│ theme/stylix.nix    │      │  ├── idle/*             │
-│                     │      │  └── launchers/*        │
-└─────────────────────┘      └─────────────────────────┘
-```
+1. **Host File** (`hosts/my-pc.nix`) - Pure data, declares what you want
+2. **Flake** (`flake.nix`) - Imports host + user, creates nixosConfiguration
+3. **System Builder** (`lib/mk-nixos-system.nix`) - Resolves defaults, creates specialArgs
+4. **Desktop Resolver** (`lib/desktop.nix`) - Provides session-specific defaults
+5. **Dispatcher** (`home/modules/desktop/default.nix`) - Routes to correct modules
+6. **Component Modules** - Implement specific functionality
+7. **Stylix** - Applies consistent theming
 
 ### Key Concepts
 
-- **hostConfig**: The raw data from `hosts/<hostname>.nix`
-- **desktop**: Pre-resolved desktop settings (nulls replaced with defaults)
-- **userSettings**: User-specific settings (username, terminal, browser, theme)
+**specialArgs**: Data passed to all modules
+- `desktop` - Resolved desktop configuration (nulls replaced with defaults)
+- `hostConfig` - Raw host data from hosts/*.nix
+- `userSettings` - User preferences (terminal, browser, theme)
+
+**Dispatcher Pattern**: Central router that imports correct modules based on configuration
+- Uses lookup tables, not if/else chains
+- Validates options at build time
+- Prevents conflicting configurations
+
+**Modular Components**: Each desktop tool is self-contained
+- Packages, services, and configuration in one place
+- Provides unified command interface
+- Easy to add/remove/replace
+
+---
+
+## Design Philosophy
+
+### 1. Pure Data in `hosts/`
+
+Host files contain **only data** - no imports, no `lib`, no `pkgs`, no logic.
+
+**Why?** 
+- Easy to read and modify
+- Clear separation of concerns
+- Can be generated or templated
+- No accidental coupling
+
+```nix
+# ✅ Good - pure data
+{
+  hostname = "my-pc";
+  desktop.session = "hyprland";
+  hardware.gpu = "nvidia";
+}
+
+# ❌ Bad - has logic/imports
+{ pkgs, lib, ... }: {
+  imports = [ ./some-module.nix ];
+  desktop.session = if hostConfig.laptop then "sway" else "hyprland";
+}
+```
+
+### 2. Modules Consume Data
+
+Modules read host data and apply logic.
+
+```nix
+# Module uses hostConfig to make decisions
+{ hostConfig, ... }: {
+  services.xserver.videoDrivers =
+    lib.mkIf (hostConfig.hardware.gpu == "nvidia") [ "nvidia" ];
+}
+```
+
+### 3. Lookup Tables Over Conditionals
+
+Use attrsets to map options to modules, not scattered if/else.
+
+```nix
+# ✅ Good - lookup table
+clipboardModules = {
+  clipman = ./clipboard/clipman.nix;
+  cliphist = ./clipboard/cliphist.nix;
+  none = ./clipboard/none.nix;
+};
+
+imports = lib.optional 
+  (builtins.hasAttr desktop.clipboard clipboardModules)
+  clipboardModules.${desktop.clipboard};
+
+# ❌ Bad - scattered conditionals
+imports = 
+  if desktop.clipboard == "clipman" then [ ./clipboard/clipman.nix ]
+  else if desktop.clipboard == "cliphist" then [ ./clipboard/cliphist.nix ]
+  else [];
+```
+
+### 4. Defaults with Overrides
+
+Sensible defaults per session; override only what differs.
+
+```nix
+# hyprland → uses hyprpanel, hyprlock, hypridle by default
+desktop.session = "hyprland";
+
+# Override only what you want to change
+desktop = {
+  session = "hyprland";
+  bar = "waybar";  # Override default hyprpanel
+};
+```
+
+### 5. Single Source of Truth
+
+Each setting defined exactly once.
+
+- Session defaults: `lib/desktop.nix`
+- Component implementations: `home/modules/desktop/<component>/`
+- Validation: `home/modules/desktop/default.nix`
+- Theming: `lib/theme.nix`
+
+### 6. Build-Time Validation
+
+Catch errors at build time, not runtime.
+
+```nix
+assertions = [
+  {
+    assertion = builtins.hasAttr desktop.clipboard clipboardModules;
+    message = "Unknown clipboard: '${desktop.clipboard}'. Valid: clipman, cliphist, none";
+  }
+];
+```
+
+### 7. Unified Command Interface
+
+Same commands work regardless of backend implementation.
+
+- `clipboard-history` works with clipman OR cliphist
+- `screenshot --copy` works with grimblast OR grim
+- `nightlight-toggle` works with gammastep OR redshift
+
+---
+
+## Implementation Details
+
+### How Defaults Work
+
+**1. User sets session:**
+```nix
+# hosts/my-pc.nix
+desktop.session = "hyprland";
+```
+
+**2. Resolver applies defaults:**
+```nix
+# lib/desktop.nix
+sessionDefaults = {
+  hyprland = {
+    bar = "hyprpanel";
+    lock = "hyprlock";
+    idle = "hypridle";
+    clipboard = "clipman";
+    screenshotTool = "grimblast";
+    notifications = "none";  # Hyprpanel has built-in
+    trayApplets = "wayland";
+    nightLight = "gammastep";
+  };
+};
+
+resolveDesktop = desktop: /* merges user config with defaults */
+```
+
+**3. Modules receive resolved config:**
+```nix
+# Component modules see:
+desktop = {
+  session = "hyprland";
+  bar = "hyprpanel";        # From default
+  lock = "hyprlock";        # From default
+  clipboard = "clipman";    # From default
+  # ... etc
+};
+```
+
+### How Modules are Loaded
+
+**1. Dispatcher creates lookup tables:**
+```nix
+# home/modules/desktop/default.nix
+clipboardModules = {
+  clipman = ./clipboard/clipman.nix;
+  cliphist = ./clipboard/cliphist.nix;
+  none = ./clipboard/none.nix;
+};
+```
+
+**2. Imports correct module:**
+```nix
+imports = lib.optional
+  (builtins.hasAttr desktop.clipboard clipboardModules)
+  clipboardModules.${desktop.clipboard};
+```
+
+**3. Validates configuration:**
+```nix
+assertions = [{
+  assertion = builtins.hasAttr desktop.clipboard clipboardModules;
+  message = "Unknown clipboard option";
+}];
+```
+
+### How Unified Commands Work
+
+**1. Module provides wrapper script:**
+```nix
+# clipboard/clipman.nix
+home.packages = [
+  (pkgs.writeShellScriptBin "clipboard-history" ''
+    ${pkgs.clipman}/bin/clipman pick -t rofi
+  '')
+];
+
+# clipboard/cliphist.nix  
+home.packages = [
+  (pkgs.writeShellScriptBin "clipboard-history" ''
+    ${pkgs.cliphist}/bin/cliphist list | rofi -dmenu | cliphist decode | wl-copy
+  '')
+];
+```
+
+**2. Session config uses unified command:**
+```nix
+# sessions/hyprland.nix
+bind = [
+  "$mainMod, O, exec, clipboard-history"  # Same command for both backends
+];
+```
+
+### How Conflicts are Prevented
+
+**Problem**: Hyprpanel has built-in AGS notifications that conflict with mako.
+
+**Solution**: Build-time assertion with helpful error.
+
+```nix
+assertions = [{
+  assertion = !(desktop.bar == "hyprpanel" && desktop.notifications == "mako");
+  message = ''
+    Incompatible: hyprpanel + mako both provide notifications.
+    
+    Fix:
+      1. Use hyprpanel's notifications: notifications = "none"
+      2. Use different bar: bar = "waybar" + notifications = "mako"
+  '';
+}];
+```
 
 ---
 
 ## Directory Structure
 
 ```
-.
-├── flake.nix                        # Entry point, defines nixosConfigurations
+.dotfiles/
+├── flake.nix                    # Entry point, defines nixosConfigurations
 │
-├── hosts/                           # Pure data files (NO imports)
-│   ├── workstation.nix              # Desktop PC config
-│   ├── lenovo-yoga-pro-7.nix        # Laptop config
-│   └── hp-server.nix                # Server (no desktop)
+├── hosts/                       # Pure data files (NO imports, NO logic)
+│   ├── workstation.nix          # Desktop PC
+│   ├── lenovo-yoga-pro-7.nix    # Laptop
+│   └── hp-server.nix            # Headless server
 │
-├── lib/                             # Shared functions
-│   ├── desktop.nix                  # Desktop defaults & resolver
-│   ├── theme.nix                    # Stylix theme config
-│   └── mk-nixos-system.nix          # System builder
+├── lib/                         # Shared functions
+│   ├── desktop.nix              # Session defaults & resolver
+│   ├── theme.nix                # Stylix theme configuration
+│   └── mk-nixos-system.nix      # System builder
 │
-├── systems/                         # NixOS per-host modules
+├── systems/                     # Per-host NixOS configurations
 │   ├── workstation/
-│   │   ├── configuration.nix        # Hardware, services
+│   │   ├── configuration.nix
 │   │   └── hardware-configuration.nix
 │   └── ...
 │
-├── nixos/modules/                   # Shared NixOS modules
+├── nixos/modules/               # Shared NixOS modules
 │   ├── desktop/
-│   │   ├── default.nix              # Dispatcher
-│   │   ├── common.nix               # Shared config
-│   │   ├── sessions/                # hyprland.nix, sway.nix, gnome.nix
-│   │   └── display-managers/        # sddm.nix, gdm.nix
-│   └── theme/
-│       └── stylix.nix
+│   │   ├── default.nix          # NixOS dispatcher
+│   │   ├── common.nix           # Shared system config
+│   │   ├── sessions/            # hyprland.nix, sway.nix, gnome.nix
+│   │   └── display-managers/    # sddm.nix, gdm.nix
+│   └── theme/stylix.nix         # NixOS Stylix config
 │
-├── home/modules/                    # Shared Home Manager modules
+├── home/modules/                # Shared Home Manager modules
 │   ├── desktop/
-│   │   ├── default.nix              # Dispatcher
-│   │   ├── common.nix               # Shared packages
-│   │   ├── sessions/                # hyprland.nix, sway.nix, gnome.nix
-│   │   ├── bars/                    # waybar.nix, hyprpanel.nix
-│   │   ├── lock/                    # hyprlock.nix, swaylock.nix
-│   │   ├── idle/                    # hypridle.nix, swayidle.nix
-│   │   └── launchers/               # rofi.nix
-│   └── themes/stylix/
+│   │   ├── default.nix          # Home Manager dispatcher
+│   │   ├── common.nix           # Common packages
+│   │   ├── lib.nix              # Shared helpers (systemd services)
+│   │   │
+│   │   ├── sessions/            # Window managers/DEs
+│   │   │   ├── hyprland.nix
+│   │   │   ├── sway.nix
+│   │   │   └── gnome.nix
+│   │   │
+│   │   ├── bars/                # Status bars
+│   │   │   ├── waybar.nix
+│   │   │   ├── hyprpanel.nix
+│   │   │   └── none.nix
+│   │   │
+│   │   ├── lock/                # Lock screens
+│   │   │   ├── hyprlock.nix
+│   │   │   ├── swaylock.nix
+│   │   │   └── none.nix
+│   │   │
+│   │   ├── idle/                # Idle daemons
+│   │   │   ├── hypridle.nix
+│   │   │   ├── swayidle.nix
+│   │   │   └── none.nix
+│   │   │
+│   │   ├── clipboard/           # Clipboard managers (NEW)
+│   │   │   ├── clipman.nix      # Clipman + systemd service
+│   │   │   ├── cliphist.nix     # Cliphist + systemd service
+│   │   │   └── none.nix
+│   │   │
+│   │   ├── screenshot/          # Screenshot tools (NEW)
+│   │   │   ├── grimblast.nix    # Grimblast wrapper
+│   │   │   ├── grim.nix         # Grim wrapper
+│   │   │   └── none.nix
+│   │   │
+│   │   ├── notifications/       # Notification daemons (NEW)
+│   │   │   ├── mako.nix
+│   │   │   ├── dunst.nix
+│   │   │   └── none.nix
+│   │   │
+│   │   ├── applets/             # System tray applets (NEW)
+│   │   │   ├── wayland.nix      # Blueman + NetworkManager
+│   │   │   └── none.nix
+│   │   │
+│   │   ├── nightlight/          # Night light (NEW)
+│   │   │   ├── gammastep.nix
+│   │   │   ├── redshift.nix
+│   │   │   └── none.nix
+│   │   │
+│   │   └── rofi/                # Application launcher
+│   │
+│   └── themes/stylix/           # Home Manager Stylix config
 │
-├── users/                           # Per-user Home Manager config
+├── users/                       # Per-user Home Manager configs
 │   └── henhal/
 │       └── home.nix
 │
-└── assets/
-    ├── wallpapers/                  # Wallpaper images
-    └── themes/                      # Custom themes (if any)
+├── assets/
+│   ├── wallpapers/              # Theme wallpapers
+│   └── themes/                  # Custom theme files
+│
+└── docs/
+    └── DESKTOP_CONFIGURATION.md # This file
 ```
 
 ---
 
-## Quick Start
+## Session Defaults
 
-### Minimal Host Setup
+When you set an option to `null`, it uses the session's default:
 
-1. Create a host file:
+### Hyprland Session
 
 ```nix
-# hosts/my-pc.nix
-{
-  hostname = "my-pc";
+desktop.session = "hyprland";  # Sets these defaults:
+```
 
-  desktop = {
-    session = "hyprland";
+| Option | Default | Why? |
+|--------|---------|------|
+| `bar` | hyprpanel | Modern, feature-rich panel for Hyprland |
+| `lock` | hyprlock | Native Hyprland lock screen |
+| `idle` | hypridle | Native Hyprland idle daemon |
+| `clipboard` | clipman | Lightweight, works well with Wayland |
+| `screenshotTool` | grimblast | Optimized for Hyprland |
+| `notifications` | **none** | Hyprpanel has built-in AGS notifications |
+| `trayApplets` | wayland | Blueman + NetworkManager applets |
+| `nightLight` | gammastep | Modern Wayland color temperature tool |
+
+### Sway Session
+
+```nix
+desktop.session = "sway";  # Sets these defaults:
+```
+
+| Option | Default | Why? |
+|--------|---------|------|
+| `bar` | waybar | Highly customizable, i3/sway standard |
+| `lock` | swaylock | Native Sway lock screen |
+| `idle` | swayidle | Native Sway idle daemon |
+| `clipboard` | clipman | Lightweight, works well with Wayland |
+| `screenshotTool` | grim | Standard Wayland screenshot tool |
+| `notifications` | mako | Lightweight Wayland notification daemon |
+| `trayApplets` | wayland | Blueman + NetworkManager applets |
+| `nightLight` | gammastep | Modern Wayland color temperature tool |
+
+### GNOME Session
+
+```nix
+desktop.session = "gnome";  # Sets these defaults:
+```
+
+| Option | Default | Why? |
+|--------|---------|------|
+| All | **none** | GNOME has everything built-in |
+
+### None (Headless)
+
+```nix
+desktop.session = "none";  # Sets these defaults:
+```
+
+| Option | Default | Why? |
+|--------|---------|------|
+| All | **none** | Server/headless system |
+
+---
+
+## Module System
+
+### Module Structure
+
+Each component type follows this pattern:
+
+```
+<component>/
+├── <implementation-1>.nix    # Full implementation
+├── <implementation-2>.nix    # Alternative implementation
+└── none.nix                  # Empty placeholder
+```
+
+### Example: Clipboard Module
+
+**`clipboard/clipman.nix`**
+```nix
+{ config, lib, pkgs, ... }:
+let
+  desktopLib = import ../lib.nix { inherit lib pkgs; };
+in {
+  # Packages
+  home.packages = with pkgs; [
+    wl-clipboard
+    clipman
+    # Unified commands
+    (pkgs.writeShellScriptBin "clipboard-history" ''
+      ${pkgs.clipman}/bin/clipman pick -t rofi
+    '')
+    (pkgs.writeShellScriptBin "clipboard-clear" ''
+      ${pkgs.clipman}/bin/clipman clear --all
+    '')
+  ];
+
+  # Systemd service (auto-start, auto-restart)
+  systemd.user.services.clipman = desktopLib.mkWlPasteWatchService {
+    name = "clipman";
+    description = "Clipman clipboard manager";
+    command = "${pkgs.clipman}/bin/clipman store";
+    types = [ "text" "image" ];
   };
-
-  hardware = {};
 }
 ```
 
-2. Add to flake.nix:
+**What this provides:**
+- ✅ Packages: clipman, wl-clipboard
+- ✅ Commands: `clipboard-history`, `clipboard-clear`
+- ✅ Service: Auto-starts and watches clipboard
+- ✅ Integration: Works with both text and images
+
+### Shared Library (`lib.nix`)
+
+Provides reusable helpers to avoid duplication:
 
 ```nix
-nixosConfigurations = {
-  my-pc = mkSystem {
-    hostConfig = hosts.my-pc;
-    userSettings = users.henhal;
+{ lib, pkgs, ... }:
+{
+  # Create wl-paste watcher systemd service
+  mkWlPasteWatchService = { name, description, command, types ? ["text" "image"], ... }: {
+    Unit = {
+      Description = description;
+      PartOf = [ "graphical-session.target" ];
+    };
+    Service = {
+      ExecStart = /* generates wl-paste watch command */;
+      Restart = "on-failure";
+    };
+    Install = {
+      WantedBy = [ "graphical-session.target" ];
+    };
   };
-};
+}
 ```
 
-3. Build and switch:
+**Used by:** clipboard modules, screenshot modules (for clipboard integration)
 
-```bash
-sudo nixos-rebuild switch --flake .#my-pc
+### Dispatcher (`default.nix`)
+
+Central router that loads correct modules:
+
+```nix
+{ config, lib, pkgs, desktop, ... }:
+let
+  # Lookup tables
+  clipboardModules = {
+    clipman = ./clipboard/clipman.nix;
+    cliphist = ./clipboard/cliphist.nix;
+    none = ./clipboard/none.nix;
+  };
+  
+  screenshotModules = {
+    grimblast = ./screenshot/grimblast.nix;
+    grim = ./screenshot/grim.nix;
+    none = ./screenshot/none.nix;
+  };
+  
+  # ... more lookup tables
+  
+  # Safe import helper
+  importModule = modules: key:
+    lib.optional (key != null && builtins.hasAttr key modules) modules.${key};
+in {
+  # Load modules based on desktop config
+  imports = lib.optionals (desktop.session != "none") ([
+    ./common.nix
+  ]
+  ++ importModule sessionModules desktop.session
+  ++ importModule clipboardModules desktop.clipboard
+  ++ importModule screenshotModules desktop.screenshotTool
+  # ... more imports
+  );
+  
+  # Validate configuration
+  config = lib.mkIf (desktop.session != "none") {
+    assertions = [
+      {
+        assertion = builtins.hasAttr desktop.clipboard clipboardModules;
+        message = "Unknown clipboard: '${desktop.clipboard}'";
+      }
+      # ... more validations
+    ];
+  };
+}
 ```
-
-That's it! The system will use session defaults for bar, lock, idle, and display manager.
 
 ---
 
-## Host Configuration Reference
+## Unified Commands
 
-Host files live in `hosts/` and contain pure data (no imports, no `lib`, no `pkgs`).
+### Clipboard Commands
 
-### Full Schema
+**`clipboard-history`** - Open clipboard history picker
+
+Works with:
+- Clipman: `clipman pick -t rofi`
+- Cliphist: `cliphist list | rofi | cliphist decode | wl-copy`
+
+**`clipboard-clear`** - Clear clipboard history
+
+Works with:
+- Clipman: `clipman clear --all`
+- Cliphist: `cliphist wipe`
+
+### Screenshot Commands
+
+**`screenshot --copy`** - Screenshot to clipboard
+**`screenshot --save`** - Screenshot to ~/Pictures/Screenshots/
+**`screenshot --swappy`** - Screenshot with editor
+
+Works with:
+- Grimblast: Optimized Hyprland integration
+- Grim: Standard Wayland screenshot tool
+
+Both show notifications on completion.
+
+### Night Light Commands
+
+**`nightlight-toggle`** - Toggle night light on/off
+
+Works with:
+- Gammastep: Modern Wayland color temperature
+- Redshift: Classic color temperature tool
+
+Shows notification with current state.
+
+---
+
+## Configuration Reference
+
+### Full Host Configuration Schema
 
 ```nix
 # hosts/<hostname>.nix
 {
   # Required
-  hostname = "my-hostname";          # Network hostname
+  hostname = "my-hostname";
 
   # Desktop configuration
   desktop = {
-    # Required if you want a desktop
-    session = "hyprland";            # "hyprland" | "sway" | "gnome" | "none"
-
+    # Required for desktop systems
+    session = "hyprland";              # hyprland | sway | gnome | none
+    
     # Optional - null uses session defaults
-    bar = null;                      # "hyprpanel" | "waybar" | "none" | null
-    lock = null;                     # "hyprlock" | "swaylock" | "loginctl" | null
-    idle = null;                     # "hypridle" | "swayidle" | "none" | null
+    bar = null;                        # hyprpanel | waybar | none | null
+    lock = null;                       # hyprlock | swaylock | loginctl | null
+    idle = null;                       # hypridle | swayidle | none | null
+    clipboard = null;                  # clipman | cliphist | none | null
+    screenshotTool = null;             # grimblast | grim | none | null
+    notifications = null;              # mako | dunst | none | null
+    trayApplets = null;                # wayland | none | null
+    nightLight = null;                 # gammastep | redshift | none | null
 
-    # Session-specific: Hyprland
-    monitors = [                     # Monitor configuration
-      "DP-1,3440x1440@144,0x0,1"     # name,resolution@rate,position,scale
-      "DP-2,2560x1440@144,3440x0,1"
+    # Hyprland-specific
+    monitors = [                       # Monitor configurations
+      "DP-1,3440x1440@144,0x0,1"
     ];
-
-    workspaceRules = [               # Workspace assignments
+    workspaceRules = [                 # Workspace assignments
       "1, monitor:DP-1, default:true"
-      "2, monitor:DP-1"
-      "4, monitor:DP-2, default:true"
     ];
 
-    # Session-specific: Sway
-    outputs = {                      # Sway output config
-      "eDP-1" = {
-        resolution = "2880x1800@120Hz";
-        scale = 1.5;
+    # Sway-specific
+    outputs = {                        # Output configurations
+      "DP-1" = {
+        resolution = "3440x1440@144Hz";
         position = "0,0";
       };
     };
 
-    # Extra session config (raw config string)
+    # Extra configuration (any session)
     extraConfig = ''
-      # Additional hyprland/sway config
+      # Raw session config
     '';
-
-    # Component-specific overrides
-    hyprpanel = {                    # Hyprpanel settings
+    
+    # Component overrides
+    hyprpanel = {
       bar.position = "top";
     };
   };
 
-  # Hardware flags (used by systems/<hostname>/configuration.nix)
+  # Hardware configuration
   hardware = {
-    gpu = "nvidia";                  # "nvidia" | "amd" | "intel"
-    logitech = true;                 # Enable Logitech wireless
-    bluetooth = true;                # Enable Bluetooth
+    gpu = "nvidia";                    # nvidia | amd | intel
+    logitech = true;                   # Logitech wireless support
+    bluetooth = true;                  # Bluetooth support
   };
 }
 ```
 
-### Per-Session Defaults
-
-When you set `bar`, `lock`, or `idle` to `null`, these defaults apply:
-
-| Session | Bar | Lock | Idle | Display Manager |
-|---------|-----|------|------|-----------------|
-| `hyprland` | hyprpanel | hyprlock | hypridle | sddm |
-| `sway` | waybar | swaylock | swayidle | sddm |
-| `gnome` | none | loginctl | none | gdm |
-| `none` | none | none | none | none |
-
 ### Monitor Configuration
 
-#### Hyprland Format
-
-```
-name,resolution@refreshrate,position,scale
-```
-
-Examples:
+**Hyprland format:**
 ```nix
 monitors = [
-  # Single monitor, auto-detect
-  ",preferred,auto,1"
-
-  # Specific monitor at position 0,0
-  "DP-1,3440x1440@144,0x0,1"
-
-  # Second monitor to the right, scaled
-  "DP-2,2560x1440@144,3440x0,1"
-
-  # Laptop display with HiDPI
-  "eDP-1,2880x1800@120,0x0,1.5"
-
-  # Disable a monitor
-  "HDMI-A-1,disable"
+  "name,resolution@rate,position,scale"
+  
+  # Examples:
+  ",preferred,auto,1"                          # Auto-detect
+  "DP-1,3440x1440@144,0x0,1"                  # Ultrawide main
+  "DP-2,2560x1440@144,3440x0,1"               # Secondary right
+  "eDP-1,2880x1800@120,0x0,1.5"               # Laptop HiDPI
+  "HDMI-A-1,disable"                          # Disable output
 ];
 ```
 
-#### Sway Format
-
+**Sway format:**
 ```nix
 outputs = {
   "eDP-1" = {
@@ -296,374 +847,211 @@ outputs = {
 };
 ```
 
-### Workspace Rules (Hyprland)
+---
 
+## Adding Components
+
+### Adding a New Desktop Tool Category
+
+**Example: Adding a compositor (picom, etc.)**
+
+**1. Create module directory:**
+```bash
+mkdir home/modules/desktop/compositor
+```
+
+**2. Create implementation modules:**
 ```nix
-workspaceRules = [
-  "1, monitor:DP-1, default:true"    # Workspace 1 on DP-1, default
-  "2, monitor:DP-1"                  # Workspace 2 on DP-1
-  "3, monitor:DP-1"
-  "4, monitor:DP-2, default:true"    # Workspace 4 on DP-2, default
-  "5, monitor:DP-2"
-];
+# compositor/picom.nix
+{ config, lib, pkgs, ... }:
+{
+  services.picom = {
+    enable = true;
+    # ... picom config
+  };
+  
+  home.packages = [ pkgs.picom ];
+}
+
+# compositor/none.nix
+{ ... }: { }
+```
+
+**3. Add to dispatcher:**
+```nix
+# home/modules/desktop/default.nix
+let
+  compositorModules = {
+    picom = ./compositor/picom.nix;
+    none = ./compositor/none.nix;
+  };
+in {
+  imports = /* ... */ ++ importModule compositorModules desktop.compositor;
+  
+  config.assertions = [{
+    assertion = builtins.hasAttr desktop.compositor compositorModules;
+    message = "Unknown compositor: '${desktop.compositor}'";
+  }];
+}
+```
+
+**4. Add to session defaults:**
+```nix
+# lib/desktop.nix
+sessionDefaults = {
+  hyprland = {
+    # ... existing defaults
+    compositor = "none";  # Hyprland is a compositor
+  };
+  sway = {
+    # ... existing defaults
+    compositor = "none";  # Sway is a compositor
+  };
+  gnome = {
+    # ... existing defaults
+    compositor = "none";  # GNOME handles compositing
+  };
+};
+
+resolveDesktop = desktop: /* ... */ // {
+  compositor = if desktop.compositor or null != null 
+    then desktop.compositor 
+    else defaults.compositor;
+};
+```
+
+**5. Use in host config:**
+```nix
+desktop = {
+  session = "hyprland";
+  compositor = "picom";  # Override default
+};
+```
+
+### Adding an Alternative Implementation
+
+**Example: Adding `copyq` as clipboard option**
+
+**1. Create module:**
+```nix
+# clipboard/copyq.nix
+{ config, lib, pkgs, ... }:
+{
+  home.packages = with pkgs; [
+    copyq
+    (pkgs.writeShellScriptBin "clipboard-history" ''
+      ${pkgs.copyq}/bin/copyq menu
+    '')
+    (pkgs.writeShellScriptBin "clipboard-clear" ''
+      ${pkgs.copyq}/bin/copyq clear
+    '')
+  ];
+  
+  services.copyq.enable = true;
+}
+```
+
+**2. Add to lookup table:**
+```nix
+# home/modules/desktop/default.nix
+clipboardModules = {
+  clipman = ./clipboard/clipman.nix;
+  cliphist = ./clipboard/cliphist.nix;
+  copyq = ./clipboard/copyq.nix;     # Added
+  none = ./clipboard/none.nix;
+};
+```
+
+**3. Optionally set as default:**
+```nix
+# lib/desktop.nix
+sessionDefaults = {
+  hyprland = {
+    clipboard = "copyq";  # Changed default
+  };
+};
 ```
 
 ---
 
-## User Configuration Reference
+## Theming System
 
-User settings are defined in `flake.nix`:
+### How Theming Works
+
+1. **Theme defined** in `userSettings.stylixTheme`
+2. **Theme mapped** in `lib/theme.nix` to base16 scheme file
+3. **Stylix modules** (NixOS + Home Manager) apply theme
+4. **Components** read from `config.stylix.*` or `config.lib.stylix.colors`
+
+### Theme Configuration
 
 ```nix
-users = {
-  henhal = {
-    # Required
-    username = "henhal";
-    name = "Henrik";
-    email = "henhalvor@gmail.com";
-    homeDirectory = "/home/henhal";
-    stateVersion = "25.05";
-
-    # Applications
-    term = "kitty";                  # Terminal emulator
-    browser = "vivaldi";             # Default browser
-
-    # Theming
-    stylixTheme = {
-      scheme = "gruvbox-dark-hard";  # Base16 scheme name
-      wallpaper = "starry-sky.png";  # Filename in assets/wallpapers/
-    };
-  };
+# In flake.nix users section
+stylixTheme = {
+  scheme = "gruvbox-dark-hard";    # Base16 scheme name
+  wallpaper = "starry-sky.png";     # In assets/wallpapers/
 };
 ```
 
 ### Available Themes
 
-Themes are base16 schemes from `pkgs.base16-schemes`:
-
-| Scheme Name | Description |
-|-------------|-------------|
-| `catppuccin-mocha` | Catppuccin Mocha (dark) |
-| `catppuccin-macchiato` | Catppuccin Macchiato (dark) |
-| `gruvbox-dark-hard` | Gruvbox Dark Hard |
-| `gruvbox-dark-medium` | Gruvbox Dark Medium |
-| `nord` | Nord |
-| `dracula` | Dracula |
-| `rose-pine-moon` | Rosé Pine Moon |
-| `tokyo-night-dark` | Tokyo Night Dark |
-| `one-dark` | One Dark |
-
-Add more in `lib/theme.nix` by extending the `schemes` attrset.
-
----
-
-## Adding a New Host
-
-### Step 1: Create Host Data File
-
-```nix
-# hosts/my-new-pc.nix
-{
-  hostname = "my-new-pc";
-
-  desktop = {
-    session = "hyprland";
-    bar = "hyprpanel";
-    # lock and idle will use hyprland defaults
-
-    monitors = [
-      "DP-1,1920x1080@60,0x0,1"
-    ];
-  };
-
-  hardware = {
-    gpu = "nvidia";
-  };
-}
-```
-
-### Step 2: Create System Configuration
-
-```bash
-mkdir -p systems/my-new-pc
-```
-
-```nix
-# systems/my-new-pc/configuration.nix
-{ config, pkgs, desktop, hostConfig, userSettings, lib, ... }:
-{
-  imports = [
-    ./hardware-configuration.nix
-    ../../nixos/default.nix
-  ];
-
-  # GPU configuration based on hostConfig
-  services.xserver.videoDrivers =
-    lib.mkIf (hostConfig.hardware.gpu or "" == "nvidia") [ "nvidia" ];
-
-  # Add host-specific hardware config here
-}
-```
-
-Generate hardware config:
-```bash
-sudo nixos-generate-config --show-hardware-config > systems/my-new-pc/hardware-configuration.nix
-```
-
-### Step 3: Add to flake.nix
-
-```nix
-let
-  hosts = {
-    # ... existing hosts
-    my-new-pc = import ./hosts/my-new-pc.nix;
-  };
-in {
-  nixosConfigurations = {
-    # ... existing configs
-    my-new-pc = mkSystem {
-      hostConfig = hosts.my-new-pc;
-      userSettings = users.henhal;
-    };
-  };
-}
-```
-
-### Step 4: Build and Switch
-
-```bash
-# Build first to catch errors
-nixos-rebuild build --flake .#my-new-pc
-
-# If successful, switch
-sudo nixos-rebuild switch --flake .#my-new-pc
-```
-
----
-
-## Modifying an Existing Host
-
-### Change Desktop Session
-
-Edit `hosts/<hostname>.nix`:
-
-```nix
-desktop = {
-  session = "sway";  # Changed from "hyprland"
-  # bar, lock, idle will now use sway defaults
-};
-```
-
-Rebuild:
-```bash
-sudo nixos-rebuild switch --flake .#<hostname>
-```
-
-### Override Default Components
-
-```nix
-desktop = {
-  session = "hyprland";
-  bar = "waybar";      # Use waybar instead of default hyprpanel
-  lock = "swaylock";   # Use swaylock instead of default hyprlock
-};
-```
-
-### Add/Change Monitors
-
-```nix
-desktop = {
-  session = "hyprland";
-
-  monitors = [
-    # Updated monitor config
-    "DP-1,2560x1440@165,0x0,1"
-    "DP-2,2560x1440@165,2560x0,1"
-  ];
-
-  workspaceRules = [
-    "1, monitor:DP-1, default:true"
-    "2, monitor:DP-1"
-    "3, monitor:DP-2, default:true"
-    "4, monitor:DP-2"
-  ];
-};
-```
-
-### Change Theme
-
-Edit user settings in `flake.nix`:
-
-```nix
-stylixTheme = {
-  scheme = "catppuccin-mocha";
-  wallpaper = "new-wallpaper.png";  # Must exist in assets/wallpapers/
-};
-```
-
----
-
-## Component Reference
-
-### Sessions
-
-#### Hyprland (`session = "hyprland"`)
-
-Wayland compositor with animations and effects.
-
-**Host options:**
-- `monitors` - Monitor configuration list
-- `workspaceRules` - Workspace-to-monitor assignments
-- `extraConfig` - Raw Hyprland config
-
-**NixOS enables:**
-- `programs.hyprland`
-- `xdg-desktop-portal-hyprland`
-- `security.pam.services.hyprlock`
-
-#### Sway (`session = "sway"`)
-
-i3-compatible Wayland compositor.
-
-**Host options:**
-- `outputs` - Output configuration attrset
-- `extraConfig` - Raw Sway config
-
-**NixOS enables:**
-- `programs.sway`
-- `xdg-desktop-portal-wlr`
-- `security.pam.services.swaylock`
-
-#### GNOME (`session = "gnome"`)
-
-Full GNOME desktop environment.
-
-**NixOS enables:**
-- `services.xserver.desktopManager.gnome`
-- GDM display manager
-
-### Bars
-
-#### Hyprpanel (`bar = "hyprpanel"`)
-
-Modern panel for Hyprland with widgets.
-
-**Host options:**
-```nix
-desktop.hyprpanel = {
-  bar.position = "top";
-  # Additional hyprpanel config
-};
-```
-
-#### Waybar (`bar = "waybar"`)
-
-Highly customizable Wayland bar.
-
-Uses Stylix colors automatically. No additional host config needed.
-
-### Lock Screens
-
-#### Hyprlock (`lock = "hyprlock"`)
-
-Lock screen for Hyprland. Uses wallpaper from Stylix with blur effect.
-
-#### Swaylock (`lock = "swaylock"`)
-
-Lock screen for Sway/wlroots. Uses Stylix colors for indicators.
-
-### Idle Daemons
-
-#### Hypridle (`idle = "hypridle"`)
-
-Idle daemon for Hyprland.
-
-Default behavior:
-- 5 minutes: Lock screen
-- 10 minutes: Turn off displays
-
-#### Swayidle (`idle = "swayidle"`)
-
-Idle daemon for Sway.
-
-Default behavior:
-- 5 minutes: Lock screen
-- 10 minutes: Turn off displays
-
-### Display Managers
-
-#### SDDM (`dm = "sddm"`)
-
-Default for Hyprland/Sway. Uses Stylix wallpaper and colors.
-
-Features:
-- Wayland mode
-- Auto-login (configurable)
-- Themed with Stylix
-
-#### GDM (`dm = "gdm"`)
-
-Default for GNOME. Standard GDM configuration.
-
----
-
-## Theming
-
-All components use Stylix for consistent theming.
-
-### How Theming Works
-
-1. Theme defined in `userSettings.stylixTheme`
-2. `lib/theme.nix` maps scheme name to base16 file
-3. Both NixOS and HM Stylix modules use `lib/theme.nix`
-4. Individual components read from `config.stylix.*` or `config.lib.stylix.colors`
-
-### Components That Use Stylix
-
-| Component | Colors | Fonts | Wallpaper |
-|-----------|--------|-------|-----------|
-| SDDM | Yes | Yes | Yes |
-| Rofi | Yes | Yes | No |
-| Waybar | Yes | Yes | No |
-| Hyprpanel | Mapped* | No | No |
-| Hyprlock | Yes | Yes | Yes |
-| Swaylock | Yes | No | Yes |
-| Mako | Yes | Yes | No |
-| GTK apps | Yes | Yes | No |
-| Qt apps | Yes | Yes | No |
-
-*Hyprpanel uses a theme name mapping, not direct Stylix colors.
-
-### Adding a New Wallpaper
-
-1. Add image to `assets/wallpapers/`
-2. Update user settings:
-
-```nix
-stylixTheme = {
-  scheme = "gruvbox-dark-hard";
-  wallpaper = "my-new-wallpaper.png";
-};
-```
-
-### Adding a New Theme
-
-1. Find the base16 scheme name (from `pkgs.base16-schemes`)
-2. Add to `lib/theme.nix`:
-
+| Scheme | Type | Description |
+|--------|------|-------------|
+| `catppuccin-mocha` | Dark | Soothing pastel dark theme |
+| `catppuccin-macchiato` | Dark | Warmer Catppuccin variant |
+| `gruvbox-dark-hard` | Dark | High contrast retro groove |
+| `gruvbox-dark-medium` | Dark | Balanced contrast |
+| `nord` | Dark | Arctic, north-bluish theme |
+| `dracula` | Dark | Dark theme with vibrant colors |
+| `rose-pine-moon` | Dark | Elegant dark theme |
+| `tokyo-night-dark` | Dark | Clean, modern dark theme |
+| `one-dark` | Dark | Atom's One Dark |
+
+### Component Theme Integration
+
+| Component | Colors | Fonts | Wallpaper | Notes |
+|-----------|--------|-------|-----------|-------|
+| **SDDM** | ✅ | ✅ | ✅ | Full Stylix integration |
+| **Hyprland** | ✅ | ✅ | ✅ | Border colors, gaps |
+| **Sway** | ✅ | ✅ | ✅ | Border colors, gaps |
+| **Rofi** | ✅ | ✅ | ❌ | Application launcher |
+| **Waybar** | ✅ | ✅ | ❌ | Module colors |
+| **Hyprpanel** | Mapped | ❌ | ❌ | Uses theme name mapping |
+| **Hyprlock** | ✅ | ✅ | ✅ | Wallpaper with blur |
+| **Swaylock** | ✅ | ❌ | ✅ | Indicator colors |
+| **Mako** | ✅ | ✅ | ❌ | Notification styling |
+| **Dunst** | ✅ | ✅ | ❌ | Notification styling |
+| **GTK apps** | ✅ | ✅ | ❌ | System-wide |
+| **Qt apps** | ✅ | ✅ | ❌ | System-wide |
+
+### Adding a Custom Theme
+
+**1. Find base16 scheme:**
+- Browse: https://github.com/chriskempson/base16-schemes-source
+- Or create custom scheme (YAML format)
+
+**2. Add to `lib/theme.nix`:**
 ```nix
 schemes = {
-  # ... existing schemes
-  "my-new-theme" = "${pkgs.base16-schemes}/share/themes/my-new-theme.yaml";
+  # ... existing
+  "my-custom-theme" = ./assets/themes/my-theme.yaml;
 };
 ```
 
-3. If using Hyprpanel, add mapping in `home/modules/desktop/bars/hyprpanel.nix`:
-
+**3. Use in config:**
 ```nix
+stylixTheme = {
+  scheme = "my-custom-theme";
+  wallpaper = "matching-wallpaper.png";
+};
+```
+
+**4. For Hyprpanel, add theme mapping:**
+```nix
+# home/modules/desktop/bars/hyprpanel.nix
 themeMap = {
-  # ... existing mappings
-  "my-new-theme" = "hyprpanel_theme_name";
+  # ... existing
+  "my-custom-theme" = "catppuccin_mocha";  # Maps to Hyprpanel theme
 };
 ```
 
@@ -671,29 +1059,28 @@ themeMap = {
 
 ## Examples
 
-### Desktop PC with Dual Monitors
+### Example 1: Desktop PC (Dual Monitors)
 
 ```nix
-# hosts/desktop.nix
+# hosts/gaming-pc.nix
 {
-  hostname = "desktop";
+  hostname = "gaming-pc";
 
   desktop = {
     session = "hyprland";
     bar = "hyprpanel";
-
+    
     monitors = [
       "DP-1,3440x1440@144,0x0,1"       # Ultrawide main
-      "DP-2,2560x1440@144,3440x0,1"    # Secondary to the right
+      "DP-2,2560x1440@144,3440x0,1"    # Secondary right
     ];
 
     workspaceRules = [
-      "1, monitor:DP-1, default:true"
-      "2, monitor:DP-1"
-      "3, monitor:DP-1"
-      "4, monitor:DP-2, default:true"
-      "5, monitor:DP-2"
-      "6, monitor:DP-2"
+      "1, monitor:DP-1, default:true"  # Browser
+      "2, monitor:DP-1"                # Terminal
+      "3, monitor:DP-1"                # Code
+      "4, monitor:DP-2, default:true"  # Discord
+      "5, monitor:DP-2"                # Music
     ];
   };
 
@@ -704,25 +1091,28 @@ themeMap = {
 }
 ```
 
-### Laptop with HiDPI Display
+### Example 2: Laptop (Power Efficient)
 
 ```nix
 # hosts/laptop.nix
 {
-  hostname = "laptop";
+  hostname = "thinkpad";
 
   desktop = {
-    session = "sway";
+    session = "sway";           # More battery efficient
     bar = "waybar";
-
+    nightLight = "redshift";    # Auto color temperature
+    
     outputs = {
       "eDP-1" = {
-        resolution = "2880x1800@120Hz";
-        scale = 1.5;
+        resolution = "2560x1440@60Hz";  # Lower refresh for battery
+        scale = 1.25;
+        position = "0,0";
       };
     };
 
     extraConfig = ''
+      # Touchpad config
       input type:touchpad {
         tap enabled
         natural_scroll enabled
@@ -732,42 +1122,62 @@ themeMap = {
   };
 
   hardware = {
-    gpu = "amd";
+    gpu = "intel";
+    bluetooth = true;
   };
 }
 ```
 
-### Headless Server
+### Example 3: Hyprland with Waybar
 
 ```nix
-# hosts/server.nix
+# hosts/custom.nix
 {
-  hostname = "server";
+  hostname = "custom-desktop";
 
   desktop = {
-    session = "none";
+    session = "hyprland";
+    bar = "waybar";              # Override default hyprpanel
+    clipboard = "cliphist";      # Override default clipman
+    screenshotTool = "grim";     # Override default grimblast
+    notifications = "mako";      # Override default none
+    
+    monitors = [
+      ",preferred,auto,1"        # Auto-detect
+    ];
   };
 
   hardware = {};
 }
 ```
 
-### Hyprland with Waybar (Override Default)
+### Example 4: Minimal GNOME
 
 ```nix
-# hosts/hyprland-waybar.nix
+# hosts/gnome-pc.nix
 {
-  hostname = "hyprland-waybar";
+  hostname = "gnome-pc";
 
   desktop = {
-    session = "hyprland";
-    bar = "waybar";        # Override: waybar instead of hyprpanel
-    lock = "hyprlock";     # Explicit, same as default
-    idle = "hypridle";     # Explicit, same as default
+    session = "gnome";
+    # Everything else uses GNOME defaults (all "none")
+  };
 
-    monitors = [
-      ",preferred,auto,1"
-    ];
+  hardware = {
+    gpu = "amd";
+  };
+}
+```
+
+### Example 5: Headless Server
+
+```nix
+# hosts/server.nix
+{
+  hostname = "my-server";
+
+  desktop = {
+    session = "none";  # No desktop
   };
 
   hardware = {};
@@ -778,78 +1188,89 @@ themeMap = {
 
 ## Troubleshooting
 
-### Build Fails
+### Build Errors
 
+**Unknown option error:**
+```
+error: Unknown desktop.clipboard: 'clipman2'
+Valid: clipman, cliphist, none
+```
+
+**Fix:** Check spelling, use a valid option from the error message.
+
+**Conflicting configuration:**
+```
+error: Incompatible: hyprpanel + mako
+Hyprpanel has built-in notifications.
+```
+
+**Fix:** Either use `notifications = "none"` or switch to `bar = "waybar"`.
+
+### Runtime Issues
+
+**Clipboard not working:**
 ```bash
-# Check syntax
+# Check if service is running
+systemctl --user status clipman  # or cliphist
+
+# Restart service
+systemctl --user restart clipman
+
+# Check logs
+journalctl --user -u clipman
+```
+
+**Screenshots not saving:**
+```bash
+# Verify directory exists
+ls ~/Pictures/Screenshots/
+
+# Test manually
+screenshot --save
+
+# Check notifications
+systemctl --user status mako  # or dunst
+```
+
+**Night light not toggling:**
+```bash
+# Check if running
+pgrep gammastep  # or redshift
+
+# Test toggle
+nightlight-toggle
+
+# Check logs
+journalctl --user | grep gammastep
+```
+
+**Monitor not detected:**
+```bash
+# Hyprland - check monitors
+hyprctl monitors all
+
+# Sway - check outputs
+swaymsg -t get_outputs
+
+# Use auto-detect fallback
+monitors = [ ",preferred,auto,1" ];
+```
+
+### Validation
+
+**Test configuration before switching:**
+```bash
+# Build without switching
+nixos-rebuild build --flake .#<hostname>
+
+# Check for errors
 nix flake check
 
-# Build with verbose output
+# Build with detailed errors
 nixos-rebuild build --flake .#<hostname> --show-trace
 ```
 
-### Desktop Doesn't Start
-
-1. Check display manager status:
-```bash
-systemctl status display-manager
-```
-
-2. Check session logs:
-```bash
-journalctl --user -u hyprland  # or sway
-```
-
-3. Verify monitor config:
-```bash
-hyprctl monitors  # Hyprland
-swaymsg -t get_outputs  # Sway
-```
-
-### Wrong Lock Screen
-
-Ensure `lock` is set correctly or let it default:
-
-```nix
-desktop = {
-  session = "hyprland";
-  lock = null;  # Will use hyprlock (hyprland default)
-};
-```
-
-### Theme Not Applying
-
-1. Rebuild both NixOS and HM:
-```bash
-sudo nixos-rebuild switch --flake .#<hostname>
-```
-
-2. Restart the session (logout/login)
-
-3. For GTK apps, try:
-```bash
-gsettings reset org.gnome.desktop.interface gtk-theme
-```
-
-### Monitor Not Detected
-
-1. Check connected monitors:
-```bash
-hyprctl monitors all  # Hyprland
-swaymsg -t get_outputs  # Sway
-```
-
-2. Use fallback config:
-```nix
-monitors = [
-  ",preferred,auto,1"  # Auto-detect
-];
-```
-
-### Rollback
-
-If something breaks:
-
+**Rollback if needed:**
 ```bash
 # From GRUB: select previous generation
 
@@ -857,16 +1278,135 @@ If something breaks:
 sudo nixos-rebuild switch --rollback
 ```
 
+### Common Fixes
+
+**Clear Home Manager cache:**
+```bash
+rm -rf ~/.cache/home-manager
+home-manager switch --flake .#<user>@<hostname>
+```
+
+**Rebuild everything:**
+```bash
+sudo nixos-rebuild switch --flake .#<hostname> --recreate-lock-file
+```
+
+**Check logs:**
+```bash
+# System logs
+journalctl -xe
+
+# User session logs
+journalctl --user -xe
+
+# Specific service
+journalctl --user -u hyprland
+```
+
 ---
 
-## Migration from Old System
+## Migration Notes
 
-If migrating from the old `windowManager` variable system:
+### From Old Window Manager System
 
-1. Create `hosts/<hostname>.nix` with your current settings
-2. Move monitor configs from `home/modules/window-manager/hyprland.nix` to host file
-3. Remove `windowManager` from flake.nix
-4. Update system configuration to remove WM conditionals
-5. Test build before switching
+If migrating from previous `windowManager` variable system:
 
-See `REFACTOR_PLAN.md` for detailed migration steps.
+**1. Create host file** with current settings
+**2. Move configurations:**
+   - Monitor configs → host file
+   - Component choices → host file
+   - Remove `windowManager` variable
+
+**3. Update structure:**
+   - Old: `windowManager = "hyprland"`
+   - New: `desktop.session = "hyprland"`
+
+**4. Test build** before switching
+
+### From Manual Configuration
+
+**1. Identify components:**
+   - What session? (Hyprland/Sway/GNOME)
+   - What bar? (Waybar/Hyprpanel)
+   - What clipboard manager?
+   - What screenshot tool?
+
+**2. Create host file** matching current setup
+
+**3. Remove manual configs:**
+   - Hardcoded packages
+   - Explicit service enables
+   - Duplicated configurations
+
+**4. Use unified commands:**
+   - Replace tool-specific keybinds
+   - Use `clipboard-history`, `screenshot`, etc.
+
+---
+
+## Best Practices
+
+### Configuration
+
+✅ **DO:**
+- Keep host files pure data
+- Use null for defaults
+- Override only what differs
+- Use unified commands
+- Test builds before switching
+
+❌ **DON'T:**
+- Add logic to host files
+- Hardcode tool names in keybinds
+- Duplicate session defaults
+- Skip validation errors
+- Force push to main without testing
+
+### Organization
+
+✅ **DO:**
+- One host file per machine
+- Group related configs
+- Use meaningful names
+- Document custom changes
+- Keep backups
+
+❌ **DON'T:**
+- Mix host and user settings
+- Scatter configs across files
+- Use unclear abbreviations
+- Skip commenting complex setups
+- Delete working configs
+
+### Maintenance
+
+✅ **DO:**
+- Update regularly
+- Test on one host first
+- Keep rollback generation
+- Document breaking changes
+- Review build logs
+
+❌ **DON'T:**
+- Update all hosts at once
+- Skip reading changelogs
+- Delete old generations immediately
+- Ignore warnings
+- Blindly copy configs
+
+---
+
+## Summary
+
+This configuration system provides:
+
+✅ **Modular Architecture** - Each component is self-contained and swappable
+✅ **Smart Defaults** - Sensible choices per session type
+✅ **Easy Overrides** - Change only what you need
+✅ **Unified Interface** - Same commands regardless of backend
+✅ **Build-Time Safety** - Catch errors before deployment
+✅ **Full Theming** - Consistent look across all components
+✅ **Zero Duplication** - Single source of truth for everything
+✅ **Conflict Prevention** - Incompatible options caught automatically
+
+**Start simple, customize as needed.** The system grows with your requirements.

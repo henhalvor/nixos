@@ -4,9 +4,9 @@
   desktop = {
     session = "hyprland";
     bar = "hyprpanel";
-    lock = null;  # null = use session default (hyprlock)
-    idle = null;  # null = use session default (hypridle)
-    notifications = null;  # null = use session default (hyprpanel for hyprland)
+    lock = null; # null = use session default (hyprlock)
+    idle = "none"; # null = use session default (hypridle)
+    notifications = null; # null = use session default (hyprpanel for hyprland)
 
     monitors = [
       # ASUS monitor (portrait, physically on the left)
