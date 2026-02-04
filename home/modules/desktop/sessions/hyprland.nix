@@ -136,7 +136,7 @@
     ]
     else [];
 in {
-  imports = [../rofi ../idle/hypridle.nix ../lock/hyprlock.nix];
+  imports = [../rofi];
 
   home.packages = with pkgs;
     [
@@ -159,7 +159,6 @@ in {
       # Startup commands
       exec-once =
         [
-          "hypridle &"
           "${userSettings.browser}"
         ]
         ++ hostExecOnce ++ barExecOnce;

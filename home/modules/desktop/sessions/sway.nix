@@ -39,7 +39,7 @@ let
     };
   } else {};
 in {
-  imports = [ ../rofi ../idle/swayidle.nix ../lock/swaylock.nix ];
+  imports = [../rofi];
 
   home.packages = with pkgs;
     [

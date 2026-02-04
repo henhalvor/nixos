@@ -4,7 +4,7 @@
   desktop = {
     session = "hyprland";
     bar = "hyprpanel";
-    lock = null; # null = use session default (hyprlock)
+    lock = "hyprlock"; # null = use session default (hyprlock)
     idle = "none"; # null = use session default (hypridle)
     notifications = null; # null = use session default (hyprpanel for hyprland)
 

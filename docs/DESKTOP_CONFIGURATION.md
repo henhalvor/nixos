@@ -98,7 +98,7 @@ desktop = {
   # Core
   session = "hyprland";           # hyprland | sway | gnome | none
   bar = null;                     # hyprpanel | waybar | none | null
-  lock = null;                    # hyprlock | swaylock | loginctl | null
+  lock = null;                    # hyprlock | swaylock | loginctl | none | null
   idle = null;                    # hypridle | swayidle | none | null
   
   # Desktop Tools (NEW - fully modular)
@@ -111,6 +111,9 @@ desktop = {
 ```
 
 **Note**: `null` uses smart defaults based on your session type.
+
+**Important**: Setting `idle` to anything other than `"none"` requires a valid lock screen (`lock != "none"`).
+The system will fail to build if you set `idle = "hypridle"` but `lock = "none"`.
 
 ---
 
@@ -1205,6 +1208,13 @@ Hyprpanel has built-in notifications.
 ```
 
 **Fix:** Either use `notifications = "none"` or switch to `bar = "waybar"`.
+
+**Idle/Lock configuration error:**
+```
+error: Incompatible configuration: desktop.idle = "hypridle" requires a lock screen.
+```
+
+**Fix:** Either disable idle (`idle = "none"`) or enable a lock screen (`lock = "hyprlock"`, `lock = "swaylock"`, or `lock = "loginctl"`).
 
 ### Runtime Issues
 

@@ -15,11 +15,14 @@ let
   lockModules = {
     hyprlock = ./lock/hyprlock.nix;
     swaylock = ./lock/swaylock.nix;
+    loginctl = ./lock/loginctl.nix;
+    none = ./lock/none.nix;
   };
 
   idleModules = {
     hypridle = ./idle/hypridle.nix;
     swayidle = ./idle/swayidle.nix;
+    none = ./idle/none.nix;
   };
 
   clipboardModules = {
@@ -102,6 +105,32 @@ in {
       {
         assertion = builtins.hasAttr desktop.nightLight nightLightModules;
         message = "Unknown desktop.nightLight: '${desktop.nightLight}'. Valid: ${lib.concatStringsSep ", " (builtins.attrNames nightLightModules)}";
+      }
+      
+      # Idle validation
+      {
+        assertion = desktop.idle == null || builtins.hasAttr desktop.idle idleModules;
+        message = "Unknown desktop.idle: '${desktop.idle}'. Valid: ${lib.concatStringsSep ", " (builtins.attrNames idleModules)}";
+      }
+      
+      # Lock validation
+      {
+        assertion = desktop.lock == null || builtins.hasAttr desktop.lock lockModules;
+        message = "Unknown desktop.lock: '${desktop.lock}'. Valid: ${lib.concatStringsSep ", " (builtins.attrNames lockModules)}";
+      }
+      
+      # CRITICAL: Prevent idle without lock
+      {
+        assertion = !(desktop.idle != "none" && desktop.lock == "none");
+        message = ''
+          Incompatible configuration: desktop.idle = "${desktop.idle}" requires a lock screen.
+          
+          Idle daemons need a lock screen to function properly.
+          
+          Fix by choosing one:
+            1. Disable idle daemon: desktop.idle = "none"
+            2. Enable a lock screen: desktop.lock = "hyprlock" (or swaylock/loginctl)
+        '';
       }
       
       # ===== CRITICAL: Hyprpanel/Mako Conflict =====
