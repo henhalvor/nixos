@@ -14,11 +14,11 @@ in {
     '')
   ];
 
-  # Systemd service (text + image support)
+  # Systemd service (text only - images disabled to prevent JSON corruption)
   systemd.user.services.clipman = desktopLib.mkWlPasteWatchService {
     name = "clipman";
     description = "Clipman clipboard manager";
     command = "${pkgs.clipman}/bin/clipman store";
-    types = [ "text" "image" ];
+    types = [ "text" ];
   };
 }
