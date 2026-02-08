@@ -17,24 +17,44 @@ in {
   };
 
   config = lib.mkIf cfg.enable {
-    # Map repo opencode/ children into ~/.config/opencode, but exclude
-    # runtime dirs like node_modules and package files so we don't manage
-    # user-managed runtime artifacts.
+    # Instead of symlinking files from the Nix store (which would be
+    # immutable), seed the user's ~/.config/opencode directory from the
+    # repo on first activation only. This lets OpenCode write and update
+    # files (node_modules, runtime files) under ~/.config/opencode freely.
+
     let
       repo = ./opencode;
-      repoEntries = builtins.readDir repo; # map name -> type string ("regular"/"directory"/...)
+      repoEntries = builtins.readDir repo; # name -> type
       repoNames = builtins.attrNames repoEntries;
-      skip = name: name == "node_modules" || name == "package.json" || name == "package-lock.json";
+      skip = name: lib.elem name [ "node_modules" "package.json" "package-lock.json" "bun.lockb" "bunfig.toml" ".gitignore" ];
       want = lib.filter (n: ! (skip n)) repoNames;
-      makeEntry = n: let
-        typ = repoEntries.${"${n}"};
-        src = "${repo}/${n}";
-      in if typ == "directory" then { name = "opencode/${n}"; value = { source = src; recursive = true; }; }
-         else { name = "opencode/${n}"; value = { source = src; }; };
-
-      entries = lib.listToAttrs (map makeEntry want);
+      namesStr = lib.concatStringsSep " " want;
     in
-    xdg.configFile = entries;
+
+    # Activation: create ~/.config/opencode if missing and copy repo children
+    # into it only if target doesn't already exist. That preserves any
+    # runtime-installed node_modules or local edits and avoids making the
+    # files read-only in /nix/store.
+    home.activation.seedOpencode = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      set -eu
+
+      src="${repo}"
+      dest="$HOME/.config/opencode"
+      mkdir -p "$dest"
+
+      for name in ${namesStr}; do
+        if [ ! -e "$dest/$name" ]; then
+          echo "opencode: seeding $name into $dest" >&2
+          if [ -d "$src/$name" ]; then
+            $DRY_RUN_CMD cp -a "$src/$name" "$dest/"
+          else
+            $DRY_RUN_CMD install -m 0644 "$src/$name" "$dest/$name"
+          fi
+        else
+          echo "opencode: $dest/$name exists; skipping" >&2
+        fi
+      done
+    '';
 
     # Optionally provide node for running npm in activation
     home.packages = lib.optional cfg.npmInstall.enable cfg.npmInstall.nodePackage;
