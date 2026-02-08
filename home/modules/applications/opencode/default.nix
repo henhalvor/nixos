@@ -17,11 +17,24 @@ in {
   };
 
   config = lib.mkIf cfg.enable {
-    # Link the whole opencode tree from the module directory into ~/.config/opencode
-    xdg.configFile."opencode" = {
-      source = ./opencode;
-      recursive = true;
-    };
+    # Map repo opencode/ children into ~/.config/opencode, but exclude
+    # runtime dirs like node_modules and package files so we don't manage
+    # user-managed runtime artifacts.
+    let
+      repo = ./opencode;
+      repoEntries = builtins.readDir repo; # map name -> type string ("regular"/"directory"/...)
+      repoNames = builtins.attrNames repoEntries;
+      skip = name: name == "node_modules" || name == "package.json" || name == "package-lock.json";
+      want = lib.filter (n: ! (skip n)) repoNames;
+      makeEntry = n: let
+        typ = repoEntries.${"${n}"};
+        src = "${repo}/${n}";
+      in if typ == "directory" then { name = "opencode/${n}"; value = { source = src; recursive = true; }; }
+         else { name = "opencode/${n}"; value = { source = src; }; };
+
+      entries = lib.listToAttrs (map makeEntry want);
+    in
+    xdg.configFile = entries;
 
     # Optionally provide node for running npm in activation
     home.packages = lib.optional cfg.npmInstall.enable cfg.npmInstall.nodePackage;
