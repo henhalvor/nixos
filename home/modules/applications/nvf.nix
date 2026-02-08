@@ -1901,8 +1901,8 @@ in {
                     return require('codecompanion.adapters').extend('copilot', {
                       schema = {
                         model = {
-                          default = 'gpt-4',
-                          options = { 'gpt-4', 'gpt-4o' },
+                          default = 'gpt-5-mini',
+                          options = { 'gpt-4', 'gpt-4o', 'gpt-5-mini'  },
                         },
                       },
                     })
