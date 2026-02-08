@@ -16,12 +16,18 @@
     ];
 
     workspaceRules = [
-      "1, monitor:DP-1, default:true"
+      # ASUS monitor (portrait, physically on the left)
+      "1, monitor:HDMI-A-1"
+      "3, monitor:HDMI-A-1"
+      
+      # Samsung Odyssey (main monitor, on the right)
       "2, monitor:DP-1"
-      "3, monitor:DP-1"
-      "4, monitor:HDMI-A-1, default:true"
-      "5, monitor:HDMI-A-1"
-      "6, monitor:HDMI-A-1"
+      "4, monitor:DP-1"
+      "5, monitor:DP-1"
+      "6, monitor:DP-1"
+      
+      # Sunshine virtual monitor
+      "10, monitor:HEADLESS-1"
     ];
   };
 
