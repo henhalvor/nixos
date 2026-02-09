@@ -54,8 +54,14 @@
     enable32Bit = true;
   };
 
+  # Increase file watch limit
+  boot.kernel.sysctl = {
+    "fs.inotify.max_user_watches" = 524288; # or 1048576
+  };
+
   # Early loading of NVIDIA modules
-  boot.initrd.kernelModules = lib.mkIf (hostConfig.hardware.gpu or "" == "nvidia") 
+  boot.initrd.kernelModules =
+    lib.mkIf (hostConfig.hardware.gpu or "" == "nvidia")
     ["nvidia" "nvidia_modeset" "nvidia_uvm" "nvidia_drm"];
 
   boot.kernelParams = lib.mkIf (hostConfig.hardware.gpu or "" == "nvidia") [
