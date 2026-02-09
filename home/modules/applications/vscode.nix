@@ -1,43 +1,69 @@
-{ config, pkgs, lib, unstable, ... }: {
+{
+  config,
+  pkgs,
+  lib,
+  unstable,
+  ...
+}: {
   programs.vscode = {
     enable = true;
-    package = unstable.vscode;
+    package =
+      ((pkgs.vscode.override {isInsiders = true;}).overrideAttrs (oldAttrs: rec {
+        src = builtins.fetchTarball {
+          url = "https://code.visualstudio.com/sha/download?build=insider&os=linux-x64";
+          sha256 = "sha256:0alnzqgck12yxa55fr07nf8cny31nx1rd1mv22pssaz5jjx6jfis";
+        };
+        version = "latest";
+
+        buildInputs =
+          oldAttrs.buildInputs
+          ++ [
+            pkgs.krb5
+            pkgs.libsoup_3
+            pkgs.webkitgtk_4_1
+          ];
+      })).fhs;
 
     profiles.default = {
-      extensions = with pkgs.vscode-extensions;
-        [
-          # TypeScript Development
-          # ms-vscode.vscode-typescript-next     # TypeScript Nightly
-          dbaeumer.vscode-eslint # ESLint
-          esbenp.prettier-vscode # Prettier
-          bradlc.vscode-tailwindcss # Tailwind CSS IntelliSense
-          formulahendry.auto-rename-tag # Auto Rename Tag
-          ms-vscode-remote.remote-ssh
-          ms-vscode-remote.vscode-remote-extensionpack
+      #
+      # Using .fhs version of vscode so it can manage extensions itself
+      #
 
-          # NeoVim
-          asvetliakov.vscode-neovim # VSCode Neovim
-        ] ++ pkgs.vscode-utils.extensionsFromVscodeMarketplace [
-          # Additional TypeScript extensions that might not be in nixpkgs
-          # {
-          #   name = "typescript-hero";
-          #   publisher = "rbbit";
-          #   version = "3.0.0";
-          #   sha256 = "0bj3q4v3254g14kgkg4yx9q3miw3gyvp23zz0wzjrj7h2qpz315m"; # Replace with actual hash
-          # }
-          # {
-          #   name = "vscodeintellicode";
-          #   publisher = "VisualStudioExptTeam";
-          #   version = "1.2.30";
-          #   sha256 = "1fr48sgd0h0diw7amn99dad9l4m7v8ydvj5yzzj9yq53l1brz35i"; # Replace with actual hash
-          # }
-          # {
-          #   name = "path-intellisense";
-          #   publisher = "christian-kohler";
-          #   version = "2.8.4";
-          #   sha256 = "1wyp3k8nc5kf5dbpbvjpq8lxbe35r9zj2wjc0n9nq4rhg5c0hg3v"; # Replace with actual hash
-          # }
-        ];
+      # extensions = with pkgs.vscode-extensions;
+      #   [
+      #     # TypeScript Development
+      #     # ms-vscode.vscode-typescript-next     # TypeScript Nightly
+      #     dbaeumer.vscode-eslint # ESLint
+      #     esbenp.prettier-vscode # Prettier
+      #     bradlc.vscode-tailwindcss # Tailwind CSS IntelliSense
+      #     formulahendry.auto-rename-tag # Auto Rename Tag
+      #     ms-vscode-remote.remote-ssh
+      #     ms-vscode-remote.vscode-remote-extensionpack
+      #
+      #     # NeoVim
+      #     asvetliakov.vscode-neovim # VSCode Neovim
+      #   ]
+      #   ++ pkgs.vscode-utils.extensionsFromVscodeMarketplace [
+      #     # Additional TypeScript extensions that might not be in nixpkgs
+      #     # {
+      #     #   name = "typescript-hero";
+      #     #   publisher = "rbbit";
+      #     #   version = "3.0.0";
+      #     #   sha256 = "0bj3q4v3254g14kgkg4yx9q3miw3gyvp23zz0wzjrj7h2qpz315m"; # Replace with actual hash
+      #     # }
+      #     # {
+      #     #   name = "vscodeintellicode";
+      #     #   publisher = "VisualStudioExptTeam";
+      #     #   version = "1.2.30";
+      #     #   sha256 = "1fr48sgd0h0diw7amn99dad9l4m7v8ydvj5yzzj9yq53l1brz35i"; # Replace with actual hash
+      #     # }
+      #     # {
+      #     #   name = "path-intellisense";
+      #     #   publisher = "christian-kohler";
+      #     #   version = "2.8.4";
+      #     #   sha256 = "1wyp3k8nc5kf5dbpbvjpq8lxbe35r9zj2wjc0n9nq4rhg5c0hg3v"; # Replace with actual hash
+      #     # }
+      #   ];
 
       userSettings = {
         # Theme settings - Fix for light title bar
@@ -73,8 +99,7 @@
 
         # NeoVim settings
         "vscode-neovim.neovimExecutablePaths.linux" = "${pkgs.neovim}/bin/nvim";
-        "vscode-neovim.neovimInitVimPaths.linux" =
-          "$HOME/.config/vscode-neovim/init.lua";
+        "vscode-neovim.neovimInitVimPaths.linux" = "$HOME/.config/vscode-neovim/init.lua";
         "keyboard.dispatch" = "keyCode";
         "vscode-neovim.NVIM_APPNAME" = "vscode-neovim";
 
@@ -104,28 +129,27 @@
         {
           key = "alt+y";
           command = "editor.action.inlineSuggest.commit";
-          when =
-            "inlineSuggestionHasIndentationLessThanTabSize && inlineSuggestionVisible && !editorHoverFocused && !editorTabMovesFocus && !suggestWidgetVisible";
+          when = "inlineSuggestionHasIndentationLessThanTabSize && inlineSuggestionVisible && !editorHoverFocused && !editorTabMovesFocus && !suggestWidgetVisible";
         }
         # Close file sidebar
         {
           key = "q";
           command = "runCommands";
-          args = { commands = [ "workbench.action.toggleSidebarVisibility" ]; };
+          args = {commands = ["workbench.action.toggleSidebarVisibility"];};
           when = "sideBarVisible";
         }
         # Close terminal
         {
           key = "q";
           command = "runCommands";
-          args = { commands = [ "workbench.action.terminal.toggleTerminal" ]; };
+          args = {commands = ["workbench.action.terminal.toggleTerminal"];};
           when = "terminalFocus";
         }
         # Close Ai sidebar (secondary sidebar)
         {
           key = "q";
           command = "runCommands";
-          args = { commands = [ "workbench.action.toggleAuxiliaryBar" ]; };
+          args = {commands = ["workbench.action.toggleAuxiliaryBar"];};
           when = "auxiliaryBarFocus";
         }
       ];
@@ -133,12 +157,11 @@
   };
 
   # Create a separate directory for VSCode-specific NeoVim config
-  home.activation.createVSCodeNeovimDir =
-    lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      $DRY_RUN_CMD mkdir -p $VERBOSE_ARG ${config.home.homeDirectory}/.config/vscode-neovim
-      $DRY_RUN_CMD mkdir -p $VERBOSE_ARG ${config.home.homeDirectory}/.local/share/vscode-neovim/lazy
-      $DRY_RUN_CMD mkdir -p $VERBOSE_ARG ${config.home.homeDirectory}/.local/share/vscode-neovim/plugins
-    '';
+  home.activation.createVSCodeNeovimDir = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    $DRY_RUN_CMD mkdir -p $VERBOSE_ARG ${config.home.homeDirectory}/.config/vscode-neovim
+    $DRY_RUN_CMD mkdir -p $VERBOSE_ARG ${config.home.homeDirectory}/.local/share/vscode-neovim/lazy
+    $DRY_RUN_CMD mkdir -p $VERBOSE_ARG ${config.home.homeDirectory}/.local/share/vscode-neovim/plugins
+  '';
 
   # Create a VSCode-specific init.vim file
   home.file.".config/vscode-neovim/init.lua".text = ''
@@ -232,7 +255,7 @@
       vscode.call("workbench.files.action.focusFilesExplorer")
     end)
     -- Keymap for closing the file explorer (sidebar) is located in keybindings.json (nvim does not work when sideBarFocus is set)
-     
+   
     -- Git (version control)
     vim.keymap.set("n", "<leader>gg", function()
       vscode.call("workbench.scm.focus")

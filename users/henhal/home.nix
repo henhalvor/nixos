@@ -40,7 +40,7 @@
     ../../home/modules/applications/tmux.nix
     ../../home/modules/applications/vial.nix
     ../../home/modules/applications/brave.nix
-    # ../../home/modules/applications/vscode.nix
+    ../../home/modules/applications/vscode.nix
     # ../../home/modules/applications/cursor.nix
     ../../home/modules/applications/mission-center.nix
     ../../home/modules/applications/amazon-q.nix
