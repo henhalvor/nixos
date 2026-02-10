@@ -1799,6 +1799,36 @@ in {
                 nested = true,
               })
 
+
+              -- Looks at every window across all tabs
+              -- Marks the buffers those windows are showing
+              -- Deletes every other listed buffer (aka the junk pile)
+              -- Fixes polluting the constantly expanding open buffers list
+              vim.api.nvim_create_autocmd("User", {
+                pattern = "PersistenceLoadPost",
+                callback = function()
+                  vim.defer_fn(function()
+                    -- Collect all buffers currently shown in any window
+                    local visible = {}
+                    for _, win in ipairs(vim.api.nvim_list_wins()) do
+                      local buf = vim.api.nvim_win_get_buf(win)
+                      visible[buf] = true
+                    end
+
+                    -- Delete every other listed buffer
+                    for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+                      if vim.api.nvim_buf_is_valid(buf)
+                        and vim.fn.buflisted(buf) == 1
+                        and not visible[buf]
+                        and vim.bo[buf].modified == false
+                        and vim.bo[buf].buftype == "" then
+                        pcall(vim.api.nvim_buf_delete, buf, {})
+                      end
+                    end
+                  end, 100) -- 100ms delay so other plugins finish their scheduled stuff
+                end,
+              })
+
               require("persistence").setup(opts)
               -- load the session for the current directory
               vim.keymap.set("n", "<leader>qs", function()
