@@ -23,6 +23,7 @@
     };
   };
 
+  # Remember to manually limit write bandwidth and max concurrent writes in web UI to avoid network issues
   services.syncthing = {
     enable = true;
     user = userSettings.username;
