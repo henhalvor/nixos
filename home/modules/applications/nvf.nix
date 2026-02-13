@@ -698,24 +698,27 @@ in {
         };
 
         # Harpoon Configuration
-        navigation.harpoon = {
-          enable = true;
-          mappings = {
-            markFile = "<leader>a";
-            listMarks = "<leader>e";
-            file1 = "<leader>1";
-            file2 = "<leader>2";
-            file3 = "<leader>3";
-            file4 = "<leader>4";
-          };
-          setupOpts = {
-            # If you had specific setupOpts in your Lua, they would go here.
-            defaults = {
-              save_on_toggle = true; # Example from your commented Lua
-              sync_on_ui_close = true; # Example from your commented Lua
-            };
-          };
-        };
+        #
+        # Configured manually using lua
+        #
+        # navigation.harpoon = {
+        #   enable = true;
+        #   mappings = {
+        #     markFile = "<leader>a";
+        #     listMarks = "<leader>e";
+        #     file1 = "<leader>1";
+        #     file2 = "<leader>2";
+        #     file3 = "<leader>3";
+        #     file4 = "<leader>4";
+        #   };
+        #   setupOpts = {
+        #     # If you had specific setupOpts in your Lua, they would go here.
+        #     defaults = {
+        #       save_on_toggle = true; # Example from your commented Lua
+        #       sync_on_ui_close = true; # Example from your commented Lua
+        #     };
+        #   };
+        # };
 
         # Add this to your main configuration
         visuals.fidget-nvim = {
@@ -2330,6 +2333,105 @@ in {
                     capabilities = require('blink.cmp').get_lsp_capabilities(),
                   },
                 }
+            '';
+          };
+
+          harpoon2 = {
+            package = pkgs.vimPlugins.harpoon2;
+            setup = ''
+              local harpoon = require("harpoon")
+
+              -- REQUIRED: Setup Harpoon with two separate lists
+              harpoon:setup({
+                settings = {
+                  save_on_toggle = false,
+                  sync_on_ui_close = false,
+                },
+                -- Pinned list: default list for manually pinned files
+                default = {},
+                -- Auto list: working set that tracks active files
+                auto = {
+                  select_with_nil = false,
+                  -- Custom BufEnter handler to auto-add files to working set
+                  BufLeave = function(evt, list)
+                    local bufnr = evt.buf
+                    local filename = vim.api.nvim_buf_get_name(bufnr)
+
+                    -- Skip empty buffers, special buffers, and non-file buffers
+                    if filename == "" or filename == nil then
+                      return
+                    end
+
+                    local buftype = vim.api.nvim_buf_get_option(bufnr, "buftype")
+                    local filetype = vim.api.nvim_buf_get_option(bufnr, "filetype")
+
+                    -- Skip special buffer types
+                    local skip_buftypes = { "help", "terminal", "quickfix", "nofile", "prompt" }
+                    local skip_filetypes = { "help", "qf", "man", "telescope", "harpoon", "NvimTree", "neo-tree" }
+
+                    for _, bt in ipairs(skip_buftypes) do
+                      if buftype == bt then return end
+                    end
+
+                    for _, ft in ipairs(skip_filetypes) do
+                      if filetype == ft then return end
+                    end
+
+                    -- Only add real files
+                    if vim.fn.filereadable(filename) ~= 1 then
+                      return
+                    end
+
+                    -- Check if file already exists in list
+                    local items = list.items
+                    for _, item in ipairs(items) do
+                      if item.value == filename then
+                        return -- Already in list, don't add
+                      end
+                    end
+
+                    -- If list is at max capacity (6), remove oldest (first) entry
+                    if #items >= 6 then
+                      table.remove(items, 1)
+                    end
+
+                    -- Add current file to the end
+                    list:add()
+                  end,
+                },
+              })
+
+              -- PINNED LIST KEYMAPS (default list)
+              vim.keymap.set("n", "<leader>a", function()
+                harpoon:list():add()
+              end, { desc = "Harpoon: Add to pinned list" })
+
+              vim.keymap.set("n", "<leader>e", function()
+                harpoon.ui:toggle_quick_menu(harpoon:list())
+              end, { desc = "Harpoon: Show pinned list" })
+
+              -- Pinned list navigation (1-6)
+              for i = 1, 6 do
+                vim.keymap.set("n", string.format("<leader>%s", i), function()
+                  harpoon:list():select(i)
+                end, { desc = "Harpoon: Jump to pinned #" .. i })
+              end
+
+              -- AUTO LIST KEYMAPS (working set)
+              vim.keymap.set("n", "<M-a>", function()
+                harpoon:list("auto"):add()
+              end, { desc = "Harpoon: Add to auto list" })
+
+              vim.keymap.set("n", "<M-e>", function()
+                harpoon.ui:toggle_quick_menu(harpoon:list("auto"))
+              end, { desc = "Harpoon: Show auto list" })
+
+              -- Auto list navigation (1-6)
+              for i = 1, 6 do
+                vim.keymap.set("n", string.format("<M-%s>", i), function()
+                  harpoon:list("auto"):select(i)
+                end, { desc = "Harpoon: Jump to auto #" .. i })
+              end
             '';
           };
         };
