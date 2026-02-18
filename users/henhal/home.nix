@@ -41,6 +41,8 @@
     ../../home/modules/applications/vial.nix
     ../../home/modules/applications/brave.nix
     ../../home/modules/applications/vscode.nix
+    # ../../home/modules/applications/qalculate.nix
+    ../../home/modules/applications/gnome-calculator.nix
     # ../../home/modules/applications/cursor.nix
     ../../home/modules/applications/mission-center.nix
     ../../home/modules/applications/amazon-q.nix
@@ -77,6 +79,7 @@
 
     # Scripts
     ../../home/modules/scripts/power-monitor.nix
+    ../../home/modules/scripts/yazi-float.nix
 
     # Utils
     ../../home/modules/utils/default.nix

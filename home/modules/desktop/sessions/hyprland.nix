@@ -167,7 +167,7 @@ in {
       input =
         {
           kb_layout = "no";
-          kb_options = "grp:alt_caps_toggle";
+          kb_options = "caps:escape";
           numlock_by_default = true;
           follow_mouse = 1;
           float_switch_override_focus = 0;
@@ -255,7 +255,7 @@ in {
           "$mainMod, O, exec, clipboard-history"
           "$mainMod SHIFT, O, exec, clipboard-clear"
           "$mainMod, X, togglesplit,"
-          "$mainMod, E, exec, hyprctl dispatch exec '[float; size 1111 650] kitty -e yazi'"
+          "$mainMod, E, exec, hyprctl dispatch exec '[float; size 1111 650] kitty -e yazi-float'"
           "$mainMod, I, exec, hyprctl dispatch exec '[float; size 1111 650] kitty -e btop'"
           "$mainMod, B, exec, hyprctl dispatch exec '[float; size 1111 650] kitty -e bluetui'"
           "$mainMod SHIFT, L, exec, ${lockBin}"
