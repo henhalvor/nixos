@@ -1189,6 +1189,24 @@ in {
             vim.opt.listchars = { tab = "  ", trail = "·", nbsp = "␣" } -- Tab is two spaces, trailing spaces are shown as dots, non-breaking spaces as a special character
           '';
 
+          inlay-hints = ''
+               -- Enable inlay hints
+              vim.api.nvim_create_autocmd("LspAttach", {
+                callback = function(args)
+                  local client = vim.lsp.get_client_by_id(args.data.client_id)
+                  if client and client.server_capabilities.inlayHintProvider then
+                    vim.lsp.inlay_hint.enable(true, { bufnr = args.buf })
+                  end
+                end,
+              })
+
+            -- Toggle inlay hints
+            vim.keymap.set("n", "<leader>ih", function()
+              vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
+            end, { desc = "Toggle inlay hints" })
+
+          '';
+
           jumplist-config = ''
             -- Clears closed buffers from the jumplist
             vim.opt.jumpoptions = "clean"
