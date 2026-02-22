@@ -1,7 +1,12 @@
 # Edit this configuration file to define what should be installed on
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
-{ config, pkgs, userSettings, ... }: {
+{
+  config,
+  pkgs,
+  userSettings,
+  ...
+}: {
   # Needed for remote ssh for vscode. Run unpatched dynamic binaries on NixOS.
   programs.nix-ld.enable = true;
 
@@ -16,8 +21,7 @@
 
   # Docker configuration - disabled by default for battery life
   virtualisation.docker = {
-    enable = false; # Start manually with: sudo systemctl start docker
-
+    enable = true; # Start manually with: sudo systemctl start docker
   };
 
   # Enable zsh
@@ -47,7 +51,7 @@
   hardware.i2c.enable = true;
 
   # Add i2c group and udev rules + Udev rule for configuring keyboard with VIAL
-  users.groups.i2c = { };
+  users.groups.i2c = {};
   services.udev.extraRules = ''
     KERNEL=="i2c-[0-9]*", GROUP="i2c", MODE="0660"
 
