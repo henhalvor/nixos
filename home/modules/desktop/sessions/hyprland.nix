@@ -160,6 +160,7 @@ in {
       exec-once =
         [
           "${userSettings.browser}"
+          "[workspace special:gmail silent] gmail"
         ]
         ++ hostExecOnce ++ barExecOnce;
 
@@ -260,6 +261,9 @@ in {
           "$mainMod, B, exec, hyprctl dispatch exec '[float; size 1111 650] kitty -e bluetui'"
           "$mainMod, A, exec, hyprctl dispatch exec '[float; size 1111 650; title opencode-ai] kitty --title opencode-ai -e opencode --model github-copilot/gpt-5-mini'"
           "$mainMod SHIFT, L, exec, ${lockBin}"
+
+          # Special workspaces
+          "$mainMod, G, exec, toggle-gmail"
 
           # Screenshot
           ",Print, exec, screenshot --copy"
@@ -468,6 +472,12 @@ in {
 
         # Workspace-specific window assignments
         "workspace 1, class:^(vivaldi)$"
+
+        # Gmail special workspace — Chrome PWA sets class to chrome-<host>-Default
+        "workspace special:gmail silent, class:^(chrome-mail\\.google\\.com__-Default)$"
+        "float, class:^(chrome-mail\\.google\\.com__-Default)$"
+        "size 1111 650, class:^(chrome-mail\\.google\\.com__-Default)$"
+        "center, class:^(chrome-mail\\.google\\.com__-Default)$"
       ];
 
       workspace =
