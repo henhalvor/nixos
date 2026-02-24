@@ -2,15 +2,29 @@
   config,
   lib,
   pkgs,
+  unstable,
   ...
 }: let
   # Use Stylix colors instead of hardcoded Catppuccin
   colors = config.lib.stylix.colors;
+
+  # Session detection
+  isHyprland = config.wayland.windowManager.hyprland.enable or false;
+  isSway = config.wayland.windowManager.sway.enable or false;
+
+  # Session-aware exec command
+  execCmd = cmd:
+    if isHyprland
+    then "hyprctl dispatch exec '[float; size 1111 650] ${cmd}'"
+    else if isSway
+    then "swaymsg exec '${cmd}'"
+    else cmd;
 in {
   # Add necessary packages
   home.packages = with pkgs; [
-    pavucontrol
+    # pavucontrol
     wlogout
+    unstable.wiremix
   ];
 
   # Configure Waybar
@@ -20,13 +34,16 @@ in {
 
     settings = [
       {
+        output = ["DP-1" "DP-0"]; # Only show on Samsung monitor
         layer = "top";
         position = "top";
         height = 30;
         width = 300;
         spacing = 10;
-        margin = "8px";
+        margin = "2px";
         anchor = "top center";
+
+        # mode = "overlay";
 
         # Module placement
         modules-center = ["clock" "sway/workspaces" "hyprland/workspaces" "pulseaudio" "network" "bluetooth" "battery"];
@@ -78,7 +95,7 @@ in {
           format-ethernet = "󰈀";
           format-disconnected = "󰤮";
           tooltip-format = "{ifname}: {ipaddr}";
-          on-click = "hyprctl dispatch exec '[float; size 1111 650] kitty -e nmtui'";
+          on-click = execCmd "${pkgs.kitty}/bin/kitty -e nmtui";
         };
 
         "bluetooth" = {
@@ -87,7 +104,7 @@ in {
           format-connected = "󰂯";
           # format-connected-battery = "󰂯 {device_alias} {device_battery_percentage}%";
           format-connected-battery = "󰂯 {device_battery_percentage}%";
-          on-click = "hyprctl dispatch exec '[float; size 1111 650] kitty -e bluetui'";
+          on-click = execCmd "${pkgs.kitty}/bin/kitty -e bluetui";
         };
 
         "pulseaudio" = {
@@ -99,7 +116,8 @@ in {
             headset = "";
           };
           scroll-step = 5;
-          on-click = "${pkgs.pavucontrol}/bin/pavucontrol";
+          # on-click = "${pkgs.pavucontrol}/bin/pavucontrol";
+          on-click = execCmd "${pkgs.kitty}/bin/kitty -e wiremix";
           tooltip = false;
         };
 
@@ -132,7 +150,7 @@ in {
         color: #${colors.base05};
         border-radius: 20px;
         padding: 4px 12px;
-        margin: 8px;
+        margin: 2px;
         border: 1px solid #${colors.base02};
       }
 

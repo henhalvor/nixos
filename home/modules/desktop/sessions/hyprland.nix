@@ -130,10 +130,10 @@
     then [
       "hyprpanel &"
     ]
-    else if desktop.bar == "waybar"
-    then [
-      "waybar &"
-    ]
+    # else if desktop.bar == "waybar"
+    # then [
+    #   "waybar &"
+    # ]
     else [];
 in {
   imports = [../rofi];
