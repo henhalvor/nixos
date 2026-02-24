@@ -258,6 +258,7 @@ in {
           "$mainMod, E, exec, hyprctl dispatch exec '[float; size 1111 650] kitty -e yazi-float'"
           "$mainMod, I, exec, hyprctl dispatch exec '[float; size 1111 650] kitty -e btop'"
           "$mainMod, B, exec, hyprctl dispatch exec '[float; size 1111 650] kitty -e bluetui'"
+          "$mainMod, A, exec, hyprctl dispatch exec '[float; size 1111 650; title opencode-ai] kitty --title opencode-ai -e opencode --model github-copilot/gpt-5-mini'"
           "$mainMod SHIFT, L, exec, ${lockBin}"
 
           # Screenshot
@@ -446,6 +447,11 @@ in {
 
         # Kitty styling
         "rounding 10, class:^(kitty)$"
+
+        # opencode AI popup
+        "float, title:^(opencode-ai)$"
+        "size 1111 650, title:^(opencode-ai)$"
+        "center, title:^(opencode-ai)$"
 
         # Android emulator windows
         "float, class:^(emulator64-crash-service)$"
