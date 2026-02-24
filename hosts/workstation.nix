@@ -3,7 +3,7 @@
 
   desktop = {
     session = "hyprland";
-    bar = "hyprpanel";
+    bar = "waybar";
     lock = "hyprlock"; # null = use session default (hyprlock)
     idle = "none"; # null = use session default (hypridle)
     notifications = null; # null = use session default (hyprpanel for hyprland)
@@ -19,13 +19,13 @@
       # ASUS monitor (portrait, physically on the left)
       "1, monitor:HDMI-A-1"
       "3, monitor:HDMI-A-1"
-      
+
       # Samsung Odyssey (main monitor, on the right)
       "2, monitor:DP-1"
       "4, monitor:DP-1"
       "5, monitor:DP-1"
       "6, monitor:DP-1"
-      
+
       # Sunshine virtual monitor
       "10, monitor:HEADLESS-1"
     ];
