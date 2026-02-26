@@ -64,7 +64,7 @@
         stateVersion = "25.05";
         stylixTheme = {
           scheme = "gruvbox-dark-hard";
-          wallpaper = "starry-sky.png";
+          wallpaper = "atoms.png";
         };
       };
     };
@@ -85,7 +85,7 @@
 
       # Should be deleted eventually
       desktop = mkSystem {
-        hostConfig = hosts.workstation;  # Using workstation config for now
+        hostConfig = hosts.workstation; # Using workstation config for now
         userSettings = users.henhal;
       };
 
@@ -104,7 +104,7 @@
     };
 
     nixOnDroidConfigurations.default = nix-on-droid.lib.nixOnDroidConfiguration {
-      modules = [ ./nix-on-droid/default.nix ];
+      modules = [./nix-on-droid/default.nix];
 
       extraSpecialArgs = {
         inherit inputs;
@@ -113,7 +113,7 @@
       pkgs = import nixpkgs {
         system = "aarch64-linux";
         config.allowUnfree = true;
-        overlays = [ nix-on-droid.overlays.default ];
+        overlays = [nix-on-droid.overlays.default];
       };
 
       home-manager-path = home-manager.outPath;
