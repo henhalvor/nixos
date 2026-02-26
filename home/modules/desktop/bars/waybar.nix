@@ -1,18 +1,14 @@
 {
   config,
-  lib,
   pkgs,
   unstable,
   ...
 }: let
-  # Use Stylix colors instead of hardcoded Catppuccin
   colors = config.lib.stylix.colors;
 
-  # Session detection
   isHyprland = config.wayland.windowManager.hyprland.enable or false;
   isSway = config.wayland.windowManager.sway.enable or false;
 
-  # Session-aware exec command
   execCmd = cmd:
     if isHyprland
     then "hyprctl dispatch exec '[float; size 1111 650] ${cmd}'"
@@ -20,36 +16,40 @@
     then "swaymsg exec '${cmd}'"
     else cmd;
 in {
-  # Add necessary packages
   home.packages = with pkgs; [
-    # pavucontrol
+    pavucontrol
     wlogout
     unstable.wiremix
   ];
 
-  # Configure Waybar
   programs.waybar = {
     enable = true;
     systemd.enable = true;
 
     settings = [
       {
-        output = ["DP-1" "DP-0"]; # Only show on Samsung monitor
+        output = ["DP-1" "eDP-1"]; # Only show on Samsung monitor + laptop monitor
         layer = "top";
+        exclusive = true;
         position = "top";
         height = 30;
         width = 300;
-        spacing = 10;
+        spacing = 8;
         margin = "2px";
         anchor = "top center";
+        reload_style_on_change = true;
 
-        # mode = "overlay";
-
-        # Module placement
-        modules-center = ["clock" "sway/workspaces" "hyprland/workspaces" "pulseaudio" "network" "bluetooth" "battery"];
+        modules-center = [
+          "clock"
+          "sway/workspaces"
+          "hyprland/workspaces"
+          "pulseaudio"
+          "network"
+          "bluetooth"
+          "battery"
+        ];
         modules-right = [];
 
-        # Module configurations
         "sway/workspaces" = {
           disable-scroll = true;
           all-outputs = true;
@@ -84,58 +84,55 @@ in {
           };
         };
 
-        "clock" = {
-          format = " {:%H:%M}";
+        clock = {
+          format = "{:%H:%M}";
+          "format-alt" = "{:%a, %d %b}";
           tooltip = false;
         };
 
-        "network" = {
+        network = {
           format = "{ifname}";
-          format-wifi = "󰤨 {essid}";
-          format-ethernet = "󰈀";
-          format-disconnected = "󰤮";
-          tooltip-format = "{ifname}: {ipaddr}";
-          on-click = execCmd "${pkgs.kitty}/bin/kitty -e nmtui";
+          "format-wifi" = "󰤨 {essid}";
+          "format-ethernet" = "󰈀";
+          "format-disconnected" = "󰤮";
+          "tooltip-format" = "{ifname}: {ipaddr}";
+          "on-click" = execCmd "${pkgs.kitty}/bin/kitty -e nmtui";
         };
 
-        "bluetooth" = {
+        bluetooth = {
           format = "󰂯";
-          # format-connected = "󰂯 {device_alias}";
-          format-connected = "󰂯";
-          # format-connected-battery = "󰂯 {device_alias} {device_battery_percentage}%";
-          format-connected-battery = "󰂯 {device_battery_percentage}%";
-          on-click = execCmd "${pkgs.kitty}/bin/kitty -e bluetui";
+          "format-connected" = "󰂯";
+          "format-connected-battery" = "󰂯 {device_battery_percentage}%";
+          "on-click" = execCmd "${pkgs.kitty}/bin/kitty -e bluetui";
         };
 
-        "pulseaudio" = {
+        pulseaudio = {
           format = "  {volume}%";
-          format-muted = "󰸈 Muted";
-          format-icons = {
+          "format-muted" = "󰸈 Muted";
+          "format-icons" = {
             default = ["" "" ""];
             headphones = "";
             headset = "";
           };
-          scroll-step = 5;
-          # on-click = "${pkgs.pavucontrol}/bin/pavucontrol";
-          on-click = execCmd "${pkgs.kitty}/bin/kitty -e wiremix";
+          "scroll-step" = 5;
+          "on-click" = execCmd "${pkgs.kitty}/bin/kitty -e wiremix";
           tooltip = false;
         };
 
-        "battery" = {
+        battery = {
           states = {
             warning = 30;
             critical = 15;
           };
           format = "{capacity}% {icon}";
-          format-charging = "{capacity}% 󰂄";
-          format-plugged = "{capacity}% 󰂄";
-          format-icons = ["󰁺" "󰁻" "󰁼" "󰁽" "󰁾" "󰁿" "󰂀" "󰂁" "󰂂" "󰁹"];
+          "format-charging" = "{capacity}% 󰂄";
+          "format-plugged" = "{capacity}% 󰂄";
+          "format-icons" = ["󰁺" "󰁻" "󰁼" "󰁽" "󰁾" "󰁿" "󰂀" "󰂁" "󰂂" "󰁹"];
           tooltip = false;
         };
       }
     ];
 
-    # Styling with Stylix colors
     style = ''
       * {
         font-family: ${config.stylix.fonts.monospace.name}, FontAwesome, sans-serif;
@@ -146,15 +143,17 @@ in {
       }
 
       window#waybar {
-        background-color: #${colors.base00};
+        background: transparent;
         color: #${colors.base05};
-        border-radius: 20px;
-        padding: 4px 12px;
-        margin: 2px;
-        border: 1px solid #${colors.base02};
       }
 
-      /* Module base styling */
+      .modules-center {
+        background: alpha(#${colors.base00}, 0.5);
+        border: 1px solid #${colors.base03};
+        border-radius: 10px;
+        padding: 6px 8px;
+      }
+
       #workspaces,
       #clock,
       #pulseaudio,
@@ -162,16 +161,15 @@ in {
       #battery,
       #bluetooth {
         padding: 0 6px;
-        margin: 0 3px;
+        margin: 0 2px;
         color: #${colors.base05};
         background-color: transparent;
       }
 
-      /* Workspace styling */
       #workspaces button {
-        min-width: 20px;
+        min-width: 18px;
         padding: 0 4px;
-        margin: 0 2px;
+        margin: 0 1px;
         border-radius: 6px;
         background-color: transparent;
         color: #${colors.base05};
@@ -179,25 +177,19 @@ in {
 
       #workspaces button.focused {
         color: #${colors.base0E};
-        background-color: #${colors.base02};
-      }
-
-      #workspaces button.visible {
-        color: #${colors.base05};
-        background-color: transparent;
+        background-color: alpha(#${colors.base05}, 0.08);
       }
 
       #workspaces button.urgent {
         color: #${colors.base08};
-        background-color: #${colors.base02};
+        background-color: alpha(#${colors.base08}, 0.1);
       }
 
       #workspaces button:hover {
-        background-color: #${colors.base02};
+        background-color: alpha(#${colors.base05}, 0.08);
         color: #${colors.base0C};
       }
 
-      /* Individual module colors */
       #clock {
         color: #${colors.base0C};
         font-weight: bold;
@@ -221,27 +213,6 @@ in {
 
       #battery {
         color: #${colors.base0B};
-      }
-
-      #battery.charging,
-      #battery.plugged {
-        color: #${colors.base0C};
-      }
-
-      #battery.critical:not(.charging) {
-        color: #${colors.base08};
-        animation-name: blink;
-        animation-duration: 0.5s;
-        animation-timing-function: linear;
-        animation-iteration-count: infinite;
-        animation-direction: alternate;
-      }
-
-      /* Blinking animation */
-      @keyframes blink {
-        to {
-          color: #${colors.base08};
-        }
       }
     '';
   };

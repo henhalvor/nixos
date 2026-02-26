@@ -80,28 +80,24 @@
       # Minimal decorations for battery life
     }
     else {
-      # Full decorations for workstation
       active_opacity = 1.0;
       inactive_opacity = 1.0;
       fullscreen_opacity = 1.0;
 
       blur = {
         enabled = true;
-        size = 3;
-        passes = 2;
-        brightness = 1;
-        contrast = 1.4;
+        size = 8;
+        passes = 3;
         ignore_opacity = true;
+        popups = false;
         noise = 0;
         new_optimizations = true;
-        xray = true;
+        xray = false;
       };
 
       shadow = {
         enabled = true;
-        ignore_window = true;
-        offset = "0 2";
-        range = 20;
+        range = 4;
         render_power = 3;
       };
     };
@@ -136,7 +132,7 @@
     # ]
     else [];
 in {
-  imports = [../rofi];
+  imports = [../launchers/rofi.nix];
 
   home.packages = with pkgs;
     [
@@ -144,6 +140,7 @@ in {
       brightnessctl
       pamixer
       playerctl
+      hyprpicker
       ddcutil
       bluez
       blueberry
@@ -181,12 +178,13 @@ in {
         "$mainMod" = "SUPER";
         layout = "dwindle";
         gaps_in = 5;
-        gaps_out = 10;
-        border_size = 2;
-        no_border_on_floating = false;
-        resize_on_border = true;
+        gaps_out = 20;
+        border_size = 0;
+        no_border_on_floating = true;
+        resize_on_border = false;
         extend_border_grab_area = 15;
         hover_icon_on_border = true;
+        allow_tearing = false;
       };
 
       misc = {
@@ -218,6 +216,7 @@ in {
       decoration =
         {
           rounding = 10;
+          rounding_power = 2;
         }
         // hostDecorations;
 
@@ -251,10 +250,11 @@ in {
           "$mainMod SHIFT, C, exec, hyprctl reload"
           "$mainMod SHIFT, Q, killactive,"
           "$mainMod, F, fullscreen, 0"
-          "$mainMod, Space, exec, toggle_float"
-          "$mainMod, D, exec, ${pkgs.rofi-wayland}/bin/rofi -show drun -theme ${config.home.homeDirectory}/.config/rofi/theme.rasi"
+          # "$mainMod, Space, exec, togglefloating"
+          "$mainMod, D, exec, ${pkgs.rofi-wayland}/bin/rofi -show drun"
           "$mainMod, O, exec, clipboard-history"
           "$mainMod SHIFT, O, exec, clipboard-clear"
+          "$mainMod, W, exec, ${config.home.homeDirectory}/.config/rofi/scripts/wallpaper-picker.sh"
           "$mainMod, X, togglesplit,"
           "$mainMod, E, exec, hyprctl dispatch exec '[float; size 1111 650] kitty -e yazi-float'"
           "$mainMod, I, exec, hyprctl dispatch exec '[float; size 1111 650] kitty -e btop'"
@@ -354,6 +354,17 @@ in {
       bindm = [
         "$mainMod, mouse:272, movewindow"
         "$mainMod, mouse:273, resizewindow"
+      ];
+
+      layerrule = [
+        "blur, namespace:notifications"
+        "ignorealpha 0, namespace:notifications"
+        "blur, namespace:rofi"
+        "ignorealpha 0, namespace:rofi"
+        "noanim, namespace:rofi"
+        "blur, namespace:waybar"
+        "ignorealpha 0, namespace:waybar"
+        "noanim, namespace:waybar"
       ];
 
       windowrule = [
@@ -512,5 +523,4 @@ in {
 
   # Add scripts to PATH
   home.sessionPath = ["${config.home.homeDirectory}/.local/bin"];
-  home.file.".local/bin/.keep".text = "";
 }
