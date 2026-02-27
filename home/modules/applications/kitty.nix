@@ -25,7 +25,7 @@
       confirm_os_window_close = 0;
 
       enable_audio_bell = "no";
-      notify_on_cmd_finish = "unfocused";
+      # notify_on_cmd_finish = "unfocused";
       allow_remote_control = "yes";
     };
   };

@@ -177,10 +177,10 @@ in {
       general = {
         "$mainMod" = "SUPER";
         layout = "dwindle";
-        gaps_in = 5;
-        gaps_out = 20;
+        gaps_in = 25;
+        gaps_out = 60;
         border_size = 0;
-        no_border_on_floating = true;
+        no_border_on_floating = false;
         resize_on_border = false;
         extend_border_grab_area = 15;
         hover_icon_on_border = true;
@@ -215,7 +215,7 @@ in {
 
       decoration =
         {
-          rounding = 10;
+          rounding = 25;
           rounding_power = 2;
         }
         // hostDecorations;
@@ -493,9 +493,11 @@ in {
 
       workspace =
         [
-          "w[t1], gapsout:0, gapsin:0"
-          "w[tg1], gapsout:0, gapsin:0"
           "f[1], gapsout:0, gapsin:0"
+
+          # Disable gaps when there is only one window in workspace, window takes up entire screen
+          # "w[t1], gapsout:0, gapsin:0"
+          # "w[tg1], gapsout:0, gapsin:0"
         ]
         ++ workspaceRules;
     };
