@@ -126,7 +126,7 @@
     then [
       "hyprpanel &"
     ]
-    # else if desktop.bar == "waybar"
+    # else if desktop.bar == "waybar" # Waybar is systemd service
     # then [
     #   "waybar &"
     # ]
@@ -151,6 +151,7 @@ in {
     enable = true;
     systemd.enable = true;
     xwayland.enable = true;
+    # plugins = with pkgs; [hyprlandPlugins.hyprbars hyprlandPlugins.hyprscrolling];
 
     settings = {
       # Startup commands
@@ -160,6 +161,20 @@ in {
           "[workspace special:gmail silent] gmail"
         ]
         ++ hostExecOnce ++ barExecOnce;
+
+      # "plugin:hyprscrolling" = {
+      #   column_width = 0.5;
+      # };
+
+      # "plugin:hyprbars" = {
+      #   # example config
+      #   # bar_height = 20;
+      #   bar_title_enabled = false;
+      #   # example buttons (R -> L)
+      #   # hyprbars-button = color, size, on-click
+      #   "hyprbars-button" = ["rgb(ff4040), 10, 󰖭, hyprctl dispatch killactive" "rgb(eeee11), 10, , hyprctl dispatch fullscreen 1"];
+      #   # "hyprbars-button" = "rgb(eeee11), 10, , hyprctl dispatch fullscreen 1";
+      # };
 
       # Input configuration
       input =

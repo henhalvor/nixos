@@ -6,7 +6,8 @@
     bar = "waybar";
     lock = "hyprlock"; # null = use session default (hyprlock)
     idle = "none"; # null = use session default (hypridle)
-    notifications = null; # null = use session default (hyprpanel for hyprland)
+    notifications = "mako"; # null = use session default (hyprpanel for hyprland)
+    logout = "none";
 
     monitors = [
       # ASUS monitor (portrait, physically on the left)
