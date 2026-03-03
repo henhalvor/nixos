@@ -153,7 +153,7 @@ in {
     systemd.enable = true;
     xwayland.enable = true;
     package = unstable.hyprland;
-    # plugins = with pkgs; [hyprlandPlugins.hyprbars hyprlandPlugins.hyprscrolling];
+    # plugins = with pkgs; [hyprlandPlugins.hyprbars];
 
     settings = {
       debug = {
@@ -167,10 +167,6 @@ in {
           "[workspace special:gmail silent] gmail"
         ]
         ++ hostExecOnce ++ barExecOnce;
-
-      # "plugin:hyprscrolling" = {
-      #   column_width = 0.5;
-      # };
 
       # "plugin:hyprbars" = {
       #   # example config
@@ -197,7 +193,7 @@ in {
 
       general = {
         "$mainMod" = "SUPER";
-        layout = "dwindle";
+        layout = "scrolling";
         gaps_in = 25;
         gaps_out = 60;
         border_size = 0;
@@ -232,6 +228,12 @@ in {
       master = {
         new_status = "master";
         special_scale_factor = 1;
+      };
+
+      scrolling = {
+        fullscreen_on_one_column = true;
+        column_width = 0.9;
+        direction = "right";
       };
 
       decoration =
@@ -282,6 +284,12 @@ in {
           "$mainMod, B, exec, hyprctl dispatch exec '[float; size 1111 650] kitty -e bluetui'"
           "$mainMod, A, exec, hyprctl dispatch exec '[float; size 1111 650; title opencode-ai] kitty --title opencode-ai -e opencode --model github-copilot/gpt-5-mini'"
           "$mainMod SHIFT, L, exec, ${lockBin}"
+
+          # Scrolling layout binds
+          "$mainMod, period, layoutmsg, move +col"
+          "$mainMod, comma, layoutmsg, move -col"
+          "$mainMod SHIFT, period, layoutmsg, swapcol r"
+          "$mainMod SHIFT, comma, layoutmsg, swapcol l"
 
           # Special workspaces
           "$mainMod, G, exec, toggle-gmail"
@@ -512,11 +520,11 @@ in {
 
       workspace =
         [
-          "f[1], gapsout:0, gapsin:0"
-
-          # Disable gaps when there is only one window in workspace, window takes up entire screen
-          # "w[t1], gapsout:0, gapsin:0"
-          # "w[tg1], gapsout:0, gapsin:0"
+          # "f[1], gapsout:0, gapsin:0"
+          #
+          # # Disable gaps when there is only one window in workspace, window takes up entire screen
+          "w[t1], gapsout:0, gapsin:0"
+          "w[tg1], gapsout:0, gapsin:0"
         ]
         ++ workspaceRules;
     };
