@@ -1,4 +1,16 @@
 { config, lib, pkgs, userSettings, ... }:
+let
+  # Override the Hyprland desktop session file to use start-hyprland wrapper
+  hyprlandSession = (pkgs.writeTextDir "share/wayland-sessions/hyprland.desktop" ''
+    [Desktop Entry]
+    Name=Hyprland
+    Comment=An intelligent dynamic tiling Wayland compositor
+    Exec=start-hyprland
+    Type=Application
+    DesktopNames=Hyprland
+    Keywords=tiling;wayland;compositor;
+  '').overrideAttrs { passthru.providedSessions = [ "hyprland" ]; };
+in
 {
   programs.hyprland = {
     enable = true;
@@ -8,6 +20,8 @@
   xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-hyprland ];
 
   security.pam.services.hyprlock = {};
+
+  services.displayManager.sessionPackages = [ hyprlandSession ];
 
   # Wayland session variables
   environment.sessionVariables = {

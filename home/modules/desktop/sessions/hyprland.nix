@@ -5,6 +5,7 @@
   userSettings,
   desktop,
   hostConfig,
+  unstable,
   ...
 }: let
   # Import scripts
@@ -136,7 +137,7 @@ in {
 
   home.packages = with pkgs;
     [
-      hyprland
+      # hyprland
       brightnessctl
       pamixer
       playerctl
@@ -151,9 +152,14 @@ in {
     enable = true;
     systemd.enable = true;
     xwayland.enable = true;
+    package = unstable.hyprland;
     # plugins = with pkgs; [hyprlandPlugins.hyprbars hyprlandPlugins.hyprscrolling];
 
     settings = {
+      debug = {
+        disable_logs = true;
+      };
+
       # Startup commands
       exec-once =
         [
@@ -195,7 +201,7 @@ in {
         gaps_in = 25;
         gaps_out = 60;
         border_size = 0;
-        no_border_on_floating = false;
+
         resize_on_border = false;
         extend_border_grab_area = 15;
         hover_icon_on_border = true;
@@ -210,7 +216,7 @@ in {
         animate_manual_resizes = false;
         enable_swallow = true;
         focus_on_activate = true;
-        new_window_takes_over_fullscreen = 2;
+        on_focus_under_fullscreen = 2;
         middle_click_paste = false;
       };
 
@@ -372,138 +378,136 @@ in {
       ];
 
       layerrule = [
-        "blur, namespace:notifications"
-        "ignorealpha 0, namespace:notifications"
-        "blur, namespace:rofi"
-        "ignorealpha 0, namespace:rofi"
-        "noanim, namespace:rofi"
-        "blur, namespace:waybar"
-        "ignorealpha 0, namespace:waybar"
-        "noanim, namespace:waybar"
+        "blur on, match:namespace notifications"
+        "ignore_alpha 0, match:namespace notifications"
+        "blur on, match:namespace rofi"
+        "ignore_alpha 0, match:namespace rofi"
+        "no_anim on, match:namespace rofi"
+        "blur on, match:namespace waybar"
+        "ignore_alpha 0, match:namespace waybar"
+        "no_anim on, match:namespace waybar"
       ];
 
       windowrule = [
-        "float,title:^(Transmission)$"
-        "float,title:^(Volume Control)$"
-        "float,title:^(Firefox — Sharing Indicator)$"
-        "move 0 0,title:^(Firefox — Sharing Indicator)$"
-        "size 700 450,title:^(Volume Control)$"
-        "move 40 55%,title:^(Volume Control)$"
-      ];
+        "float on, match:title ^(Transmission)$"
+        "float on, match:title ^(Volume Control)$"
+        "float on, match:title ^(Firefox — Sharing Indicator)$"
+        "move 0 0, match:title ^(Firefox — Sharing Indicator)$"
+        "size 700 450, match:title ^(Volume Control)$"
+        "move 40 55%, match:title ^(Volume Control)$"
 
-      windowrulev2 = [
         # Basic application rules
-        "tile, class:^(Aseprite)$"
-        "pin, class:^(rofi)$"
-        "idleinhibit focus, class:^(mpv)$"
+        "tile on, match:class ^(Aseprite)$"
+        "pin on, match:class ^(rofi)$"
+        "idle_inhibit focus, match:class ^(mpv)$"
 
         # Firefox/Zen Picture-in-Picture rules
-        "float, title:^(Picture-in-Picture)$"
-        "size 480 270, title:^(Picture-in-Picture)$"
-        "move 68% 70%, title:^(Picture-in-Picture)$"
-        "opacity 1.0 override 1.0 override, title:^(Picture-in-Picture)$"
-        "noborder, title:^(Picture-in-Picture)$"
-        "rounding 6, title:^(Picture-in-Picture)$"
-        "keepaspectratio, title:^(Picture-in-Picture)$"
-        "minsize 320 180, title:^(Picture-in-Picture)$"
-        "maxsize 960 540, title:^(Picture-in-Picture)$"
+        "float on, match:title ^(Picture-in-Picture)$"
+        "size 480 270, match:title ^(Picture-in-Picture)$"
+        "move 68% 70%, match:title ^(Picture-in-Picture)$"
+        "opacity 1.0 override 1.0 override, match:title ^(Picture-in-Picture)$"
+        "border_size 0, match:title ^(Picture-in-Picture)$"
+        "rounding 6, match:title ^(Picture-in-Picture)$"
+        "keep_aspect_ratio on, match:title ^(Picture-in-Picture)$"
+        "min_size 320 180, match:title ^(Picture-in-Picture)$"
+        "max_size 960 540, match:title ^(Picture-in-Picture)$"
 
         # More generic PiP rules
-        "float, title:.*Picture.?in.?Picture.*"
-        "size 480 270, title:.*Picture.?in.?Picture.*"
-        "move 68% 70%, title:.*Picture.?in.?Picture.*"
+        "float on, match:title .*Picture.?in.?Picture.*"
+        "size 480 270, match:title .*Picture.?in.?Picture.*"
+        "move 68% 70%, match:title .*Picture.?in.?Picture.*"
 
-        "float, class:^(firefox)$, title:^(Picture-in-Picture)$"
-        "size 480 270, class:^(firefox)$, title:^(Picture-in-Picture)$"
-        "move 68% 70%, class:^(firefox)$, title:^(Picture-in-Picture)$"
+        "float on, match:class ^(firefox)$, match:title ^(Picture-in-Picture)$"
+        "size 480 270, match:class ^(firefox)$, match:title ^(Picture-in-Picture)$"
+        "move 68% 70%, match:class ^(firefox)$, match:title ^(Picture-in-Picture)$"
 
-        "float, class:^(zen)$, title:^(Picture-in-Picture)$"
-        "size 480 270, class:^(zen)$, title:^(Picture-in-Picture)$"
-        "move 68% 70%, class:^(zen)$, title:^(Picture-in-Picture)$"
+        "float on, match:class ^(zen)$, match:title ^(Picture-in-Picture)$"
+        "size 480 270, match:class ^(zen)$, match:title ^(Picture-in-Picture)$"
+        "move 68% 70%, match:class ^(zen)$, match:title ^(Picture-in-Picture)$"
 
-        "pin, title:^(Picture-in-Picture)$"
+        "pin on, match:title ^(Picture-in-Picture)$"
 
         # Opacity settings
-        "opacity 1.0 override 1.0 override, title:^(.*imv.*)$"
-        "opacity 1.0 override 1.0 override, title:^(.*mpv.*)$"
-        "opacity 1.0 override 1.0 override, class:(zen)"
-        "workspace 1, class:^(zen)$"
+        "opacity 1.0 override 1.0 override, match:title ^(.*imv.*)$"
+        "opacity 1.0 override 1.0 override, match:title ^(.*mpv.*)$"
+        "opacity 1.0 override 1.0 override, match:class (zen)"
+        "workspace 1, match:class ^(zen)$"
 
         # Idle inhibit
-        "idleinhibit focus, class:^(mpv)$"
-        "idleinhibit fullscreen, class:^(firefox)$"
-        "idleinhibit focus, class:^(firefox)$"
-        "idleinhibit fullscreen, class:^(zen)$"
-        "idleinhibit focus, class:^(zen)$"
+        "idle_inhibit focus, match:class ^(mpv)$"
+        "idle_inhibit fullscreen, match:class ^(firefox)$"
+        "idle_inhibit focus, match:class ^(firefox)$"
+        "idle_inhibit fullscreen, match:class ^(zen)$"
+        "idle_inhibit focus, match:class ^(zen)$"
 
         # Floating windows
-        "float,class:^(org.gnome.Calculator)$"
-        "float,class:^(org.gnome.FileRoller)$"
-        "float,class:^(pavucontrol)$"
-        "float,class:^(SoundWireServer)$"
-        "float,class:^(.sameboy-wrapped)$"
-        "float,class:^(file_progress)$"
-        "float,class:^(confirm)$"
-        "float,class:^(dialog)$"
-        "float,class:^(download)$"
-        "float,class:^(notification)$"
-        "float,class:^(error)$"
-        "float,class:^(confirmreset)$"
-        "float,title:^(Open File)$"
-        "float,title:^(File Upload)$"
-        "float,title:^(branchdialog)$"
-        "float,title:^(Confirm to replace files)$"
-        "float,title:^(File Operation Progress)$"
+        "float on, match:class ^(org.gnome.Calculator)$"
+        "float on, match:class ^(org.gnome.FileRoller)$"
+        "float on, match:class ^(pavucontrol)$"
+        "float on, match:class ^(SoundWireServer)$"
+        "float on, match:class ^(.sameboy-wrapped)$"
+        "float on, match:class ^(file_progress)$"
+        "float on, match:class ^(confirm)$"
+        "float on, match:class ^(dialog)$"
+        "float on, match:class ^(download)$"
+        "float on, match:class ^(notification)$"
+        "float on, match:class ^(error)$"
+        "float on, match:class ^(confirmreset)$"
+        "float on, match:title ^(Open File)$"
+        "float on, match:title ^(File Upload)$"
+        "float on, match:title ^(branchdialog)$"
+        "float on, match:title ^(Confirm to replace files)$"
+        "float on, match:title ^(File Operation Progress)$"
 
         # xwaylandvideobridge
-        "opacity 0.0 override,class:^(xwaylandvideobridge)$"
-        "noanim,class:^(xwaylandvideobridge)$"
-        "noinitialfocus,class:^(xwaylandvideobridge)$"
-        "maxsize 1 1,class:^(xwaylandvideobridge)$"
-        "noblur,class:^(xwaylandvideobridge)$"
+        "opacity 0.0 override, match:class ^(xwaylandvideobridge)$"
+        "no_anim on, match:class ^(xwaylandvideobridge)$"
+        "no_initial_focus on, match:class ^(xwaylandvideobridge)$"
+        "max_size 1 1, match:class ^(xwaylandvideobridge)$"
+        "no_blur on, match:class ^(xwaylandvideobridge)$"
 
         # No gaps when only one window
-        "bordersize 0, floating:0, onworkspace:w[t1]"
-        "rounding 0, floating:0, onworkspace:w[t1]"
-        "bordersize 0, floating:0, onworkspace:w[tg1]"
-        "rounding 0, floating:0, onworkspace:w[tg1]"
-        "bordersize 0, floating:0, onworkspace:f[1]"
-        "rounding 0, floating:0, onworkspace:f[1]"
+        "border_size 0, match:float false, match:workspace w[t1]"
+        "rounding 0, match:float false, match:workspace w[t1]"
+        "border_size 0, match:float false, match:workspace w[tg1]"
+        "rounding 0, match:float false, match:workspace w[tg1]"
+        "border_size 0, match:float false, match:workspace f[1]"
+        "rounding 0, match:float false, match:workspace f[1]"
 
         # Remove context menu transparency
-        "opaque,class:^()$,title:^()$"
-        "noshadow,class:^()$,title:^()$"
-        "noblur,class:^()$,title:^()$"
+        "opaque on, match:class ^()$, match:title ^()$"
+        "no_shadow on, match:class ^()$, match:title ^()$"
+        "no_blur on, match:class ^()$, match:title ^()$"
 
         # Kitty styling
-        "rounding 10, class:^(kitty)$"
+        "rounding 10, match:class ^(kitty)$"
 
         # opencode AI popup
-        "float, title:^(opencode-ai)$"
-        "size 1111 650, title:^(opencode-ai)$"
-        "center, title:^(opencode-ai)$"
+        "float on, match:title ^(opencode-ai)$"
+        "size 1111 650, match:title ^(opencode-ai)$"
+        "center on, match:title ^(opencode-ai)$"
 
         # Android emulator windows
-        "float, class:^(emulator64-crash-service)$"
-        "float, class:^(qemu-system-x86_64)$"
-        "float, class:^(Emulator)$"
-        "float, title:^(Android Emulator)$"
-        "float, title:^(Emulator)$"
-        "size 400 800, class:^(qemu-system-x86_64)$"
+        "float on, match:class ^(emulator64-crash-service)$"
+        "float on, match:class ^(qemu-system-x86_64)$"
+        "float on, match:class ^(Emulator)$"
+        "float on, match:title ^(Android Emulator)$"
+        "float on, match:title ^(Emulator)$"
+        "size 400 800, match:class ^(qemu-system-x86_64)$"
 
         # Emulator toolbar
-        "float, title:^(Extended controls)$"
-        "pin, title:^(Extended controls)$"
-        "stayfocused, title:^(Extended controls)$"
+        "float on, match:title ^(Extended controls)$"
+        "pin on, match:title ^(Extended controls)$"
+        "stay_focused on, match:title ^(Extended controls)$"
 
         # Workspace-specific window assignments
-        "workspace 1, class:^(vivaldi)$"
+        "workspace 1, match:class ^(vivaldi)$"
 
         # Gmail special workspace — Chrome PWA sets class to chrome-<host>-Default
-        "workspace special:gmail silent, class:^(chrome-mail\\.google\\.com__-Default)$"
-        "float, class:^(chrome-mail\\.google\\.com__-Default)$"
-        "size 1111 650, class:^(chrome-mail\\.google\\.com__-Default)$"
-        "center, class:^(chrome-mail\\.google\\.com__-Default)$"
+        "workspace special:gmail silent, match:class ^(chrome-mail\\.google\\.com__-Default)$"
+        "float on, match:class ^(chrome-mail\\.google\\.com__-Default)$"
+        "size 1111 650, match:class ^(chrome-mail\\.google\\.com__-Default)$"
+        "center on, match:class ^(chrome-mail\\.google\\.com__-Default)$"
       ];
 
       workspace =
