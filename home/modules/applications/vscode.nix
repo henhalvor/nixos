@@ -11,7 +11,7 @@
       ((pkgs.vscode.override {isInsiders = true;}).overrideAttrs (oldAttrs: rec {
         src = builtins.fetchTarball {
           url = "https://code.visualstudio.com/sha/download?build=insider&os=linux-x64";
-          sha256 = "sha256:0alnzqgck12yxa55fr07nf8cny31nx1rd1mv22pssaz5jjx6jfis";
+          sha256 = "sha256:00vjsbklkr5a7f13vvq2ch3ca3brhi97nazwkbbja2yd477gaps2";
         };
         version = "latest";
 
@@ -255,7 +255,7 @@
       vscode.call("workbench.files.action.focusFilesExplorer")
     end)
     -- Keymap for closing the file explorer (sidebar) is located in keybindings.json (nvim does not work when sideBarFocus is set)
-   
+     
     -- Git (version control)
     vim.keymap.set("n", "<leader>gg", function()
       vscode.call("workbench.scm.focus")
