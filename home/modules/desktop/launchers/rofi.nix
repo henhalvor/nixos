@@ -18,14 +18,14 @@
   colors = config.lib.stylix.colors;
 in {
   home.packages = with pkgs; [
-    rofi-wayland
+    rofi
     wl-clipboard
     libnotify
   ];
 
   programs.rofi = {
     enable = true;
-    package = pkgs.rofi-wayland;
+    package = pkgs.rofi;
     theme = lib.mkForce "${config.home.homeDirectory}/.config/rofi/theme.rasi";
     extraConfig = {
       modi = "drun";

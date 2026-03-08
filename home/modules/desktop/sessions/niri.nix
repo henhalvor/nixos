@@ -36,7 +36,6 @@ in {
       blueberry
       swaybg
       xwayland-satellite
-      unstable.niri
     ]
     ++ hostPackages;
 
@@ -52,11 +51,6 @@ in {
     _JAVA_AWT_WM_NONREPARENTING = "1";
     GDK_BACKEND = "wayland";
   };
-
-  # programs.niri = {
-  #   enable = true;
-  #   package = unstable.niri;
-  # };
 
   xdg.configFile = {
     "niri/config.kdl".source = config.lib.file.mkOutOfStoreSymlink "${niriConfigDir}/config.kdl";

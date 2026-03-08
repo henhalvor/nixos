@@ -1,5 +1,12 @@
-{ config, lib, pkgs, userSettings, desktop, hostConfig, ... }:
-let
+{
+  config,
+  lib,
+  pkgs,
+  userSettings,
+  desktop,
+  hostConfig,
+  ...
+}: let
   # Import scripts
   toggleMonitorsWorkstation = import ../../scripts/toggle-monitors-workstation-sway.nix {
     inherit pkgs;
@@ -10,34 +17,48 @@ let
   extraConfig = hostConfig.desktop.extraConfig or "";
 
   # Determine lock command
-  lockBin = {
-    hyprlock = "${pkgs.hyprlock}/bin/hyprlock";
-    swaylock = "${pkgs.swaylock}/bin/swaylock -f";
-    loginctl = "loginctl lock-session";
-  }.${desktop.lock} or "loginctl lock-session";
+  lockBin =
+    {
+      hyprlock = "${pkgs.hyprlock}/bin/hyprlock";
+      swaylock = "${pkgs.swaylock}/bin/swaylock -f";
+      loginctl = "loginctl lock-session";
+    }.${
+      desktop.lock
+    } or "loginctl lock-session";
 
   # Host-specific packages
-  hostPackages = if hostConfig.hostname == "workstation" then [
-    toggleMonitorsWorkstation
-  ] else [];
+  hostPackages =
+    if hostConfig.hostname == "workstation"
+    then [
+      toggleMonitorsWorkstation
+    ]
+    else [];
 
   # Host-specific keybindings
-  hostKeybindings = if hostConfig.hostname == "workstation" then {
-    "Mod4+m" = "exec toggle-monitors";
-  } else if hostConfig.hostname == "lenovo-yoga-pro-7" then {
-    "XF86MonBrightnessUp" = "exec brightnessctl s +10%";
-    "XF86MonBrightnessDown" = "exec brightnessctl s 10%-";
-  } else {};
+  hostKeybindings =
+    if hostConfig.hostname == "workstation"
+    then {
+      "Mod4+m" = "exec toggle-monitors";
+    }
+    else if hostConfig.hostname == "lenovo-yoga-pro-7"
+    then {
+      "XF86MonBrightnessUp" = "exec brightnessctl s +10%";
+      "XF86MonBrightnessDown" = "exec brightnessctl s 10%-";
+    }
+    else {};
 
   # Host-specific input settings
-  hostInput = if hostConfig.hostname == "lenovo-yoga-pro-7" then {
-    "1739:52992:SYNA2BA6:00 06CB:CF00 Touchpad" = {
-      tap = "enabled";
-      dwt = "enabled";
-      natural_scroll = "enabled";
-      middle_emulation = "enabled";
-    };
-  } else {};
+  hostInput =
+    if hostConfig.hostname == "lenovo-yoga-pro-7"
+    then {
+      "1739:52992:SYNA2BA6:00 06CB:CF00 Touchpad" = {
+        tap = "enabled";
+        dwt = "enabled";
+        natural_scroll = "enabled";
+        middle_emulation = "enabled";
+      };
+    }
+    else {};
 in {
   imports = [../rofi];
 
@@ -52,7 +73,8 @@ in {
       blueberry
       autotiling-rs
       swaybg
-    ] ++ hostPackages;
+    ]
+    ++ hostPackages;
 
   home.sessionVariables = {
     MOZ_ENABLE_WAYLAND = "1";
@@ -86,26 +108,28 @@ in {
     '';
 
     config = {
-      bars = [];  # Disable built-in bar
+      bars = []; # Disable built-in bar
 
-      input = {
-        "*" = {
-          xkb_layout = "no";
-          xkb_options = "caps:escape";
-          tap = "enabled";
-          dwt = "enabled";
-          natural_scroll = "enabled";
-          middle_emulation = "enabled";
-        };
-        "5426:64:Razer_Razer_Naga_2014" = {
-          natural_scroll = "disabled";
-        };
-      } // hostInput;
+      input =
+        {
+          "*" = {
+            xkb_layout = "no";
+            xkb_options = "caps:escape";
+            tap = "enabled";
+            dwt = "enabled";
+            natural_scroll = "enabled";
+            middle_emulation = "enabled";
+          };
+          "5426:64:Razer_Razer_Naga_2014" = {
+            natural_scroll = "disabled";
+          };
+        }
+        // hostInput;
 
       output = outputs;
 
       assigns = {
-        "1" = [{ app_id = "zen"; }];
+        "1" = [{app_id = "zen";}];
       };
 
       defaultWorkspace = "1";
@@ -118,14 +142,14 @@ in {
       terminal = "${userSettings.term}";
 
       startup = [
-        { command = "${userSettings.browser}"; }
-        { command = "waybar"; }
-        { command = "${pkgs.swaybg}/bin/swaybg -i ~/.dotfiles/assets/wallpapers/catpuccin_landscape.png -m fill"; }
-        { command = "autotiling-rs"; }
-        { command = "blueman-applet"; }
+        {command = "${userSettings.browser}";}
+        {command = "waybar";}
+        {command = "${pkgs.swaybg}/bin/swaybg -i ~/.dotfiles/assets/wallpapers/catpuccin_landscape.png -m fill";}
+        {command = "autotiling-rs";}
+        {command = "blueman-applet";}
       ];
 
-      menu = "${pkgs.rofi-wayland}/bin/rofi -show drun -theme ${config.home.homeDirectory}/.config/rofi/theme.rasi";
+      menu = "${pkgs.rofi}/bin/rofi -show drun -theme ${config.home.homeDirectory}/.config/rofi/theme.rasi";
 
       keybindings = let
         modifier = config.wayland.windowManager.sway.config.modifier;
@@ -149,8 +173,8 @@ in {
           "XF86AudioLowerVolume" = "exec pactl set-sink-volume @DEFAULT_SINK@ -10%";
           "XF86AudioMute" = "exec pactl set-sink-mute @DEFAULT_SINK@ toggle";
         };
-      in lib.mkOptionDefault (baseKeybindings // hostKeybindings);
+      in
+        lib.mkOptionDefault (baseKeybindings // hostKeybindings);
     };
   };
 }
-

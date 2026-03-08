@@ -1,19 +1,27 @@
-{ config, pkgs, userSettings, desktop, ... }:
-let
+{
+  config,
+  pkgs,
+  userSettings,
+  desktop,
+  ...
+}: let
   inherit (config.lib.stylix) colors;
 
   # Choose lock command based on desktop config
-  lockCommand = {
-    hyprlock = "${pkgs.hyprlock}/bin/hyprlock";
-    swaylock = "${pkgs.swaylock}/bin/swaylock -f";
-    loginctl = "loginctl lock-session";
-  }.${desktop.lock} or "loginctl lock-session";
+  lockCommand =
+    {
+      hyprlock = "${pkgs.hyprlock}/bin/hyprlock";
+      swaylock = "${pkgs.swaylock}/bin/swaylock -f";
+      loginctl = "loginctl lock-session";
+    }.${
+      desktop.lock
+    } or "loginctl lock-session";
 in {
-  home.packages = with pkgs; [ rofi-wayland ];
+  home.packages = with pkgs; [rofi];
 
   programs.rofi = {
     enable = true;
-    package = pkgs.rofi-wayland;
+    package = pkgs.rofi;
   };
 
   home.file.".config/rofi/theme.rasi".text = ''
@@ -33,8 +41,8 @@ in {
       /*****----- Global Properties -----*****/
     * {
           font:                        "${config.stylix.fonts.monospace.name} ${
-            toString config.stylix.fonts.sizes.applications
-          }";
+      toString config.stylix.fonts.sizes.applications
+    }";
           background:                  #${colors.base00};
           background-alt:              #${colors.base01};
           foreground:                  #${colors.base05};
@@ -147,7 +155,7 @@ in {
           reverse:                     false;
           fixed-height:                true;
           fixed-columns:               true;
-          
+
           spacing:                     10px;
           background-color:            transparent;
           text-color:                  @foreground;

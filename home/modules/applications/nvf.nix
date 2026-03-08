@@ -1789,7 +1789,7 @@ in {
           };
 
           vscode-diff-nvim = {
-            package = unstable.vimPlugins.vscode-diff-nvim;
+            package = unstable.vimPlugins.codediff-nvim;
           };
 
           persistence-nvim = {
@@ -2497,7 +2497,7 @@ in {
           vimPlugins.persistence-nvim
           vimPlugins.nvim-ts-context-commentstring # used for mini.comment jsx comment strings
           vimPlugins.rustaceanvim
-          unstable.vimPlugins.vscode-diff-nvim
+          unstable.vimPlugins.codediff-nvim
           vimPlugins.tabout-nvim
 
           # Use this if "built in" persistence is not working

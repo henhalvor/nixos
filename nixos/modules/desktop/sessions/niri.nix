@@ -1,4 +1,8 @@
-{ userSettings, unstable, ... }: {
+{
+  userSettings,
+  unstable,
+  ...
+}: {
   programs.niri = {
     enable = true;
     package = unstable.niri;
@@ -19,6 +23,6 @@
     XDG_CURRENT_DESKTOP = "niri";
   };
 
-  users.users.${userSettings.username}.extraGroups = [ "video" ];
+  users.users.${userSettings.username}.extraGroups = ["video"];
   programs.light.enable = true;
 }

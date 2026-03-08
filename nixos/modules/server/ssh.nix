@@ -11,7 +11,7 @@
   # fileSystems."/" = { options = [ "mode=755" ]; };
 
   # Start SSH agent
-  programs.ssh.startAgent = true;
+  # programs.ssh.startAgent = true;  # Conflicts with a gnome service running
 
   # Enable SSH server
   services.openssh = {

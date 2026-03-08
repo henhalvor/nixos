@@ -32,7 +32,7 @@
     #     dosbox
     #   ];
     # })
-    teamspeak_client # install voice-chat
+    teamspeak3 # install voice-chat
 
     prismlauncher # Minecraft launcher
     # You can override prismlauncher to change the environment available to the launcher and the game. This might be useful for installing additional versions of Java or providing extra binaries needed by some mods.
@@ -42,7 +42,7 @@
 
       # Change Java runtimes available to Prism Launcher
       jdks = [
-        graalvm-ce
+        graalvmPackages.graalvm-ce
         zulu8
         zulu17
         zulu

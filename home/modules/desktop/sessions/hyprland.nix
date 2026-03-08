@@ -274,7 +274,7 @@ in {
           "$mainMod SHIFT, Q, killactive,"
           "$mainMod, F, fullscreen, 0"
           # "$mainMod, Space, exec, togglefloating"
-          "$mainMod, D, exec, ${pkgs.rofi-wayland}/bin/rofi -show drun"
+          "$mainMod, D, exec, ${pkgs.rofi}/bin/rofi -show drun"
           "$mainMod, O, exec, clipboard-history"
           "$mainMod SHIFT, O, exec, clipboard-clear"
           "$mainMod, W, exec, ${config.home.homeDirectory}/.config/rofi/scripts/wallpaper-picker.sh"

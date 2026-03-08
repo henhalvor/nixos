@@ -1,11 +1,18 @@
-{ config, lib, pkgs, userSettings, ... }:
-
 {
+  config,
+  lib,
+  pkgs,
+  userSettings,
+  ...
+}: {
   programs.git = {
     enable = true;
-    userName = userSettings.username;
-    userEmail = userSettings.email;
-    extraConfig = {
+    settings = {
+      user = {
+        name = userSettings.username;
+        email = userSettings.email;
+      };
+
       init = {
         defaultBranch = "main";
       };
@@ -43,7 +50,7 @@
 
   # Generate SSH key if it doesn't exist
   home.activation = {
-    generateGitHubSSHKey = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    generateGitHubSSHKey = lib.hm.dag.entryAfter ["writeBoundary"] ''
       if [ ! -f "${config.home.homeDirectory}/.ssh/id_ed25519" ]; then
         ${pkgs.openssh}/bin/ssh-keygen -t ed25519 -C "${userSettings.email}" -f "${config.home.homeDirectory}/.ssh/id_ed25519" -N ""
         echo "New SSH key generated for GitHub. Please add this public key to your GitHub account:"
@@ -52,7 +59,7 @@
     '';
   };
 
-programs.gh = {
+  programs.gh = {
     enable = true;
     settings.editor = "nvim";
     settings.git_protocol = "ssh";

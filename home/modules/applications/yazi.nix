@@ -1,4 +1,8 @@
-{ config, pkgs, ... }: {
+{
+  config,
+  pkgs,
+  ...
+}: {
   programs.yazi = {
     enable = true;
     settings = {
@@ -13,40 +17,52 @@
         max_height = 1024;
       };
       opener = {
-        folder = [{
-          run = ''cd "$@"'';
-          block = true;
-        }];
-        text = [{
-          run = ''nvim "$@"'';
-          block = true;
-        }];
-        image = [{
-          run = ''imv "$@"'';
-          fork = true;
-        }];
-        video = [{
-          run = ''mpv "$@"'';
-          fork = true;
-        }];
-        pdf = [{
-          run = ''zathura "$@"'';
-          fork = true;
-        }];
+        folder = [
+          {
+            run = ''cd "$@"'';
+            block = true;
+          }
+        ];
+        text = [
+          {
+            run = ''nvim "$@"'';
+            block = true;
+          }
+        ];
+        image = [
+          {
+            run = ''imv "$@"'';
+            fork = true;
+          }
+        ];
+        video = [
+          {
+            run = ''mpv "$@"'';
+            fork = true;
+          }
+        ];
+        pdf = [
+          {
+            run = ''zathura "$@"'';
+            fork = true;
+          }
+        ];
         # edit = [{
         #   # Use the wrapper script instead of nvim directly (to get api keys from secrets)
         #   run = "$HOME/.local/bin/nvim-wrapper.sh %*";
         #   block = true;
         # }];
-        edit = [{
-          run = ''nvim "$@"'';
-          block = true;
-        }];
+        edit = [
+          {
+            run = ''nvim "$@"'';
+            block = true;
+          }
+        ];
       };
     };
   };
 
-  home.packages = with pkgs; [ ffmpegthumbnailer unar poppler_utils file jq ];
+  home.packages = with pkgs; [ffmpegthumbnailer unar poppler-utils file jq];
 
   home.file.".local/bin/nvim-wrapper.sh" = {
     executable = true;
