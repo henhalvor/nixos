@@ -143,7 +143,7 @@ in {
 
       startup = [
         {command = "${userSettings.browser}";}
-        {command = "waybar";}
+        # {command = "waybar";} # waybar is systemd service
         {command = "${pkgs.swaybg}/bin/swaybg -i ~/.dotfiles/assets/wallpapers/catpuccin_landscape.png -m fill";}
         {command = "autotiling-rs";}
         {command = "blueman-applet";}

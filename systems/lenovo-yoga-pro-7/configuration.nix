@@ -30,6 +30,11 @@
     ../../nixos/modules/android.nix
   ];
 
+  hardware.graphics = {
+    enable = true;
+    enable32Bit = true;
+  };
+
   # Hardware configuration based on hostConfig
   hardware.logitech.wireless.enable = hostConfig.hardware.logitech or false;
   hardware.logitech.wireless.enableGraphical = hostConfig.hardware.logitech or false;

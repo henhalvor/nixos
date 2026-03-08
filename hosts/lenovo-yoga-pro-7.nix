@@ -1,19 +1,20 @@
 {
   hostname = "lenovo-yoga-pro-7";
 
+  # Session defaults are located in ../lib/desktop.nix
   desktop = {
-    session = "hyprland";
-    bar = "hyprpanel";
-    lock = null;  # null = use session default (hyprlock)
-    idle = null;  # null = use session default (hypridle)
-    notifications = null;  # null = use session default (hyprpanel for hyprland)
+    session = "sway";
+    bar = "waybar";
+    # lock = "hyprlock"; # null = use session default (hyprlock)
+    # idle = "hypridle"; # null = use session default (hypridle)
+    notifications = "mako"; # null = use session default (hyprpanel for hyprland)
 
     # Hyprland-specific monitor configuration
     monitors = [
-      ",preferred,auto,1"
+      # ",preferred,auto,1"
       "eDP-1,2560x1600@60,0x0,1.6"
-      "DP-9,2560x1440@144,0x0,1"
-      "DP-8,1920x1080@144,-1080x240,1,transform,1"
+      # "DP-9,2560x1440@144,0x0,1"
+      # "DP-8,1920x1080@144,-1080x240,1,transform,1"
     ];
 
     workspaceRules = [
