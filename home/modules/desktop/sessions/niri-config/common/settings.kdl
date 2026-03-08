@@ -11,6 +11,12 @@ input {
         }
         numlock
     }
+    touchpad {
+            tap
+            // Other options:
+            natural-scroll
+            dwt // disable-when-typing
+        }
 }
 
 layout {

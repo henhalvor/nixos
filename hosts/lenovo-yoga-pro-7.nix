@@ -3,7 +3,7 @@
 
   # Session defaults are located in ../lib/desktop.nix
   desktop = {
-    session = "sway";
+    session = "niri";
     bar = "waybar";
     # lock = "hyprlock"; # null = use session default (hyprlock)
     # idle = "hypridle"; # null = use session default (hypridle)
