@@ -1,5 +1,6 @@
 {
   config,
+  lib,
   pkgs,
   unstable,
   ...
@@ -7,11 +8,50 @@
   colors = config.lib.stylix.colors;
 
   isHyprland = config.wayland.windowManager.hyprland.enable or false;
+  isNiri = config.programs.niri.enable or false;
   isSway = config.wayland.windowManager.sway.enable or false;
+  workspaceModule =
+    if isHyprland
+    then "hyprland/workspaces"
+    else if isNiri
+    then "niri/workspaces"
+    else if isSway
+    then "sway/workspaces"
+    else null;
+  workspaceIcons = {
+    "1" = "1";
+    "2" = "2";
+    "3" = "3";
+    "4" = "4";
+    "5" = "5";
+    "6" = "6";
+    "7" = "7";
+    "8" = "8";
+    "9" = "9";
+    "10" = "10";
+    gmail = "G";
+  };
+  swayWorkspaceConfig = {
+    disable-scroll = true;
+    all-outputs = true;
+    format = "{icon}";
+    format-icons = workspaceIcons;
+  };
+  hyprlandWorkspaceConfig = {
+    format = "{icon}";
+    format-icons = workspaceIcons;
+  };
+  niriWorkspaceConfig = {
+    all-outputs = true;
+    format = "{icon}";
+    format-icons = workspaceIcons;
+  };
 
   execCmd = cmd:
     if isHyprland
     then "hyprctl dispatch exec '[float; size 1111 650] ${cmd}'"
+    else if isNiri
+    then cmd
     else if isSway
     then "swaymsg exec '${cmd}'"
     else cmd;
@@ -39,50 +79,22 @@ in {
         anchor = "top center";
         reload_style_on_change = true;
 
-        modules-center = [
-          "clock"
-          "sway/workspaces"
-          "hyprland/workspaces"
-          "pulseaudio"
-          "network"
-          "bluetooth"
-          "battery"
-        ];
+        modules-center =
+          [
+            "clock"
+          ]
+          ++ lib.optional (workspaceModule != null) workspaceModule
+          ++ [
+            "pulseaudio"
+            "network"
+            "bluetooth"
+            "battery"
+          ];
         modules-right = [];
 
-        "sway/workspaces" = {
-          disable-scroll = true;
-          all-outputs = true;
-          format = "{icon}";
-          format-icons = {
-            "1" = "1";
-            "2" = "2";
-            "3" = "3";
-            "4" = "4";
-            "5" = "5";
-            "6" = "6";
-            "7" = "7";
-            "8" = "8";
-            "9" = "9";
-            "10" = "10";
-          };
-        };
-
-        "hyprland/workspaces" = {
-          format = "{icon}";
-          format-icons = {
-            "1" = "1";
-            "2" = "2";
-            "3" = "3";
-            "4" = "4";
-            "5" = "5";
-            "6" = "6";
-            "7" = "7";
-            "8" = "8";
-            "9" = "9";
-            "10" = "10";
-          };
-        };
+        "sway/workspaces" = swayWorkspaceConfig;
+        "hyprland/workspaces" = hyprlandWorkspaceConfig;
+        "niri/workspaces" = niriWorkspaceConfig;
 
         clock = {
           format = "{:%H:%M}";
@@ -96,14 +108,14 @@ in {
           "format-ethernet" = "󰈀";
           "format-disconnected" = "󰤮";
           "tooltip-format" = "{ifname}: {ipaddr}";
-          "on-click" = execCmd "${pkgs.kitty}/bin/kitty -e nmtui";
+          "on-click" = execCmd "${pkgs.kitty}/bin/kitty --title nmtui-popup -e nmtui";
         };
 
         bluetooth = {
           format = "󰂯";
           "format-connected" = "󰂯";
           "format-connected-battery" = "󰂯 {device_battery_percentage}%";
-          "on-click" = execCmd "${pkgs.kitty}/bin/kitty -e bluetui";
+          "on-click" = execCmd "${pkgs.kitty}/bin/kitty --title bluetui-popup -e bluetui";
         };
 
         pulseaudio = {
@@ -115,7 +127,7 @@ in {
             headset = "";
           };
           "scroll-step" = 5;
-          "on-click" = execCmd "${pkgs.kitty}/bin/kitty -e wiremix";
+          "on-click" = execCmd "${pkgs.kitty}/bin/kitty --title wiremix-popup -e wiremix";
           tooltip = false;
         };
 

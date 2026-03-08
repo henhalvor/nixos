@@ -552,6 +552,23 @@ desktop.session = "hyprland";  # Sets these defaults:
 | `trayApplets` | wayland | Blueman + NetworkManager applets |
 | `nightLight` | gammastep | Modern Wayland color temperature tool |
 
+### Niri Session
+
+```nix
+desktop.session = "niri";  # Sets these defaults:
+```
+
+| Option | Default | Why? |
+|--------|---------|------|
+| `bar` | waybar | Native Waybar support, including `niri/workspaces` |
+| `lock` | swaylock | Stable Wayland lock screen that works well with Niri |
+| `idle` | swayidle | Reuses the existing idle stack with Niri monitor power actions |
+| `clipboard` | clipman | Lightweight, works well with Wayland |
+| `screenshotTool` | grim | Compositor-agnostic screenshot flow |
+| `notifications` | mako | Lightweight Wayland notification daemon |
+| `trayApplets` | wayland | Blueman + NetworkManager applets |
+| `nightLight` | gammastep | Modern Wayland color temperature tool |
+
 ### Sway Session
 
 ```nix
@@ -771,7 +788,7 @@ Shows notification with current state.
   # Desktop configuration
   desktop = {
     # Required for desktop systems
-    session = "hyprland";              # hyprland | sway | gnome | none
+    session = "hyprland";              # hyprland | niri | sway | gnome | none
     
     # Optional - null uses session defaults
     bar = null;                        # hyprpanel | waybar | none | null
@@ -798,6 +815,11 @@ Shows notification with current state.
         position = "0,0";
       };
     };
+
+    # Niri-specific
+    # Repo-managed KDL config is symlinked to ~/.config/niri/
+    # via Home Manager from:
+    # home/modules/desktop/sessions/niri-config/
 
     # Extra configuration (any session)
     extraConfig = ''
@@ -848,6 +870,27 @@ outputs = {
     position = "2880,0";
   };
 };
+```
+
+**Niri format:**
+```kdl
+// home/modules/desktop/sessions/niri-config/hosts/<hostname>.kdl
+output "DP-1" {
+    mode "2560x1440"
+    scale 1
+    position x=1080 y=0
+    focus-at-startup
+}
+
+output "HDMI-A-1" {
+    mode "1920x1080"
+    scale 1
+    transform "90"
+    position x=0 y=0
+}
+
+workspace "1" { open-on-output "HDMI-A-1" }
+workspace "2" { open-on-output "DP-1" }
 ```
 
 ---
@@ -1016,6 +1059,7 @@ stylixTheme = {
 |-----------|--------|-------|-----------|-------|
 | **SDDM** | ✅ | ✅ | ✅ | Full Stylix integration |
 | **Hyprland** | ✅ | ✅ | ✅ | Border colors, gaps |
+| **Niri** | ✅ | ✅ | ✅ | Focus ring, shadows, gaps |
 | **Sway** | ✅ | ✅ | ✅ | Border colors, gaps |
 | **Rofi** | ✅ | ✅ | ❌ | Application launcher |
 | **Waybar** | ✅ | ✅ | ❌ | Module colors |
@@ -1259,6 +1303,9 @@ journalctl --user | grep gammastep
 # Hyprland - check monitors
 hyprctl monitors all
 
+# Niri - check outputs
+niri msg outputs
+
 # Sway - check outputs
 swaymsg -t get_outputs
 
@@ -1336,7 +1383,7 @@ If migrating from previous `windowManager` variable system:
 ### From Manual Configuration
 
 **1. Identify components:**
-   - What session? (Hyprland/Sway/GNOME)
+   - What session? (Hyprland/Niri/Sway/GNOME)
    - What bar? (Waybar/Hyprpanel)
    - What clipboard manager?
    - What screenshot tool?

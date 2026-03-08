@@ -3,6 +3,7 @@ let
   # Lookup tables - add new sessions/DMs here
   sessionModules = {
     hyprland = ./sessions/hyprland.nix;
+    niri = ./sessions/niri.nix;
     sway = ./sessions/sway.nix;
     gnome = ./sessions/gnome.nix;
   };

@@ -5,10 +5,22 @@
       bar = "hyprpanel";
       lock = "hyprlock";
       idle = "hypridle";
-      notifications = "mako";
+      notifications = "none";
       dm = "sddm";
       clipboard = "clipman";
       screenshotTool = "grimblast";
+      trayApplets = "wayland";
+      nightLight = "gammastep";
+      logout = "wlogout";
+    };
+    niri = {
+      bar = "waybar";
+      lock = "swaylock";
+      idle = "swayidle";
+      notifications = "mako";
+      dm = "sddm";
+      clipboard = "clipman";
+      screenshotTool = "grim";
       trayApplets = "wayland";
       nightLight = "gammastep";
       logout = "wlogout";

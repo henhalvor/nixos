@@ -13,6 +13,17 @@
   # Toggle Gmail special workspace — launches Gmail if not running, then shows/hides
   toggleGmail = pkgs.writeShellScriptBin "toggle-gmail" ''
     CLASS="chrome-mail.google.com__-Default"
+    GMAIL_PROCESS_PATTERN='google-chrome.*--app=https://mail.google.com'
+
+    if [ -n "''${NIRI_SOCKET-}" ] || [ "''${XDG_CURRENT_DESKTOP-}" = "niri" ]; then
+      if ! pgrep -fa "$GMAIL_PROCESS_PATTERN" >/dev/null; then
+        gmail &
+        sleep 0.5
+      fi
+
+      niri msg action focus-workspace gmail
+      exit 0
+    fi
 
     # Launch Gmail if no window exists yet
     if ! hyprctl clients | grep -q "class: $CLASS"; then

@@ -222,7 +222,7 @@ The script will:
 - **Unified Configuration**: Single command rebuilds both system and user configs
 - **Multi-System Support**: Easy management of multiple machines
 - **Theme Management**: Stylix integration for consistent theming
-- **Window Manager Support**: Hyprland and Sway configurations
+- **Window Manager Support**: Hyprland, Niri, and Sway configurations
 - **Development Environment**: Comprehensive tooling for various languages
 - **Server Support**: Headless configurations with remote development tools
 
@@ -281,4 +281,3 @@ nix develop
 ```
 
 This configuration provides a robust, reproducible development environment that can be easily deployed across multiple systems while maintaining consistency and flexibility.
-
