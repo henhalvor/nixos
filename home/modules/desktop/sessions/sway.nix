@@ -64,7 +64,7 @@ in {
 
   home.packages = with pkgs;
     [
-      sway
+      # sway
       brightnessctl
       pamixer
       playerctl

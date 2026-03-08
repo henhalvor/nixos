@@ -13,6 +13,8 @@
       # This ensures systemd-boot can handle your generations
       configurationLimit =
         10; # Adjust this number to control how many generations to keep
+      # Tolerate non-critical errors (e.g. BOOTX64.EFI owned by Lenovo firmware)
+      graceful = true;
     };
 
     # EFI settings for UEFI systems

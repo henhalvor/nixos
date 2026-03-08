@@ -1,4 +1,9 @@
-{ config, pkgs, userSettings, ... }: {
+{
+  config,
+  pkgs,
+  userSettings,
+  ...
+}: {
   # Video drivers
   # services.xserver.videoDrivers = [ "amdgpu" ];
 
@@ -11,7 +16,6 @@
     MOZ_ENABLE_WAYLAND = "1";
     WLR_RENDERER = "gles2";
     WLR_NO_HARDWARE_CURSORS = "1";
-
   };
 
   # Performance Issues with AMDVLK
@@ -33,7 +37,7 @@
         # Essential video acceleration for battery life
         libva
         libvdpau
-        vaapiVdpau
+        libva-vdpau-driver
         libvdpau-va-gl
 
         # Minimal Vulkan support
@@ -45,11 +49,11 @@
         vulkan-loader
         libva
         libvdpau
-        vaapiVdpau
+        libva-vdpau-driver
       ];
     };
 
-    firmware = with pkgs; [ linux-firmware ];
+    firmware = with pkgs; [linux-firmware];
   };
 
   # Optional: For better performance with AMDGPU
@@ -68,18 +72,16 @@
   # XDG Portal configuration
   xdg.portal = {
     enable = true;
-    extraPortals = with pkgs; [ xdg-desktop-portal-gtk xdg-desktop-portal-wlr ];
-    config = { common = { default = [ "wlr" "gtk" ]; }; };
+    extraPortals = with pkgs; [xdg-desktop-portal-gtk xdg-desktop-portal-wlr];
+    config = {common = {default = ["wlr" "gtk"];};};
   };
 
   # AMD microcode updates
   hardware.cpu.amd.updateMicrocode = true;
 
   # Minimal monitoring tools
-  environment.systemPackages = with pkgs;
-    [
-      libva-utils # vainfo - verify video acceleration works
-      # radeontop and nvtop are useful but consume power themselves
-    ];
+  environment.systemPackages = with pkgs; [
+    libva-utils # vainfo - verify video acceleration works
+    # radeontop and nvtop are useful but consume power themselves
+  ];
 }
-

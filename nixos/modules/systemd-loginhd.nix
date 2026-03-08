@@ -1,20 +1,24 @@
-{ config, lib, pkgs, ... }:
-
 {
+  config,
+  lib,
+  pkgs,
+  ...
+}: {
   services.logind = {
     lidSwitch = "suspend";
     lidSwitchExternalPower = "lock";
-    extraConfig = ''
+
+    settings.Login = {
       # Allow lid close handling
-      HandleLidSwitch=suspend
-      HandleLidSwitchExternalPower=lock
+      HandleLidSwitch = "suspend";
+      HandleLidSwitchExternalPower = "lock";
 
       # Don't let systemd kill things too aggressively
-      KillUserProcesses=no
+      KillUserProcesses = false;
 
       # Increase timeout to give processes a chance to handle suspend/resume
-      InhibitDelayMaxSec=5
-    '';
+      InhibitDelayMaxSec = "5";
+    };
   };
 
   # Ensure logind can communicate with Hyprland
