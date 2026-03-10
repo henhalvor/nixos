@@ -66,6 +66,7 @@
     ../../home/modules/environment/dev-tools.nix
     ../../home/modules/environment/session-variables.nix
     ../../home/modules/environment/direnv.nix
+    ../../home/modules/environment/bottles.nix
 
     # Settings
     ../../home/modules/settings/git.nix

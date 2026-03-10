@@ -4,6 +4,10 @@
 
 **Priority**
 
+- [ ] Look into caelestia shell
+      https://github.com/caelestia-dots/shell?tab=readme-ov-file#home-manager-module
+- [ ] Further improve laptop battery tuning
+
 - More modularity and flexibility in config. for example dont hardcode
   services.mako in common.nix, and add configurations for clipboard manager,
   audio etcc, this way the current hardcoded config wont interfer if a switch to
@@ -12,7 +16,7 @@
 ## Other
 
 - [ ] Syncthing for android phone and tablet
-- [ ] Make opencode agents config declarative
+- [x] Make opencode agents config declarative
 
 - [ ] Sunshine Improvements: better resolution, montior should stay off while
       sunshine is remotely using machine
@@ -22,9 +26,6 @@ Low priority:
 
 - [ ] Correct monitor orientation in sddm
 - [ ] Proper VM setup
-
-- [ ] Lazygit Theming
-- [ ] Yazi config + theming
 
 <!---->
 <!-- - [ ] check bluetooth config -->
