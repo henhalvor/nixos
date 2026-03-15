@@ -38,6 +38,7 @@
     ../../home/modules/applications/${userSettings.browser}.nix
     ../../home/modules/applications/zen-browser.nix
     ../../home/modules/applications/yazi.nix
+    ../../home/modules/applications/obsidian.nix
     # ../../home/modules/applications/aider-chat.nix
     ../../home/modules/applications/claude-code.nix # installed via npm
     ../../home/modules/applications/tmux.nix
