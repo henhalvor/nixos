@@ -4,10 +4,8 @@
   # Session defaults are located in ../lib/desktop.nix
   desktop = {
     session = "niri";
-    bar = "waybar";
-    # lock = "hyprlock"; # null = use session default (hyprlock)
-    # idle = "hypridle"; # null = use session default (hypridle)
-    notifications = "mako"; # null = use session default (hyprpanel for hyprland)
+    shell = "noctalia"; # Manages bar, notifications, and logout
+    # bar, notifications, and logout are disabled automatically when shell is set
 
     # Hyprland-specific monitor configuration
     monitors = [

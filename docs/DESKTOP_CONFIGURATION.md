@@ -101,7 +101,10 @@ desktop = {
   lock = null;                    # hyprlock | swaylock | loginctl | none | null
   idle = null;                    # hypridle | swayidle | none | null
   
-  # Desktop Tools (NEW - fully modular)
+  # Desktop Shell (overrides bar, notifications, logout)
+  shell = null;                   # noctalia | null
+  
+  # Desktop Tools (fully modular)
   clipboard = null;               # clipman | cliphist | none | null
   screenshotTool = null;          # grimblast | grim | none | null
   notifications = null;           # mako | dunst | none | null
@@ -114,6 +117,11 @@ desktop = {
 
 **Important**: Setting `idle` to anything other than `"none"` requires a valid lock screen (`lock != "none"`).
 The system will fail to build if you set `idle = "hypridle"` but `lock = "none"`.
+
+**Desktop Shells**: Setting `shell` (e.g. `"noctalia"`) activates a full desktop shell that manages
+the bar, notifications, and logout menu. These three components are automatically set to `"none"` to
+avoid conflicts with the shell's built-in functionality. You can still configure `lock` and `idle`
+independently.
 
 ---
 

@@ -20,6 +20,10 @@
     hyprpanel = ./bars/hyprpanel.nix;
   };
 
+  shellModules = {
+    noctalia = ./shells/noctalia.nix;
+  };
+
   lockModules = {
     hyprlock = ./lock/hyprlock.nix;
     swaylock = ./lock/swaylock.nix;
@@ -87,6 +91,7 @@ in {
     ++ importModule trayAppletModules desktop.trayApplets
     ++ importModule nightLightModules desktop.nightLight
     ++ importModule logoutModules desktop.logout
+    ++ importModule shellModules (desktop.shell or null)
   );
 
   # Validation
@@ -146,6 +151,12 @@ in {
             1. Disable idle daemon: desktop.idle = "none"
             2. Enable a lock screen: desktop.lock = "hyprlock" (or swaylock/loginctl)
         '';
+      }
+
+      # Shell validation
+      {
+        assertion = (desktop.shell or null) == null || builtins.hasAttr desktop.shell shellModules;
+        message = "Unknown desktop.shell: '${toString (desktop.shell or null)}'. Valid: ${lib.concatStringsSep ", " (builtins.attrNames shellModules)}";
       }
 
       # ===== CRITICAL: Hyprpanel/Mako Conflict =====
