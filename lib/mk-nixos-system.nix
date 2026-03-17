@@ -70,6 +70,11 @@ in
           i18n.defaultLocale = "en_US.UTF-8";
           system.stateVersion = userSettings.stateVersion;
 
+          # Noctalia shell
+          environment.systemPackages = [
+            inputs.noctalia.packages.${pkgs.stdenv.hostPlatform.system}.default
+          ];
+
           users.users.${userSettings.username} = {
             isNormalUser = true;
             description = userSettings.name;

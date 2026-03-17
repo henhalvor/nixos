@@ -20,7 +20,7 @@
     ../../nixos/modules/virtualization.nix
     ../../nixos/modules/syncthing.nix
     ./amd-graphics.nix
-    ./battery.nix
+    ./minimal-battery.nix
 
     # Server connectivity
     ../../nixos/modules/server/ssh.nix

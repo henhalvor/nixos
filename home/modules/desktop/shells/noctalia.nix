@@ -1,7 +1,4 @@
-{
-  inputs,
-  ...
-}: {
+{inputs, ...}: {
   imports = [
     inputs.noctalia.homeModules.default
   ];
@@ -13,7 +10,7 @@
     settings = {
       bar = {
         density = "compact";
-        position = "right";
+        # position = "right";
         showCapsule = false;
         widgets = {
           left = [
