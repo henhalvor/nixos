@@ -1,10 +1,14 @@
 {
   config,
   pkgs,
+  lib,
   ...
 }: {
   # Essential monitoring tools only
   environment.systemPackages = with pkgs; [powertop acpi btop htop];
+
+  services.spice-vdagentd.enable = lib.mkDefault false; # not a VM guest
+  networking.networkmanager.wifi.powersave = lib.mkDefault true;
 
   # Simple, effective power management
   powerManagement = {
@@ -32,14 +36,10 @@
     ];
   };
 
-  # Aggressive power management
   services.udev.extraRules = ''
-    # Maximum battery optimization for AMD GPU
-    KERNEL=="card[0-9]", SUBSYSTEM=="drm", DRIVERS=="amdgpu", ATTR{device/power_dpm_state}="battery"
-    KERNEL=="card[0-9]", SUBSYSTEM=="drm", DRIVERS=="amdgpu", ATTR{device/power_dpm_force_performance_level}="low"
-    KERNEL=="card[0-9]", SUBSYSTEM=="drm", DRIVERS=="amdgpu", ATTR{device/pp_power_profile_mode}="1"
     ACTION=="add", SUBSYSTEM=="pci", DRIVER=="amdgpu", ATTR{power/control}="auto"
     ACTION=="add", SUBSYSTEM=="pci", DRIVER=="amdgpu", ATTR{power/autosuspend_delay_ms}="1000"
+    KERNEL=="card[0-9]", SUBSYSTEM=="drm", DRIVERS=="amdgpu", ATTR{device/power_dpm_force_performance_level}="auto"
   '';
 
   # Battery-focused Firefox
@@ -55,7 +55,6 @@
       "dom.ipc.processCount" = 2;
       "browser.sessionstore.interval" = 120000;
       "browser.tabs.unloadOnLowMemory" = true;
-      "browser.tabs.remote.autostart" = false;
       "media.autoplay.default" = 5; # Block autoplay
 
       # Memory management
