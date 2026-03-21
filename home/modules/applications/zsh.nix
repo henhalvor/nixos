@@ -168,13 +168,10 @@
 
 
 
-      # Auto-attach tmux for local shells (not in SSH)
-      if [ -z "$TMUX" ] && [ -z "$SSH_CONNECTION" ]; then
-        exec tmux new-session -A -s main
-      fi
-
-
-
+      # # Auto-attach tmux for local shells (not in SSH)
+      # if [ -z "$TMUX" ] && [ -z "$SSH_CONNECTION" ]; then
+      #   exec tmux new-session -A -s main
+      # fi
     '';
     history = {
       size = 10000;

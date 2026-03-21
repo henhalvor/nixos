@@ -193,9 +193,9 @@ in {
 
       general = {
         "$mainMod" = "SUPER";
-        layout = "scrolling";
-        gaps_in = 25;
-        gaps_out = 60;
+        layout = "dwindle";
+        gaps_in = 10;
+        gaps_out = 20;
         border_size = 0;
 
         resize_on_border = false;
