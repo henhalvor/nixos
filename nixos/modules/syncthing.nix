@@ -18,7 +18,8 @@
         mkdir -p \
           "${userSettings.homeDirectory}/Pictures/Camera" \
           "${userSettings.homeDirectory}/Pictures/Screenshots" \
-          "${userSettings.homeDirectory}/Shared"
+          "${userSettings.homeDirectory}/Shared" \
+          "${userSettings.homeDirectory}/Vault"
       '';
     };
   };
@@ -85,6 +86,13 @@
         # Camera folder - sync between all devices
         "camera" = {
           path = "${userSettings.homeDirectory}/Pictures/Camera";
+          devices = ["workstation" "yoga-pro-7" "android-phone" "android-tablet"];
+          ignorePerms = true; # Needed for Android
+        };
+
+        # Vault folder - sync between all devices
+        "vault" = {
+          path = "${userSettings.homeDirectory}/Vault";
           devices = ["workstation" "yoga-pro-7" "android-phone" "android-tablet"];
           ignorePerms = true; # Needed for Android
         };
