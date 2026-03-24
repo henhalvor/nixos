@@ -21,7 +21,7 @@
   };
 
   shellModules = {
-    noctalia = ./shells/noctalia.nix;
+    noctalia = ./shells/noctalia/default.nix;
   };
 
   lockModules = {
