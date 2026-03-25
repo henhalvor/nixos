@@ -24,6 +24,11 @@
     noctalia = ./shells/noctalia/default.nix;
   };
 
+  launcherModules = {
+    rofi = ./launchers/rofi.nix;
+    none = ./launchers/none.nix;
+  };
+
   lockModules = {
     hyprlock = ./lock/hyprlock.nix;
     swaylock = ./lock/swaylock.nix;
@@ -82,6 +87,7 @@ in {
       ./common.nix
     ]
     ++ importModule sessionModules desktop.session
+    ++ importModule launcherModules desktop.launcher
     ++ importModule barModules desktop.bar
     ++ importModule lockModules desktop.lock
     ++ importModule idleModules desktop.idle
@@ -97,6 +103,12 @@ in {
   # Validation
   config = lib.mkIf enabled {
     assertions = [
+      # Launcher validation
+      {
+        assertion = builtins.hasAttr desktop.launcher launcherModules;
+        message = "Unknown desktop.launcher: '${desktop.launcher}'. Valid: ${lib.concatStringsSep ", " (builtins.attrNames launcherModules)}";
+      }
+
       # Clipboard validation
       {
         assertion = builtins.hasAttr desktop.clipboard clipboardModules;

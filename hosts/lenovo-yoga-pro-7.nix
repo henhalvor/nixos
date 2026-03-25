@@ -6,6 +6,7 @@
     session = "niri";
     shell = "noctalia"; # Manages bar, notifications, and logout
     # bar, notifications, and logout are disabled automatically when shell is set
+    # launcher = "rofi"; # Re-enable the launcher when using Noctalia
 
     # Hyprland-specific monitor configuration
     monitors = [

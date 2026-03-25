@@ -121,6 +121,18 @@
     ]
     else [];
 
+  launcherBinds =
+    if desktop.launcher == "rofi"
+    then [
+      "$mainMod, D, exec, ${pkgs.rofi}/bin/rofi -show drun"
+      "$mainMod, W, exec, ${config.home.homeDirectory}/.config/rofi/scripts/wallpaper-picker.sh"
+    ]
+    else if desktop.shell == "noctalia"
+    then [
+      "$mainMod, D, exec, noctalia-shell ipc call launcher toggle"
+    ]
+    else [];
+
   # Bar-specific exec-once commands
   barExecOnce =
     if desktop.bar == "hyprpanel"
@@ -133,8 +145,6 @@
     # ]
     else [];
 in {
-  imports = [../launchers/rofi.nix];
-
   home.packages = with pkgs;
     [
       # hyprland
@@ -274,10 +284,11 @@ in {
           "$mainMod SHIFT, Q, killactive,"
           "$mainMod, F, fullscreen, 0"
           # "$mainMod, Space, exec, togglefloating"
-          "$mainMod, D, exec, ${pkgs.rofi}/bin/rofi -show drun"
+        ]
+        ++ launcherBinds
+        ++ [
           "$mainMod, O, exec, clipboard-history"
           "$mainMod SHIFT, O, exec, clipboard-clear"
-          "$mainMod, W, exec, ${config.home.homeDirectory}/.config/rofi/scripts/wallpaper-picker.sh"
           "$mainMod, X, togglesplit,"
           "$mainMod, E, exec, hyprctl dispatch exec '[float; size 1111 650] kitty -e yazi-float'"
           "$mainMod, I, exec, hyprctl dispatch exec '[float; size 1111 650] kitty -e btop'"

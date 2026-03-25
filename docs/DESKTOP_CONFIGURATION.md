@@ -100,8 +100,9 @@ desktop = {
   bar = null;                     # hyprpanel | waybar | none | null
   lock = null;                    # hyprlock | swaylock | loginctl | none | null
   idle = null;                    # hypridle | swayidle | none | null
-  
-  # Desktop Shell (overrides bar, notifications, logout)
+  launcher = null;                # rofi | none | null
+
+  # Desktop Shell (overrides bar, notifications, logout, launcher default)
   shell = null;                   # noctalia | null
   
   # Desktop Tools (fully modular)
@@ -120,8 +121,9 @@ The system will fail to build if you set `idle = "hypridle"` but `lock = "none"`
 
 **Desktop Shells**: Setting `shell` (e.g. `"noctalia"`) activates a full desktop shell that manages
 the bar, notifications, and logout menu. These three components are automatically set to `"none"` to
-avoid conflicts with the shell's built-in functionality. You can still configure `lock` and `idle`
-independently.
+avoid conflicts with the shell's built-in functionality. The launcher also defaults to `"none"` while
+a shell is active, but you can explicitly re-enable it with `desktop.launcher = "rofi";`. You can
+still configure `lock` and `idle` independently.
 
 ---
 
@@ -343,6 +345,7 @@ sessionDefaults = {
     bar = "hyprpanel";
     lock = "hyprlock";
     idle = "hypridle";
+    launcher = "rofi";
     clipboard = "clipman";
     screenshotTool = "grimblast";
     notifications = "none";  # Hyprpanel has built-in
@@ -361,6 +364,7 @@ desktop = {
   session = "hyprland";
   bar = "hyprpanel";        # From default
   lock = "hyprlock";        # From default
+  launcher = "rofi";        # From default unless shell disables it
   clipboard = "clipman";    # From default
   # ... etc
 };

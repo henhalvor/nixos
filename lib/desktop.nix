@@ -6,6 +6,7 @@
       lock = "hyprlock";
       idle = "hypridle";
       notifications = "none";
+      launcher = "rofi";
       dm = "sddm";
       clipboard = "clipman";
       screenshotTool = "grimblast";
@@ -19,6 +20,7 @@
       lock = "swaylock";
       idle = "swayidle";
       notifications = "mako";
+      launcher = "rofi";
       dm = "sddm";
       clipboard = "clipman";
       screenshotTool = "grim";
@@ -32,6 +34,7 @@
       lock = "swaylock";
       idle = "swayidle";
       notifications = "mako";
+      launcher = "rofi";
       dm = "sddm";
       clipboard = "clipman";
       screenshotTool = "grim";
@@ -45,6 +48,7 @@
       lock = "loginctl";
       idle = "none";
       notifications = "none";
+      launcher = "none";
       dm = "gdm";
       clipboard = "none";
       screenshotTool = "none";
@@ -58,6 +62,7 @@
       lock = "none";
       idle = "none";
       notifications = "none";
+      launcher = "none";
       dm = "none";
       clipboard = "none";
       screenshotTool = "none";
@@ -99,6 +104,12 @@
         else if desktop.notifications or null != null
         then desktop.notifications
         else defaults.notifications;
+      launcher =
+        if desktop.launcher or null != null
+        then desktop.launcher
+        else if shellActive
+        then "none"
+        else defaults.launcher;
       clipboard =
         if desktop.clipboard or null != null
         then desktop.clipboard

@@ -26,6 +26,13 @@
       desktop.lock
     } or "loginctl lock-session";
 
+  launcherMenu =
+    if desktop.launcher == "rofi"
+    then "${pkgs.rofi}/bin/rofi -show drun -theme ${config.home.homeDirectory}/.config/rofi/theme.rasi"
+    else if desktop.shell == "noctalia"
+    then "noctalia-shell ipc call launcher toggle"
+    else null;
+
   # Host-specific packages
   hostPackages =
     if hostConfig.hostname == "workstation"
@@ -60,8 +67,6 @@
     }
     else {};
 in {
-  imports = [../rofi];
-
   home.packages = with pkgs;
     [
       # sway
@@ -149,16 +154,15 @@ in {
         {command = "blueman-applet";}
       ];
 
-      menu = "${pkgs.rofi}/bin/rofi -show drun -theme ${config.home.homeDirectory}/.config/rofi/theme.rasi";
-
       keybindings = let
         modifier = config.wayland.windowManager.sway.config.modifier;
-        menu = config.wayland.windowManager.sway.config.menu;
-
-        baseKeybindings = {
+        launcherKeybindings = lib.optionalAttrs (launcherMenu != null) {
+          "${modifier}+d" = "exec ${launcherMenu}";
+        };
+        baseKeybindings =
+          {
           "${modifier}+Return" = "exec ${pkgs.kitty}/bin/kitty";
           "${modifier}+Shift+q" = "kill";
-          "${modifier}+d" = "exec ${menu}";
           "${modifier}+Shift+c" = "exec reload";
           "${modifier}+o" = "exec clipboard-history";
           "${modifier}+Shift+o" = "exec clipboard-clear";
@@ -172,9 +176,13 @@ in {
           "XF86AudioRaiseVolume" = "exec pactl set-sink-volume @DEFAULT_SINK@ +10%";
           "XF86AudioLowerVolume" = "exec pactl set-sink-volume @DEFAULT_SINK@ -10%";
           "XF86AudioMute" = "exec pactl set-sink-mute @DEFAULT_SINK@ toggle";
-        };
+          }
+          // launcherKeybindings;
       in
         lib.mkOptionDefault (baseKeybindings // hostKeybindings);
+    }
+    // lib.optionalAttrs (launcherMenu != null) {
+      menu = launcherMenu;
     };
   };
 }
