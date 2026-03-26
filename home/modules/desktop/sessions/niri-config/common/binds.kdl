@@ -3,7 +3,7 @@ binds {
     Mod+Shift+C repeat=false { spawn-sh "niri msg action load-config-file --path \"${XDG_CONFIG_HOME:-$HOME/.config}/niri/config.kdl\""; }
     Mod+Shift+Q repeat=false { close-window; }
     Mod+F repeat=false { fullscreen-window; }
-    Mod+D repeat=false { spawn "rofi" "-show" "drun"; }
+    Mod+D repeat=false { spawn "noctalia-shell" "ipc" "call" "launcher" "toggle" ; }
     Mod+O repeat=false { spawn "clipboard-history"; }
     Mod+Shift+O repeat=false { spawn "clipboard-clear"; }
     Mod+W repeat=false { spawn-sh "$HOME/.config/rofi/scripts/wallpaper-picker.sh"; }
