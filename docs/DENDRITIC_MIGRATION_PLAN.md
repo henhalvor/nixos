@@ -85,9 +85,14 @@ A feature file can define up to **three things** in one place:
 |---|:---:|:---:|:---:|---|
 | Full desktop feature | ✓ | ✓ | ✓ | hyprland, niri, kitty |
 | System service | ✓ | — | — | bluetooth, pipewire, tailscale |
-| User-only config | — | ✓ | — | git, ssh, direnv |
+| User config (with options) | ✓ (thin) | ✓ | — | git, ssh-config, secrets |
+| User config (no options) | ✓ (thin) | ✓ | — | direnv, dev-tools, utils |
 | Both levels, no package | ✓ | ✓ | — | gaming, printing |
 | Package only | — | — | ✓ | noctalia (wrapped shell) |
+
+> **"✓ (thin)"** means the `nixosModules` side only injects the `homeModules` via
+> `sharedModules` — no NixOS-level config of its own. This keeps the
+> "one import per feature" pattern consistent for hosts.
 
 ### How the injection works
 
@@ -219,13 +224,13 @@ Host configuration.nix
 │   │   ├── sunshine.nix
 │   │   ├── server-base.nix
 │   │   │
-│   │   │  # ── User-only config ──
-│   │   ├── git.nix                        # homeModules only
+│   │   │  # ── User config (option-based for multi-user) ──
+│   │   ├── git.nix                        # nixosModules (thin) + homeModules (with options)
 │   │   ├── ssh-config.nix
 │   │   ├── nerd-fonts.nix
 │   │   ├── secrets.nix
 │   │   ├── udiskie.nix
-│   │   ├── dev-tools.nix
+│   │   ├── dev-tools.nix                  # nixosModules (thin) + homeModules
 │   │   ├── direnv.nix
 │   │   ├── session-variables.nix
 │   │   ├── bottles.nix
@@ -312,18 +317,76 @@ That's it. No `nixosConfigurations` block, no `mkSystem` factory, no manual host
 }
 ```
 
-### Template B: Home-manager-only feature (user config)
+### Template B: Home-manager-only feature with options (user config)
+
+Features that need user-specific values (name, email, keys) define **options** so
+multiple users can set their own values without duplicating the feature file.
 
 ```nix
 # modules/features/git.nix
-{ ... }: {
-  flake.homeModules.git = { ... }: {
-    programs.git = {
-      enable = true;
-      userName = "Henrik";
-      userEmail = "henhalvor@gmail.com";
-      extraConfig = { init.defaultBranch = "main"; };
+{ self, ... }: {
+  flake.homeModules.git = { lib, config, ... }: {
+    options.my.git = {
+      userName = lib.mkOption { type = lib.types.str; };
+      userEmail = lib.mkOption { type = lib.types.str; };
     };
+
+    config.programs.git = {
+      enable = true;
+      userName = config.my.git.userName;
+      userEmail = config.my.git.userEmail;
+      extraConfig = {
+        init.defaultBranch = "main";
+        pull.rebase = true;
+      };
+    };
+  };
+
+  # Thin NixOS wrapper so hosts can import this like any other feature
+  flake.nixosModules.git = { ... }: {
+    home-manager.sharedModules = [ self.homeModules.git ];
+  };
+}
+```
+
+The user module only sets values — it never imports the feature:
+
+```nix
+# In modules/users/henhal.nix
+home-manager.users.henhal.my.git = {
+  userName = "Henrik";
+  userEmail = "henhalvor@gmail.com";
+};
+```
+
+A second user sets different values for the same options:
+
+```nix
+# In modules/users/alice.nix
+home-manager.users.alice.my.git = {
+  userName = "Alice";
+  userEmail = "alice@example.com";
+};
+```
+
+No duplicate git.nix needed.
+
+### Template B2: Home-manager-only feature without options (no user-specific data)
+
+Features with no user-specific data don't need options at all:
+
+```nix
+# modules/features/direnv.nix
+{ self, ... }: {
+  flake.homeModules.direnv = { ... }: {
+    programs.direnv = {
+      enable = true;
+      nix-direnv.enable = true;
+    };
+  };
+
+  flake.nixosModules.direnv = { ... }: {
+    home-manager.sharedModules = [ self.homeModules.direnv ];
   };
 }
 ```
@@ -485,6 +548,20 @@ That's it. No `nixosConfigurations` block, no `mkSystem` factory, no manual host
       self.nixosModules.spotify
       # ... etc
 
+      # User-level features (also imported here, NOT in the user module)
+      self.nixosModules.git
+      self.nixosModules.sshConfig
+      self.nixosModules.nerdFonts
+      self.nixosModules.secrets
+      self.nixosModules.udiskie
+      self.nixosModules.devTools
+      self.nixosModules.direnv
+      self.nixosModules.sessionVariables
+      self.nixosModules.bottles
+      self.nixosModules.utils
+      self.nixosModules.powerMonitor
+      self.nixosModules.yaziFloat
+
       # System services
       self.nixosModules.pipewire
       self.nixosModules.bluetooth
@@ -505,7 +582,7 @@ That's it. No `nixosConfigurations` block, no `mkSystem` factory, no manual host
       self.nixosModules.stylix
       inputs.stylix.nixosModules.stylix
 
-      # User
+      # User (slim — just identity + option values)
       self.nixosModules.userHenhal
     ];
 
@@ -533,42 +610,48 @@ That's it. No `nixosConfigurations` block, no `mkSystem` factory, no manual host
 }
 ```
 
-### Template G: User module
+### Template G: User module (slim — identity + option values only)
+
+The user module defines **who the user is** and sets values for option-based features.
+It does **not** import features — the host decides what's installed.
 
 ```nix
 # modules/users/henhal.nix
-{ self, ... }: {
+{ ... }: {
   flake.nixosModules.userHenhal = { pkgs, ... }: {
+    # System-level identity
     users.users.henhal = {
       isNormalUser = true;
       extraGroups = [ "wheel" "networkmanager" "docker" "video" "input" "i2c" ];
       shell = pkgs.zsh;
     };
 
+    # Home-manager identity + option values for features
     home-manager.users.henhal = {
-      imports = [
-        # Pure home-manager features (no NixOS counterpart needed)
-        self.homeModules.git
-        self.homeModules.sshConfig
-        self.homeModules.nerdFonts
-        self.homeModules.secrets
-        self.homeModules.udiskie
-        self.homeModules.devTools
-        self.homeModules.direnv
-        self.homeModules.sessionVariables
-        self.homeModules.bottles
-        self.homeModules.utils
-        self.homeModules.powerMonitor
-        self.homeModules.yaziFloat
-      ];
-
       home.username = "henhal";
       home.homeDirectory = "/home/henhal";
       home.stateVersion = "25.05";
+
+      # Set values for option-based features (git, ssh, secrets, etc.)
+      # The features themselves are imported at the HOST level, not here.
+      my.git = {
+        userName = "Henrik";
+        userEmail = "henhalvor@gmail.com";
+      };
+
+      my.ssh = {
+        identityFile = "~/.ssh/id_ed25519";
+      };
     };
   };
 }
 ```
+
+**Why this is slim:**
+- No feature imports here — the host's `configuration.nix` imports all features
+- Features auto-inject their home-manager config via `sharedModules`
+- The user module only provides identity + user-specific option values
+- Adding a second user means creating `modules/users/alice.nix` with different option values, nothing else
 
 ---
 
@@ -690,7 +773,31 @@ Nix-on-droid uses its own builder (`nixOnDroidConfiguration`), not `nixosSystem`
 
 ### 7. `home-manager.sharedModules` applies to all users
 
-Since this config is effectively single-user, `sharedModules` works perfectly. If multi-user support is needed later, switch to importing home-manager modules directly in specific user modules instead.
+Since every feature (including user-level ones like git, direnv, dev-tools) now injects via `sharedModules`, the modules are available to **all** users on a host. This is intentional — the host decides the feature set, and user modules only provide identity and option values.
+
+For multi-user setups, this means all users get the same feature set but can configure features differently via their own `my.*` option values. If a feature truly needs to be user-specific (only user A gets it, not user B), import its `homeModules.*` directly in that user's `home-manager.users.*.imports` instead of relying on `sharedModules`.
+
+### 8. User modules are slim — identity + option values only
+
+User modules (`modules/users/henhal.nix`) contain:
+- `users.users.henhal` — system account definition (groups, shell)
+- `home-manager.users.henhal` — home identity (username, homeDirectory, stateVersion)
+- `home-manager.users.henhal.my.*` — values for option-based features (git email, SSH key, etc.)
+
+They do **not** import features. The host controls what's installed. This keeps user modules small and focused, and makes it trivial to add a second user — just create `modules/users/alice.nix` with different option values.
+
+### 9. Option-based features for multi-user support
+
+Features that need user-specific values (git username, SSH key path, etc.) define custom options under a `my.*` namespace:
+
+```nix
+options.my.git = {
+  userName = lib.mkOption { type = lib.types.str; };
+  userEmail = lib.mkOption { type = lib.types.str; };
+};
+```
+
+This lets each user set their own values without duplicating the feature file. Features without user-specific data (direnv, dev-tools, utils) don't need options — they just work the same for everyone.
 
 ---
 
@@ -897,18 +1004,18 @@ Convert all `home/modules/**/*.nix` to colocated features or home-only features:
 | `home/modules/applications/obsidian.nix` | `obsidian` | Home-only |
 | `home/modules/applications/spotify.nix` | `spotify` | Home-only |
 | *(all other apps)* | *(same pattern)* | Home-only |
-| `home/modules/settings/git.nix` | `git` | Home-only |
-| `home/modules/settings/ssh.nix` | `sshConfig` | Home-only |
-| `home/modules/settings/nerd-fonts.nix` | `nerdFonts` | Home-only |
-| `home/modules/settings/secrets/` | `secrets` | Home-only |
-| `home/modules/settings/udiskie.nix` | `udiskie` | Home-only |
-| `home/modules/environment/dev-tools.nix` | `devTools` | Home-only |
-| `home/modules/environment/direnv.nix` | `direnv` | Home-only |
-| `home/modules/environment/session-variables.nix` | `sessionVariables` | Home-only |
-| `home/modules/environment/bottles.nix` | `bottles` | Home-only |
-| `home/modules/utils/default.nix` | `utils` | Home-only |
-| `home/modules/scripts/power-monitor.nix` | `powerMonitor` | Home-only |
-| `home/modules/scripts/yazi-float.nix` | `yaziFloat` | Home-only |
+| `home/modules/settings/git.nix` | `git` | Option-based + thin NixOS |
+| `home/modules/settings/ssh.nix` | `sshConfig` | Option-based + thin NixOS |
+| `home/modules/settings/nerd-fonts.nix` | `nerdFonts` | Thin NixOS + HM |
+| `home/modules/settings/secrets/` | `secrets` | Option-based + thin NixOS |
+| `home/modules/settings/udiskie.nix` | `udiskie` | Thin NixOS + HM |
+| `home/modules/environment/dev-tools.nix` | `devTools` | Thin NixOS + HM |
+| `home/modules/environment/direnv.nix` | `direnv` | Thin NixOS + HM |
+| `home/modules/environment/session-variables.nix` | `sessionVariables` | Thin NixOS + HM |
+| `home/modules/environment/bottles.nix` | `bottles` | Thin NixOS + HM |
+| `home/modules/utils/default.nix` | `utils` | Thin NixOS + HM |
+| `home/modules/scripts/power-monitor.nix` | `powerMonitor` | Thin NixOS + HM |
+| `home/modules/scripts/yazi-float.nix` | `yaziFloat` | Thin NixOS + HM |
 | `home/modules/themes/stylix/` | `stylix` | Colocated (merged with NixOS) |
 
 ### Users
@@ -942,7 +1049,7 @@ Convert all `home/modules/**/*.nix` to colocated features or home-only features:
 
 5. **`wrapper-modules` availability** — Not all programs have wrappers. Check [BirdeeHub/nix-wrapper-modules](https://github.com/BirdeeHub/nix-wrapper-modules) before planning which programs to wrap. For unsupported programs, use `symlinkJoin` + `makeWrapper`.
 
-6. **Home-only features with `nixosModules` wrapper** — For features like `kitty` that are purely home-manager config, we create a thin `nixosModules.kitty` whose only job is to inject `homeModules.kitty` via `sharedModules`. This adds a small indirection but keeps the "one import per feature" pattern consistent.
+6. **Option namespace collisions** — Features define options under `my.*` (e.g., `my.git.userName`). This namespace must not collide with other NixOS/HM options. Using a unique prefix like `my.*` or `dotfiles.*` avoids this.
 
 ### Open Questions
 
