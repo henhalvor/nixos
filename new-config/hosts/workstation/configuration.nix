@@ -61,7 +61,34 @@
       self.nixosModules.waylandApplets
       self.nixosModules.gammastep
 
-      # TODO: Phase 8+ features
+      # Applications (Phase 8)
+      self.nixosModules.kitty
+      self.nixosModules.nvf
+      self.nixosModules.zsh
+      self.nixosModules.tmux
+      self.nixosModules.yazi
+      self.nixosModules.vivaldi
+      self.nixosModules.zenBrowser
+      self.nixosModules.brave
+      self.nixosModules.firefox
+      self.nixosModules.googleChrome
+      self.nixosModules.microsoftEdge
+      self.nixosModules.obsidian
+      self.nixosModules.spotify
+      self.nixosModules.gimp
+      self.nixosModules.gthumb
+      self.nixosModules.mpv
+      self.nixosModules.zathura
+      self.nixosModules.libreoffice
+      self.nixosModules.nautilus
+      self.nixosModules.missionCenter
+      self.nixosModules.gnomeCalculator
+      self.nixosModules.vial
+      self.nixosModules.claudeCode
+      self.nixosModules.amazonQ
+      self.nixosModules.opencode
+
+      # TODO: Phase 9+ features
 
       # User
       self.nixosModules.userHenhal
@@ -130,6 +157,10 @@
       extraSpecialArgs = {
         inherit inputs self;
         pkgs-unstable = import inputs.nixpkgs-unstable {
+          system = "x86_64-linux";
+          config.allowUnfree = true;
+        };
+        pkgs24-11 = import inputs.nixpkgs-24-11 {
           system = "x86_64-linux";
           config.allowUnfree = true;
         };

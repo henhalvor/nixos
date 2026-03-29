@@ -29,7 +29,11 @@
       self.nixosModules.serverMonitoring
       # self.nixosModules.cockpit  # Currently unused
 
-      # TODO: Phase 5+ features
+      # Shell & tools (Phase 8)
+      self.nixosModules.zsh
+      self.nixosModules.tmux
+
+      # TODO: Phase 9+ features
 
       # User
       self.nixosModules.userHenhal

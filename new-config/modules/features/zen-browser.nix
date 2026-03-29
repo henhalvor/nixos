@@ -1,0 +1,12 @@
+# Zen Browser — privacy-focused browser (from flake input)
+# Source: home/modules/applications/zen-browser.nix
+# Template B2: HM-only (uses inputs.zen-browser)
+{ self, inputs, ... }: {
+  flake.nixosModules.zenBrowser = { ... }: {
+    home-manager.sharedModules = [ self.homeModules.zenBrowser ];
+  };
+
+  flake.homeModules.zenBrowser = { pkgs, ... }: {
+    home.packages = [ inputs.zen-browser.packages.${pkgs.system}.default ];
+  };
+}

@@ -30,6 +30,7 @@
     };
 
     home-manager.users.henhal = {
+      nixpkgs.config.allowUnfree = true;
       home.username = "henhal";
       home.homeDirectory = "/home/henhal";
       home.stateVersion = "25.05";
