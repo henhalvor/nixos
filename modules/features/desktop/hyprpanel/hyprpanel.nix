@@ -32,12 +32,12 @@
     hostname = osConfig.networking.hostName;
 
     systemConfigs = {
-      workstation.configFile = ./hyprpanel-configs/workstation.json;
-      lenovo-yoga-pro-7.configFile = ./hyprpanel-configs/lenovo-yoga-pro-7.json;
+      workstation.configFile = ./workstation.json;
+      lenovo-yoga-pro-7.configFile = ./lenovo-yoga-pro-7.json;
     };
 
     currentConfig = systemConfigs.${hostname} or systemConfigs.lenovo-yoga-pro-7;
-    currentTheme = ./hyprpanel-configs/themes/${selectedHyprpanelTheme}.json;
+    currentTheme = ./themes/${selectedHyprpanelTheme}.json;
 
     baseConfig = builtins.fromJSON (builtins.readFile currentConfig.configFile);
     themeConfig = builtins.fromJSON (builtins.readFile currentTheme);

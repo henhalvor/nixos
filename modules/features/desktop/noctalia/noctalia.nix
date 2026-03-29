@@ -5,7 +5,11 @@
 # Settings in noctalia/settings.json (co-located).
 # When noctalia manages bar/notifications/logout, those individual features
 # should NOT be imported for the same host.
-{self, inputs, ...}: {
+{
+  self,
+  inputs,
+  ...
+}: {
   flake.nixosModules.noctalia = {...}: {
     home-manager.sharedModules = [self.homeModules.noctalia];
   };
@@ -16,7 +20,7 @@
     programs.noctalia-shell = {
       enable = true;
       systemd.enable = true;
-      settings = lib.mkDefault (builtins.fromJSON (builtins.readFile ./noctalia/settings.json));
+      settings = lib.mkDefault (builtins.fromJSON (builtins.readFile ./settings.json));
     };
   };
 }

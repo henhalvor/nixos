@@ -5,10 +5,7 @@
 # Config is KDL-based in modules/features/niri-config/
 # Host-specific config selected by hostname.
 {self, ...}: {
-  flake.nixosModules.niri = {
-    pkgs-unstable,
-    ...
-  }: {
+  flake.nixosModules.niri = {pkgs-unstable, ...}: {
     programs.niri = {
       enable = true;
       package = pkgs-unstable.niri;
@@ -130,7 +127,7 @@
       else "hosts/default.kdl";
 
     # Path to the niri-config directory co-located with this feature
-    niriConfigSrc = ./niri-config;
+    niriConfigSrc = ./config;
   in {
     home.packages = with pkgs;
       [brightnessctl pamixer playerctl ddcutil bluez blueberry swaybg xwayland-satellite]

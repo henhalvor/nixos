@@ -1,19 +1,29 @@
 # OpenCode — AI coding assistant (npm-installed, web UI service)
 # Source: home/modules/applications/opencode/default.nix
 # Template B2: HM-only with systemd services
-{ self, ... }: {
-  flake.nixosModules.opencode = { ... }: {
-    home-manager.sharedModules = [ self.homeModules.opencode ];
+{self, ...}: {
+  flake.nixosModules.opencode = {...}: {
+    home-manager.sharedModules = [self.homeModules.opencode];
   };
 
-  flake.homeModules.opencode = { lib, pkgs, config, ... }: let
-    repo = ./opencode-config;
+  flake.homeModules.opencode = {
+    lib,
+    pkgs,
+    config,
+    ...
+  }: let
+    repo = ./config;
     repoEntries = builtins.readDir repo;
     repoNames = builtins.attrNames repoEntries;
-    skip = name: lib.elem name [
-      "node_modules" "package.json" "package-lock.json"
-      "bun.lockb" "bunfig.toml" ".gitignore"
-    ];
+    skip = name:
+      lib.elem name [
+        "node_modules"
+        "package.json"
+        "package-lock.json"
+        "bun.lockb"
+        "bunfig.toml"
+        ".gitignore"
+      ];
     want = lib.filter (n: !(skip n)) repoNames;
     namesStr = lib.concatStringsSep " " want;
 
@@ -37,7 +47,7 @@
     '';
   in {
     # Seed config files on first activation
-    home.activation.seedOpencode = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    home.activation.seedOpencode = lib.hm.dag.entryAfter ["writeBoundary"] ''
       src="${repo}"
       dest="$HOME/.config/opencode"
       mkdir -p "$dest"
@@ -63,15 +73,15 @@
         Type = "oneshot";
         ExecStart = opencodeUpdateScript;
       };
-      Install.WantedBy = [ "default.target" ];
+      Install.WantedBy = ["default.target"];
     };
 
     # Web UI service
     systemd.user.services.opencode-web = {
       Unit = {
         Description = "OpenCode Web UI";
-        After = [ "network.target" "opencode-update.service" ];
-        Requires = [ "opencode-update.service" ];
+        After = ["network.target" "opencode-update.service"];
+        Requires = ["opencode-update.service"];
       };
       Service = {
         ExecStart = opencodeWebScript;
@@ -79,7 +89,7 @@
         RestartSec = 5;
         WorkingDirectory = "%h";
       };
-      Install.WantedBy = [ "default.target" ];
+      Install.WantedBy = ["default.target"];
     };
   };
 }

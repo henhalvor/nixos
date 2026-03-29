@@ -116,7 +116,7 @@
 
       # Deploy apps.json declaratively
       systemd.tmpfiles.rules = [
-        "L+ ${homeDir}/.config/sunshine/apps.json - ${cfg.user} users - ${./sunshine/apps.json}"
+        "L+ ${homeDir}/.config/sunshine/apps.json - ${cfg.user} users - ${./apps.json}"
       ];
     };
   };
