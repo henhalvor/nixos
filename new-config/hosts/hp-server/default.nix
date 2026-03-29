@@ -7,6 +7,10 @@
         system = "x86_64-linux";
         config.allowUnfree = true;
       };
+      pkgs24-11 = import inputs.nixpkgs-24-11 {
+        system = "x86_64-linux";
+        config.allowUnfree = true;
+      };
     };
     modules = [
       self.nixosModules.hpServerConfig

@@ -29,20 +29,24 @@
       self.nixosModules.serverMonitoring
       # self.nixosModules.cockpit  # Currently unused
 
+      # VS Code Remote Server
+      inputs.vscode-server.nixosModules.default
+
       # Shell & tools (Phase 8)
       self.nixosModules.zsh
       self.nixosModules.tmux
+      self.nixosModules.yazi
+      self.nixosModules.nvf
 
       # Settings & Environment (Phase 9)
       self.nixosModules.git
       self.nixosModules.sshConfig
       self.nixosModules.secrets
+      self.nixosModules.nerdFonts
       self.nixosModules.devTools
       self.nixosModules.sessionVariables
       self.nixosModules.direnv
       self.nixosModules.utils
-
-      # TODO: Phase 10+ features
 
       # User
       self.nixosModules.userHenhal
@@ -54,6 +58,9 @@
 
     programs.dconf.enable = true;
 
+    # VS Code Remote Server (for remote development)
+    services.vscode-server.enable = true;
+
     # Home-manager settings
     home-manager = {
       useGlobalPkgs = false;
@@ -62,6 +69,10 @@
       extraSpecialArgs = {
         inherit inputs self;
         pkgs-unstable = import inputs.nixpkgs-unstable {
+          system = "x86_64-linux";
+          config.allowUnfree = true;
+        };
+        pkgs24-11 = import inputs.nixpkgs-24-11 {
           system = "x86_64-linux";
           config.allowUnfree = true;
         };

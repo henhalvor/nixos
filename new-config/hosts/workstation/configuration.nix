@@ -105,8 +105,6 @@
       self.nixosModules.yaziFloat
       self.nixosModules.brightnessExternal
 
-      # TODO: Phase 11+ features
-
       # User
       self.nixosModules.userHenhal
     ];

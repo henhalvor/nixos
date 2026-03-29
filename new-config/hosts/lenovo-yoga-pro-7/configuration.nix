@@ -99,8 +99,6 @@
       self.nixosModules.powerMonitor
       self.nixosModules.yaziFloat
 
-      # TODO: Phase 11+ features
-
       # User
       self.nixosModules.userHenhal
     ];
@@ -143,6 +141,10 @@
       enable = true;
       enable32Bit = true;
     };
+
+    # Logitech wireless peripherals
+    hardware.logitech.wireless.enable = true;
+    hardware.logitech.wireless.enableGraphical = true;
 
     # Fixes battery percentage in hyprpanel
     services.upower.enable = true;
