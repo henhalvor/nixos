@@ -83,7 +83,19 @@
       self.nixosModules.amazonQ
       self.nixosModules.opencode
 
-      # TODO: Phase 9+ features
+      # Settings & Environment (Phase 9)
+      self.nixosModules.git
+      self.nixosModules.sshConfig
+      self.nixosModules.secrets
+      self.nixosModules.nerdFonts
+      self.nixosModules.udiskie
+      self.nixosModules.devTools
+      self.nixosModules.sessionVariables
+      self.nixosModules.direnv
+      self.nixosModules.bottles
+      self.nixosModules.utils
+
+      # TODO: Phase 10+ features
 
       # User
       self.nixosModules.userHenhal

@@ -29,18 +29,17 @@
       wallpaper = "atoms.png";
     };
 
+    my.git = {
+      userName = "Henrik";
+      userEmail = "henhalvor@gmail.com";
+    };
+
     home-manager.users.henhal = {
       nixpkgs.config.allowUnfree = true;
       home.username = "henhal";
       home.homeDirectory = "/home/henhal";
       home.stateVersion = "25.05";
       programs.home-manager.enable = true;
-
-      # HM-level option values for future features:
-      # my.git = {
-      #   userName = "Henrik";
-      #   userEmail = "henhalvor@gmail.com";
-      # };
     };
   };
 }

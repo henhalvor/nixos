@@ -33,7 +33,16 @@
       self.nixosModules.zsh
       self.nixosModules.tmux
 
-      # TODO: Phase 9+ features
+      # Settings & Environment (Phase 9)
+      self.nixosModules.git
+      self.nixosModules.sshConfig
+      self.nixosModules.secrets
+      self.nixosModules.devTools
+      self.nixosModules.sessionVariables
+      self.nixosModules.direnv
+      self.nixosModules.utils
+
+      # TODO: Phase 10+ features
 
       # User
       self.nixosModules.userHenhal
