@@ -1,7 +1,19 @@
 # Boot Windows — EFI boot-next script for dual-boot
-# Source: systems/workstation/scripts/boot-windows.nix
-{...}: {
-  flake.nixosModules.bootWindows = {pkgs, ...}: let
+# Source: systems/workstation/scripts/boot-windows.nix + users/henhal/home.nix (desktop entry)
+# Template C: Colocated NixOS + HM
+{ self, ... }: {
+  flake.homeModules.bootWindows = { pkgs, ... }: {
+    xdg.desktopEntries.boot-windows = {
+      name = "Boot Windows";
+      comment = "Boot into Windows on next reboot";
+      exec = "${pkgs.kitty}/bin/kitty -e boot-windows";
+      terminal = true;
+      categories = [ "System" ];
+      icon = "computer";
+    };
+  };
+
+  flake.nixosModules.bootWindows = { pkgs, ... }: let
     boot-windows = pkgs.writeScriptBin "boot-windows" ''
       #!${pkgs.bash}/bin/bash
       set -euo pipefail
@@ -56,5 +68,7 @@
 
     programs.bash.shellAliases.boot-windows = "sudo boot-windows";
     programs.zsh.shellAliases.boot-windows = "sudo boot-windows";
+
+    home-manager.sharedModules = [ self.homeModules.bootWindows ];
   };
 }

@@ -40,6 +40,8 @@
       home.homeDirectory = "/home/henhal";
       home.stateVersion = "25.05";
       programs.home-manager.enable = true;
+
+      home.packages = with pkgs; [ vim ];
     };
   };
 }
