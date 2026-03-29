@@ -42,7 +42,11 @@
       self.nixosModules.tailscale
       self.nixosModules.sunshine
 
-      # TODO: Phase 5+ features
+      # Desktop foundation (Phase 5)
+      self.nixosModules.desktopCommon
+      self.nixosModules.sddm
+
+      # TODO: Phase 6+ features
 
       # User
       self.nixosModules.userHenhal
