@@ -37,12 +37,12 @@
       self.nixosModules.syncthing
       self.nixosModules.bootWindows
 
-      # TODO: Phase 4+ features
-      # self.nixosModules.sshServer
-      # self.nixosModules.tailscale
-      # self.nixosModules.sunshine
-      # self.nixosModules.desktopCommon
-      # self.nixosModules.hyprland
+      # Server/connectivity (Phase 4)
+      self.nixosModules.sshServer
+      self.nixosModules.tailscale
+      self.nixosModules.sunshine
+
+      # TODO: Phase 5+ features
 
       # User
       self.nixosModules.userHenhal
@@ -54,6 +54,9 @@
 
     # Syncthing user
     my.syncthing.user = "henhal";
+
+    # Sunshine user
+    my.sunshine.user = "henhal";
 
     # Workstation-specific NVIDIA overrides (desktop GPU doesn't need power saving)
     hardware.nvidia.powerManagement.enable = lib.mkForce false;

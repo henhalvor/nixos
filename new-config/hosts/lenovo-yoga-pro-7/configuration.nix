@@ -32,11 +32,11 @@
       self.nixosModules.amdGraphics
       self.nixosModules.minimalBattery
 
-      # TODO: Phase 4+ features
-      # self.nixosModules.sshServer
-      # self.nixosModules.tailscale
-      # self.nixosModules.desktopCommon
-      # self.nixosModules.niri
+      # Server/connectivity (Phase 4)
+      self.nixosModules.sshServer
+      self.nixosModules.tailscale
+
+      # TODO: Phase 5+ features
 
       # User
       self.nixosModules.userHenhal

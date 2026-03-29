@@ -22,12 +22,14 @@
       self.nixosModules.nvidiaGraphics
       self.nixosModules.laptopServer
 
-      # TODO: Phase 4 server features
-      # self.nixosModules.serverBase
-      # self.nixosModules.sshServer
-      # self.nixosModules.tailscale
-      # self.nixosModules.serverMonitoring
-      # self.nixosModules.cockpit
+      # Server features (Phase 4)
+      self.nixosModules.serverBase
+      self.nixosModules.sshServer
+      self.nixosModules.tailscale
+      self.nixosModules.serverMonitoring
+      # self.nixosModules.cockpit  # Currently unused
+
+      # TODO: Phase 5+ features
 
       # User
       self.nixosModules.userHenhal
