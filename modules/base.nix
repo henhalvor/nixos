@@ -2,6 +2,9 @@
 # Source: nixos/default.nix + inline config from lib/mk-nixos-system.nix
 {...}: {
   flake.nixosModules.base = {pkgs, ...}: {
+    # System platform
+    nixpkgs.hostPlatform = "x86_64-linux";
+
     # Nix settings
     nix.settings.experimental-features = ["nix-command" "flakes"];
     nixpkgs.config.allowUnfree = true;

@@ -3,10 +3,8 @@
 # Template C: Colocated NixOS + HM
 {self, ...}: {
   flake.nixosModules.gnome = {pkgs, ...}: {
-    services.xserver = {
-      enable = true;
-      desktopManager.gnome.enable = true;
-    };
+    services.xserver.enable = true;
+    services.desktopManager.gnome.enable = true;
 
     environment.gnome.excludePackages = with pkgs; [gnome-tour epiphany];
 

@@ -29,6 +29,7 @@
   in {
     programs.ssh = {
       enable = true;
+      enableDefaultConfig = false;
       matchBlocks = {
         "server" = {
           hostname = "10.0.0.2";

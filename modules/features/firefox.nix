@@ -7,6 +7,10 @@
   };
 
   flake.homeModules.firefox = { ... }: {
-    programs.firefox.enable = true;
+    programs.firefox = {
+      enable = true;
+      profiles.default = {};
+    };
+    stylix.targets.firefox.profileNames = [ "default" ];
   };
 }

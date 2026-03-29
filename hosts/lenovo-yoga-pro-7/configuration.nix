@@ -1,6 +1,10 @@
 # Lenovo Yoga Pro 7 — system configuration
 # Source: systems/lenovo-yoga-pro-7/configuration.nix + hosts/lenovo-yoga-pro-7.nix
-{self, inputs, ...}: {
+{
+  self,
+  inputs,
+  ...
+}: {
   flake.nixosModules.lenovoYogaPro7Config = {
     pkgs,
     lib,
@@ -109,6 +113,9 @@
 
     # Syncthing user
     my.syncthing.user = "henhal";
+
+    # Default session
+    services.displayManager.defaultSession = "niri";
 
     # Hyprland host-specific config
     my.hyprland = {

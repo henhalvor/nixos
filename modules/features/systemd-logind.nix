@@ -3,16 +3,11 @@
 # Suitable for laptops with desktop sessions.
 {...}: {
   flake.nixosModules.systemdLogind = {...}: {
-    services.logind = {
-      lidSwitch = "suspend";
-      lidSwitchExternalPower = "lock";
-
-      settings.Login = {
-        HandleLidSwitch = "suspend";
-        HandleLidSwitchExternalPower = "lock";
-        KillUserProcesses = false;
-        InhibitDelayMaxSec = "5";
-      };
+    services.logind.settings.Login = {
+      HandleLidSwitch = "suspend";
+      HandleLidSwitchExternalPower = "lock";
+      KillUserProcesses = false;
+      InhibitDelayMaxSec = "5";
     };
 
     security.pam.services.login.enableGnomeKeyring = true;
