@@ -1,6 +1,10 @@
 # Workstation — system configuration
 # Source: systems/workstation/configuration.nix + hosts/workstation.nix
-{self, inputs, ...}: {
+{
+  self,
+  inputs,
+  ...
+}: {
   flake.nixosModules.workstationConfig = {pkgs, ...}: {
     imports = [
       # Hardware
@@ -8,7 +12,7 @@
 
       # Core
       self.nixosModules.base
-      self.nixosModules.bootloader
+      self.nixosModules.secureBoot
       self.nixosModules.networking
       inputs.home-manager.nixosModules.home-manager
 
