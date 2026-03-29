@@ -801,237 +801,779 @@ This lets each user set their own values without duplicating the feature file. F
 
 ---
 
-## Migration Phases
+## Step-by-Step Migration Guide
 
-### Phase 0: Preparation
+> **Strategy:** Build the new config in `new-config/`, test builds, then move contents to root.
+> Each step lists the exact source file(s), target file, template pattern, and what to absorb.
 
-1. Create a migration branch: `git checkout -b dendritic-migration`
-2. Ensure current config builds: `sudo nixos-rebuild build --flake .#workstation`
+### Phase 0: Scaffold ✅ DONE
 
-### Phase 1: Scaffold flake-parts
-
-1. Add `flake-parts`, `import-tree`, `wrapper-modules` to flake inputs
-2. Create `modules/flake-parts.nix` (systems list + `homeModules` option)
-3. Rewrite `flake.nix` outputs to use `mkFlake` + `import-tree`
-4. Create empty `hosts/` structure (directories only)
-5. Verify: `nix flake check` (should pass with no outputs)
-
-### Phase 2: Migrate one host end-to-end (workstation)
-
-**Do one host completely before touching the others.** This validates the entire pattern.
-
-1. Create `hosts/workstation/hardware.nix` — wrap existing `systems/workstation/hardware-configuration.nix` in flake-parts boilerplate
-2. Create `modules/base.nix` — wrap `nixos/default.nix` as `flake.nixosModules.base`
-3. Create a few critical features as colocated files:
-   - `modules/features/pipewire.nix` (NixOS-only, simple)
-   - `modules/features/bluetooth.nix` (NixOS-only, simple)
-   - `modules/features/kitty.nix` (colocated + package)
-   - `modules/features/hyprland.nix` (colocated, validates the full pattern)
-   - `modules/features/zsh.nix` (colocated)
-   - `modules/features/git.nix` (home-only)
-4. Create `modules/users/henhal.nix` — the user module
-5. Create `hosts/workstation/configuration.nix` — import all the above by name
-6. Create `hosts/workstation/default.nix` — define `nixosConfigurations.workstation`
-7. **Build and test:** `nix build .#nixosConfigurations.workstation.config.system.build.toplevel`
-8. **Test standalone:** `nix run .#kitty`
-
-### Phase 3: Migrate remaining NixOS features
-
-Convert all remaining `nixos/modules/*.nix` files to named features under `modules/features/`. Work through them systematically:
-
-**System services (NixOS-only):**
-- networking, bootloader, nvidia-graphics, amd-graphics, gaming, virtualization, syncthing, printer, external-io, android, systemd-logind, secure-boot, battery, minimal-battery
-
-**Server features:**
-- ssh, tailscale, server-monitoring, sunshine, server-base
-
-**Desktop infrastructure:**
-- desktop-common, sddm, gdm
-
-**Desktop sessions:**
-- niri, sway, gnome (hyprland done in Phase 2)
-
-### Phase 4: Migrate remaining home-manager features
-
-Convert all `home/modules/**/*.nix` to colocated features or home-only features:
-
-**Desktop components (colocated — NixOS + HM + optional package):**
-- waybar, hyprpanel, swaylock, swayidle, rofi, mako, dunst, clipman, cliphist, grimblast, grim-screenshot, gammastep, wlogout, wayland-applets, noctalia
-
-**Applications (colocated or home-only + optional package):**
-- All ~30 application modules from `home/modules/applications/`
-
-**User config (home-only):**
-- ssh-config, nerd-fonts, secrets, udiskie, dev-tools, direnv, session-variables, bottles, utils
-
-**Scripts (home-only):**
-- power-monitor, yazi-float, brightness-external, toggle-monitors
-
-**Theme (colocated):**
-- stylix (both NixOS and home-manager sides)
-
-### Phase 5: Migrate remaining hosts
-
-1. `lenovo-yoga-pro-7` — same structure, imports niri instead of hyprland, plus battery/amd features
-2. `hp-server` — no desktop features, just server + system modules
-3. Delete the legacy `desktop` configuration
-
-### Phase 6: Migrate supporting config
-
-1. **Dev shells** → `modules/dev-shells/rust.nix`, `react-native.nix` (define `perSystem.devShells`)
-2. **Nix-on-Droid** → `modules/nix-on-droid.nix` (imports `self.homeModules.*` for shared config)
-3. **Theme data** → `modules/theme.nix` (export on `flake.theme`)
-
-### Phase 7: Cleanup & validation
-
-1. Build all hosts:
-   ```bash
-   nix build .#nixosConfigurations.workstation.config.system.build.toplevel
-   nix build .#nixosConfigurations.lenovo-yoga-pro-7.config.system.build.toplevel
-   nix build .#nixosConfigurations.hp-server.config.system.build.toplevel
-   ```
-2. Test standalone packages:
-   ```bash
-   nix run .#kitty
-   nix run .#niri  # if wrapper-modules supports it
-   ```
-3. Test dev shells:
-   ```bash
-   nix develop .#rust
-   ```
-4. Delete old directories:
-   - `hosts/*.nix` (old flat files)
-   - `systems/`
-   - `nixos/`
-   - `home/`
-   - `lib/`
-   - `users/`
-   - `shells/`
-5. Update `docs/`, `README.md`, `scripts/create-new-config.sh`
+Created `new-config/` with:
+- `flake.nix` — mkFlake + import-tree on `./hosts` and `./modules`
+- `modules/flake-parts.nix` — systems list + `homeModules` output definition
+- `modules/base.nix` — stub for `nixosModules.base`
+- `modules/users/henhal.nix` — stub for slim user module
+- `modules/features/bluetooth.nix` — first migrated feature (reference example)
+- `hosts/{workstation,lenovo-yoga-pro-7,hp-server}/{default,configuration,hardware}.nix` — stubs
 
 ---
 
-## File-by-File Mapping
+### Phase 1: Core Infrastructure
 
-### Deleted (no longer needed)
+These files form the foundation that every host needs.
+
+#### Step 1.1 — `modules/base.nix` (nixosModules.base)
+
+| Source | `nixos/default.nix` |
+|---|---|
+| **Template** | A (NixOS-only) |
+| **Module name** | `nixosModules.base` |
+| **What to include** | nix-ld, console keymap, docker, zsh enable, gvfs, gnome-disks, systemPackages (home-manager, os-prober, ntfs3g, dosfstools, ddcutil, usbutils), i2c support, udev rules (i2c + VIAL keyboard), basic locale/timezone (from `mk-nixos-system.nix` inline config) |
+| **What NOT to include** | `nixpkgs.config.allowUnfree` (set per-host), `users.users.*` (user module handles this), noctalia systemPackages (noctalia feature), hostname (per-host) |
+| **Notes** | Merge the inline base config from `lib/mk-nixos-system.nix` (the `{ config, pkgs, ... }: { ... }` block) into this module. Absorb `time.timeZone`, `i18n.defaultLocale`, `system.stateVersion` (or make stateVersion per-host). |
+
+#### Step 1.2 — `modules/features/bootloader.nix` (nixosModules.bootloader)
+
+| Source | `nixos/modules/bootloader.nix` |
+|---|---|
+| **Template** | A (NixOS-only) |
+| **Module name** | `nixosModules.bootloader` |
+| **What to include** | systemd-boot config (enable, configurationLimit=10, graceful), EFI settings, supportedFilesystems |
+| **Notes** | This is the **default** bootloader. Workstation overrides via `secureBoot`. HP server has a custom GRUB bootloader (currently commented out — inline in hp-server hardware.nix). |
+
+#### Step 1.3 — `modules/features/networking.nix` (nixosModules.networking)
+
+| Source | `nixos/modules/networking.nix` |
+|---|---|
+| **Template** | A (NixOS-only) |
+| **Module name** | `nixosModules.networking` |
+| **What to include** | `networking.networkmanager.enable = true` |
+| **What changes** | Remove `networking.hostName = hostname` — hostname is set per-host in configuration.nix. The `hostname` specialArg is eliminated. |
+
+---
+
+### Phase 2: Theme & Stylix
+
+Stylix must be migrated early because many desktop components (bars, lock screens, rofi themes) depend on `config.lib.stylix.colors` and `config.stylix.fonts`.
+
+#### Step 2.1 — `modules/features/stylix.nix` (nixosModules.stylix + homeModules.stylix)
+
+| Source | `nixos/modules/theme/stylix.nix` + `home/modules/themes/stylix/default.nix` + `lib/theme.nix` |
+|---|---|
+| **Template** | C (Colocated NixOS + HM) |
+| **Module names** | `nixosModules.stylix`, `homeModules.stylix` |
+| **NixOS side** | Absorb `lib/theme.nix` logic inline. Define `stylix.enable`, `stylix.autoEnable`, `stylix.polarity`, `stylix.base16Scheme`, `stylix.image`, `stylix.cursor`, `stylix.fonts`. The scheme/wallpaper data currently comes from `userSettings.stylixTheme` — define `options.my.theme.*` so user modules can set scheme + wallpaper. |
+| **HM side** | `stylix.targets.neovim.enable = false` + any other HM stylix target overrides. |
+| **Notes** | Must also add `inputs.stylix.nixosModules.stylix` to the host imports (or import it from within this module). The wallpaper paths (`../assets/wallpapers/`) need to resolve from the new location — use `../../assets/wallpapers/` or pass as option. Consider defining `options.my.theme.scheme` and `options.my.theme.wallpaper` so user modules set values. |
+
+---
+
+### Phase 3: System Services (NixOS-only features)
+
+All of these follow **Template A** — NixOS modules with no home-manager counterpart.
+
+| Step | Source file | Feature name | Notes |
+|---|---|---|---|
+| 3.1 | `nixos/modules/pipewire.nix` | `pipewire` | Include the Sunshine virtual sink config. |
+| 3.2 | `nixos/modules/external-io.nix` | `externalIo` | One-liner: `services.udisks2.enable = true`. |
+| 3.3 | `nixos/modules/printer.nix` | `printer` | Uses `userSettings.username` — replace with NixOS option or hardcode "henhal" initially, then use `options.my.printer.user` or just `config.users.users` iteration. |
+| 3.4 | `nixos/modules/android.nix` | `android` | Uses `userSettings.username` for groups — same approach as printer. |
+| 3.5 | `nixos/modules/systemd-loginhd.nix` | `systemdLogind` | Logind settings + polkit. |
+| 3.6 | `nixos/modules/nvidia-graphics.nix` | `nvidiaGraphics` | Session variables + xserver videoDrivers + hardware.graphics + NVIDIA settings. Workstation-specific NVIDIA config (from `systems/workstation/configuration.nix`) can either live in the host configuration.nix or be folded in here with options. |
+| 3.7 | `nixos/modules/gaming.nix` | `gaming` | Steam, gamemode, wine, heroic, lutris, etc. |
+| 3.8 | `nixos/modules/virtualization.nix` | `virtualization` | libvirtd, virt-manager, SPICE, QEMU. |
+| 3.9 | `nixos/modules/syncthing.nix` | `syncthing` | Uses `userSettings.username/homeDirectory` — replace with options or config introspection. Includes the systemd directory-creation service. |
+| 3.10 | `systems/workstation/secure-boot.nix` | `secureBoot` | Lanzaboote config. Must also add `inputs.lanzaboote.nixosModules.lanzaboote` in its module or require host to import it. |
+| 3.11 | `systems/lenovo-yoga-pro-7/amd-graphics.nix` | `amdGraphics` | AMD-specific session variables + Vulkan config. |
+| 3.12 | `systems/lenovo-yoga-pro-7/minimal-battery.nix` | `minimalBattery` | powertop, tuned, upower, networkmanager powersave. Absorbs `systems/lenovo-yoga-pro-7/battery.nix` (which is the unused alt). |
+| 3.13 | `systems/workstation/scripts/boot-windows.nix` | `bootWindows` | Boot-windows script. Currently a NixOS systemPackages entry — keep as NixOS feature. The user's xdg.desktopEntries entry (from `users/henhal/home.nix`) should also move here as an HM module, making this colocated. |
+| 3.14 | `systems/hp-server/laptop-server.nix` | `laptopServer` | Lid-close ignore, performance governor. HP server specific. |
+
+---
+
+### Phase 4: Server Features (NixOS-only)
+
+| Step | Source file | Feature name | Notes |
+|---|---|---|---|
+| 4.1 | `nixos/modules/server/default.nix` | `serverBase` | htop, iftop, iotop packages + nix-collect-garbage cron job. |
+| 4.2 | `nixos/modules/server/ssh.nix` | `sshServer` | openssh config + mosh. Uses `userSettings.username` for authorized keys — replace with option. **Name:** `sshServer` (not `ssh`) to avoid collision with SSH client feature. |
+| 4.3 | `nixos/modules/server/tailscale.nix` | `tailscale` | Simple enable + trusted firewall interface. |
+| 4.4 | `nixos/modules/server/server-monitoring.nix` | `serverMonitoring` | Prometheus + Grafana setup. |
+| 4.5 | `nixos/modules/server/sunshine/default.nix` | `sunshine` | Sunshine streaming + CUDA + Avahi. Absorb `sunshine-monitor-setup.nix` and `sunshine-monitor-restore.nix` scripts (they're imported by hyprland HM session — move script derivations here, export them for hyprland to reference). |
+| 4.6 | `nixos/modules/server/cockpit.nix` | `cockpit` | Currently unused (commented out). Migrate anyway for completeness. |
+
+---
+
+### Phase 5: Desktop Foundation
+
+#### Step 5.1 — `modules/features/desktop-common.nix` (nixosModules.desktopCommon + homeModules.desktopCommon)
+
+| Source | `nixos/modules/desktop/common.nix` + `home/modules/desktop/common.nix` |
+|---|---|
+| **Template** | C (Colocated) |
+| **Module names** | `nixosModules.desktopCommon`, `homeModules.desktopCommon` |
+| **NixOS side** | XKB layout (no), XDG portal enable + gtk portal, dconf enable, Noto fonts. |
+| **HM side** | playerctl/brightnessctl/pamixer packages, xdg.enable, TERMINAL/BROWSER session vars. Currently reads `userSettings.term/browser` — replace with `options.my.desktop.terminal` and `options.my.desktop.browser` set by user module. |
+
+#### Step 5.2 — `modules/features/sddm.nix` (nixosModules.sddm)
+
+| Source | `nixos/modules/desktop/display-managers/sddm.nix` |
+|---|---|
+| **Template** | A (NixOS-only) |
+| **Module name** | `nixosModules.sddm` |
+| **What to include** | SDDM enable + astronaut theme with Stylix integration. References `config.stylix.*` and `config.lib.stylix.colors` — Stylix must be imported before this feature on the host. |
+
+#### Step 5.3 — `modules/features/gdm.nix` (nixosModules.gdm)
+
+| Source | `nixos/modules/desktop/display-managers/gdm.nix` |
+|---|---|
+| **Template** | A (NixOS-only) |
+| **Module name** | `nixosModules.gdm` |
+
+---
+
+### Phase 6: Desktop Sessions (Colocated — the most complex features)
+
+Each window manager merges its NixOS module + home-manager module + host-specific scripts into a single feature file. These are the largest and most complex migrations.
+
+#### Step 6.1 — `modules/features/hyprland.nix` ⭐
+
+| Source | `nixos/modules/desktop/sessions/hyprland.nix` + `home/modules/desktop/sessions/hyprland.nix` |
+|---|---|
+| **Template** | C (Colocated) or D (with standalone package) |
+| **Module names** | `nixosModules.hyprland`, `homeModules.hyprland` |
+| **NixOS side** | `programs.hyprland.enable`, xdg-desktop-portal-hyprland, PAM hyprlock, custom session desktop entry, wayland session variables, video group, `programs.light.enable`. |
+| **HM side** | Full hyprland config: keybindings, monitor rules, workspace rules, exec-once, animations, etc. |
+| **Scripts to absorb** | `home/modules/scripts/toggle-monitors-workstation-hyprland.nix`, `home/modules/scripts/brightness-external.nix`, `nixos/modules/server/sunshine/sunshine-monitor-setup.nix`, `nixos/modules/server/sunshine/sunshine-monitor-restore.nix` — define these as derivations within the feature or reference from sunshine feature. |
+| **Host-specific data** | Current config reads `hostConfig.desktop.monitors`, `hostConfig.desktop.workspaceRules`, and uses `hostConfig.hostname == "workstation"` conditionals. **Approach:** Define `options.my.hyprland.monitors` and `options.my.hyprland.workspaceRules` as lists that host configurations set. For workstation-only scripts, either use `config.networking.hostName` conditional or make them separate features. |
+| **Current dependencies** | Reads `desktop.lock` to determine lock command (hyprlock/swaylock/loginctl) — needs to detect which lock module is active. Options: (a) hardcode in host config, (b) define `options.my.desktop.lockCommand`. |
+| **Standalone package** | If `wrapper-modules` supports hyprland, use that. Otherwise use `symlinkJoin` + `makeWrapper` with a generated config. |
+
+#### Step 6.2 — `modules/features/niri.nix`
+
+| Source | `nixos/modules/desktop/sessions/niri.nix` + `home/modules/desktop/sessions/niri.nix` |
+|---|---|
+| **Template** | C/D (Colocated + possible standalone) |
+| **Module names** | `nixosModules.niri`, `homeModules.niri` |
+| **NixOS side** | `programs.niri.enable`, PAM swaylock, polkit, wayland vars. Currently uses `unstable.niri` — reference `pkgs-unstable.niri` via specialArgs. |
+| **HM side** | KDL config file symlinks (niri uses out-of-store symlinks to `niri-config/` directory), host-specific config file selection, packages (brightnessctl, pamixer, swaybg, xwayland-satellite). Also imports rofi — should reference `self.homeModules.rofi` or just import rofi at host level. |
+| **Scripts to absorb** | `toggle-monitors-workstation-niri.nix`, `brightness-external.nix` (shared with hyprland — could be a shared feature). |
+| **Host-specific data** | `hostConfig.hostname` selects config file. Define `options.my.niri.hostConfigFile` or use `config.networking.hostName` conditional. |
+| **KDL config files** | The `home/modules/desktop/sessions/niri-config/` directory with .kdl files needs to be referenced. Copy these into `modules/features/niri-config/` alongside the feature. |
+
+#### Step 6.3 — `modules/features/sway.nix`
+
+| Source | `nixos/modules/desktop/sessions/sway.nix` + `home/modules/desktop/sessions/sway.nix` |
+|---|---|
+| **Template** | C (Colocated) |
+| **Module names** | `nixosModules.sway`, `homeModules.sway` |
+| **NixOS side** | `programs.sway.enable`, xdg-desktop-portal-wlr, PAM swaylock, polkit, wayland vars. |
+| **HM side** | Full sway config (keybindings, output rules, window rules, startup). |
+| **Scripts to absorb** | `toggle-monitors-workstation-sway.nix`. |
+
+#### Step 6.4 — `modules/features/gnome.nix`
+
+| Source | `nixos/modules/desktop/sessions/gnome.nix` + `home/modules/desktop/sessions/gnome.nix` |
+|---|---|
+| **Template** | C (Colocated) |
+| **Module names** | `nixosModules.gnome`, `homeModules.gnome` |
+| **NixOS side** | `services.xserver.enable`, `desktopManager.gnome.enable`, exclude gnome-tour + epiphany. |
+| **HM side** | dconf settings (prefer-dark). Minimal. |
+
+---
+
+### Phase 7: Desktop Components
+
+Each desktop component becomes a colocated feature. Most are HM-only with a thin NixOS wrapper for `sharedModules` injection.
+
+#### Bars
+
+| Step | Source | Feature name | Template | Standalone pkg? | Notes |
+|---|---|---|---|---|---|
+| 7.1 | `home/modules/desktop/bars/waybar.nix` | `waybar` | B2 + package | ✓ | Large config — session-aware (detects hyprland/niri/sway via `config.*.enable`). Uses `config.lib.stylix.colors`. Stylix must be active. |
+| 7.2 | `home/modules/desktop/bars/hyprpanel.nix` | `hyprpanel` | B2 | ✗ | Uses `hostConfig.hostname` and `userSettings.stylixTheme` — replace with options or config introspection. |
+
+#### Lock Screens
+
+| Step | Source | Feature name | Template | Notes |
+|---|---|---|---|---|
+| 7.3 | `home/modules/desktop/lock/hyprlock.nix` | `hyprlock` | B2 | Tiny — just `programs.hyprlock.enable = true`. Stylix does the rest. |
+| 7.4 | `home/modules/desktop/lock/swaylock.nix` | `swaylock` | B2 | Uses `config.lib.stylix.colors` for theming. |
+
+#### Idle Daemons
+
+| Step | Source | Feature name | Template | Notes |
+|---|---|---|---|---|
+| 7.5 | `home/modules/desktop/idle/hypridle.nix` | `hypridle` | B2 | Reads `desktop.lock` to determine lock command. **Replace with:** `options.my.idle.lockCommand` or detect which lock module is active. |
+| 7.6 | `home/modules/desktop/idle/swayidle.nix` | `swayidle` | B2 | Same issue — reads `desktop.lock` and `desktop.session` for monitor power command (niri vs sway). |
+
+#### Clipboard Managers
+
+| Step | Source | Feature name | Template | Notes |
+|---|---|---|---|---|
+| 7.7 | `home/modules/desktop/clipboard/clipman.nix` | `clipman` | B2 | Uses `home/modules/desktop/lib.nix` helper `mkWlPasteWatchService` — inline the helper or define it within the feature. Also creates `clipboard-history` and `clipboard-clear` wrapper scripts. |
+| 7.8 | `home/modules/desktop/clipboard/cliphist.nix` | `cliphist` | B2 | Same pattern as clipman. |
+
+#### Screenshot Tools
+
+| Step | Source | Feature name | Template | Notes |
+|---|---|---|---|---|
+| 7.9 | `home/modules/desktop/screenshot/grimblast.nix` | `grimblast` | B2 | Creates `screenshot` wrapper script. |
+| 7.10 | `home/modules/desktop/screenshot/grim.nix` | `grimScreenshot` | B2 | Creates `screenshot` wrapper script (same name — can't have both active). |
+
+#### Notification Daemons
+
+| Step | Source | Feature name | Template | Notes |
+|---|---|---|---|---|
+| 7.11 | `home/modules/desktop/notifications/mako.nix` | `mako` | B2 | Small. Stylix handles theming. |
+| 7.12 | `home/modules/desktop/notifications/dunst.nix` | `dunst` | B2 | Larger config with manual color settings. |
+
+#### Other Desktop Components
+
+| Step | Source | Feature name | Template | Notes |
+|---|---|---|---|---|
+| 7.13 | `home/modules/desktop/launchers/rofi.nix` + `rofi-theme.nix` | `rofi` | B2 + package | Merge both files. The `home/modules/desktop/rofi/default.nix` is an alternate rofi config — determine which one is actually used (likely the `launchers/` version). Uses `desktop.lock` for lock command + `config.lib.stylix.colors` for theme. |
+| 7.14 | `home/modules/desktop/nightlight/gammastep.nix` | `gammastep` | B2 | Creates `nightlight-toggle` script. |
+| 7.15 | `home/modules/desktop/nightlight/redshift.nix` | `redshift` | B2 | Creates `nightlight-toggle` script (same name — can't have both active). |
+| 7.16 | `home/modules/desktop/logout/wlogout.nix` | `wlogout` | B2 | Minimal — just enable. |
+| 7.17 | `home/modules/desktop/applets/wayland.nix` | `waylandApplets` | B2 | Network manager applet enable. |
+| 7.18 | `home/modules/desktop/shells/noctalia/default.nix` | `noctalia` | B2 + package | Imports `inputs.noctalia.homeModules.default`. Reads JSON settings from `settings.json` file alongside. Copy the settings.json into feature directory or embed inline. |
+
+#### Files to DELETE (no-op modules)
+
+These "none" variant files are dispatcher artifacts. They contain empty modules (`{ ... }: {}`) and are no longer needed:
+
+- `home/modules/desktop/launchers/none.nix` (note: this one imports rofi-theme.nix — rofi-theme should be absorbed into rofi.nix)
+- `home/modules/desktop/idle/none.nix`
+- `home/modules/desktop/lock/none.nix`
+- `home/modules/desktop/lock/loginctl.nix`
+- `home/modules/desktop/clipboard/none.nix`
+- `home/modules/desktop/screenshot/none.nix`
+- `home/modules/desktop/notifications/none.nix`
+- `home/modules/desktop/nightlight/none.nix`
+- `home/modules/desktop/applets/none.nix`
+- `home/modules/desktop/logout/none.nix`
+
+---
+
+### Phase 8: Applications
+
+All applications follow **Template B2** (homeModules + thin nixosModules wrapper) unless they warrant a standalone package. Most are simple — just `home.packages` or `programs.X.enable`.
+
+#### Terminal Emulators (with standalone package)
+
+| Step | Source | Feature name | Standalone? | Notes |
+|---|---|---|---|---|
+| 8.1 | `home/modules/applications/kitty.nix` | `kitty` | ✓ | Uses `config.stylix.fonts.*` for font config. Standalone package: `symlinkJoin` + `makeWrapper --config`. |
+
+#### Text Editors
+
+| Step | Source | Feature name | Standalone? | Notes |
+|---|---|---|---|---|
+| 8.2 | `home/modules/applications/nvf.nix` | `nvf` | ✓ | Complex — builds custom neovim with plugins (neocodeium, codecompanion) using `pkgs24-11.vimUtils.buildVimPlugin`. Uses `system`, `nvf`, `inputs`, `unstable`, `pkgs24-11` from specialArgs. Needs careful specialArgs migration. Standalone: expose as `perSystem.packages.nvim`. |
+| 8.3 | `home/modules/applications/nvim.nix` | `nvim` | ✗ | Commented out in user imports. Migrate if desired. |
+
+#### Shell & Terminal Tools
+
+| Step | Source | Feature name | Standalone? | Notes |
+|---|---|---|---|---|
+| 8.4 | `home/modules/applications/zsh.nix` | `zsh` | ✓ | Large config: oh-my-zsh, aliases, fzf, zoxide, powerlevel10k. **Absorbs** `home/modules/scripts/search-with-zoxide.nix` (imported by zsh.nix). Standalone: wrap with custom zdotdir. |
+| 8.5 | `home/modules/applications/tmux.nix` | `tmux` | ✓ | Vim-tmux-navigator integration. |
+| 8.6 | `home/modules/applications/yazi.nix` | `yazi` | ✗ | File manager config. |
+
+#### Browsers
+
+| Step | Source | Feature name | Notes |
+|---|---|---|---|
+| 8.7 | `home/modules/applications/vivaldi.nix` | `vivaldi` | |
+| 8.8 | `home/modules/applications/zen-browser.nix` | `zenBrowser` | Uses `zen-browser` input. |
+| 8.9 | `home/modules/applications/brave.nix` | `brave` | Just `home.packages`. |
+| 8.10 | `home/modules/applications/firefox.nix` | `firefox` | Just `programs.firefox.enable`. |
+| 8.11 | `home/modules/applications/google-chrome.nix` | `googleChrome` | |
+| 8.12 | `home/modules/applications/microsoft-edge.nix` | `microsoftEdge` | |
+
+#### GUI Applications
+
+| Step | Source | Feature name | Notes |
+|---|---|---|---|
+| 8.13 | `home/modules/applications/obsidian.nix` | `obsidian` | Uses `unstable.obsidian`. |
+| 8.14 | `home/modules/applications/spotify.nix` | `spotify` | Just `home.packages`. |
+| 8.15 | `home/modules/applications/gimp.nix` | `gimp` | |
+| 8.16 | `home/modules/applications/gthumb.nix` | `gthumb` | |
+| 8.17 | `home/modules/applications/mpv.nix` | `mpv` | Sets MIME associations. |
+| 8.18 | `home/modules/applications/zathura.nix` | `zathura` | PDF viewer + MIME associations. |
+| 8.19 | `home/modules/applications/libreoffice.nix` | `libreoffice` | |
+| 8.20 | `home/modules/applications/nautilus.nix` | `nautilus` | |
+| 8.21 | `home/modules/applications/mission-center.nix` | `missionCenter` | |
+| 8.22 | `home/modules/applications/gnome-calculator.nix` | `gnomeCalculator` | |
+| 8.23 | `home/modules/applications/vial.nix` | `vial` | Keyboard configurator. |
+
+#### AI/Dev Tools (GUI)
+
+| Step | Source | Feature name | Notes |
+|---|---|---|---|
+| 8.24 | `home/modules/applications/claude-code.nix` | `claudeCode` | Installed via npm. |
+| 8.25 | `home/modules/applications/amazon-q.nix` | `amazonQ` | |
+| 8.26 | `home/modules/applications/opencode/default.nix` | `opencode` | Complex — builds from local repo directory, copies config files. Has an `opencode/` subdirectory with config. Copy that directory to `modules/features/opencode-config/`. |
+| 8.27 | `home/modules/applications/aider-chat.nix` | `aiderChat` | Currently commented out in user imports. |
+
+#### Unused/Commented-out (migrate but mark optional)
+
+| Source | Feature name | Notes |
+|---|---|---|
+| `home/modules/applications/vscode.nix` | `vscode` | Commented out in user imports. |
+| `home/modules/applications/cursor.nix` | `cursor` | Commented out. |
+| `home/modules/applications/qalculate.nix` | `qalculate` | Commented out. |
+| `home/modules/applications/nsxiv.nix` | `nsxiv` | Commented out. |
+
+---
+
+### Phase 9: Settings & Environment
+
+Features with user-specific data use **Template B** (options). Features without use **Template B2**.
+
+#### Option-based features (user provides values)
+
+| Step | Source | Feature name | Options to define | Notes |
+|---|---|---|---|---|
+| 9.1 | `home/modules/settings/git.nix` | `git` | `my.git.userName`, `my.git.userEmail` | Currently reads `userSettings.username/email`. Also includes SSH config (matchBlocks for github.com, hp-server). Consider splitting SSH matchBlocks into `sshConfig`. |
+| 9.2 | `home/modules/settings/ssh.nix` | `sshConfig` | `my.ssh.serverHost`, `my.ssh.forwardPorts` | Port forwarding config for dev (Next.js, Supabase, etc.). Currently hardcoded — could use options or keep hardcoded per-user. |
+| 9.3 | `home/modules/settings/secrets/secrets.nix` | `secrets` | None (file paths are relative) | Creates `~/.local/secrets/load-secrets.sh`. Copy `load-secrets.sh` script alongside the feature file. |
+
+#### Non-option features (same for all users)
+
+| Step | Source | Feature name | Template | Notes |
+|---|---|---|---|---|
+| 9.4 | `home/modules/settings/nerd-fonts.nix` | `nerdFonts` | B2 | Just `home.packages = [ nerd-fonts.hack ]`. |
+| 9.5 | `home/modules/settings/udiskie.nix` | `udiskie` | B2 | Auto-mount service. Desktop-only. |
+| 9.6 | `home/modules/environment/dev-tools.nix` | `devTools` | B2 | lazygit, jq, nodejs, rust, python, go, gcc, cmake + lazygit config. |
+| 9.7 | `home/modules/environment/session-variables.nix` | `sessionVariables` | B2 | Editor (nvim), dev tool paths (NPM, cargo, Go, Python). |
+| 9.8 | `home/modules/environment/direnv.nix` | `direnv` | B2 | `programs.direnv.enable + nix-direnv.enable`. |
+| 9.9 | `home/modules/environment/bottles.nix` | `bottles` | B2 | Wine + Bottles for Windows apps. Desktop-only. |
+| 9.10 | `home/modules/utils/default.nix` | `utils` | B2 | nix-search-tv, bat, fd, tree, btop, ripgrep, fzf + aliases. |
+
+---
+
+### Phase 10: Scripts & Utilities
+
+| Step | Source | Feature name | Template | Notes |
+|---|---|---|---|---|
+| 10.1 | `home/modules/scripts/power-monitor.nix` | `powerMonitor` | B2 | Large bash script for power/performance monitoring. |
+| 10.2 | `home/modules/scripts/yazi-float.nix` | `yaziFloat` | B2 | Wrapper script for yazi file manager. |
+| 10.3 | `home/modules/scripts/search-with-zoxide.nix` | *(absorbed into zsh)* | — | Imported by `zsh.nix`, not standalone. |
+| 10.4 | `home/modules/scripts/brightness-external.nix` | `brightnessExternal` | B2 | ddcutil wrapper for external monitor brightness. Shared by hyprland + niri. Make this its own feature that both WMs can depend on. |
+| 10.5 | `home/modules/scripts/toggle-monitors-workstation-hyprland.nix` | *(absorbed into hyprland)* | — | Workstation-specific hyprland script. |
+| 10.6 | `home/modules/scripts/toggle-monitors-workstation-niri.nix` | *(absorbed into niri)* | — | Workstation-specific niri script. |
+| 10.7 | `home/modules/scripts/toggle-monitors-workstation-sway.nix` | *(absorbed into sway)* | — | Workstation-specific sway script. |
+
+---
+
+### Phase 11: Users
+
+#### Step 11.1 — `modules/users/henhal.nix` (nixosModules.userHenhal)
+
+| Source | `users/henhal/home.nix` + inline config from `lib/mk-nixos-system.nix` |
+|---|---|
+| **Template** | G (Slim user) |
+| **Module name** | `nixosModules.userHenhal` |
+| **System-level** | `users.users.henhal` (isNormalUser, groups, shell=zsh). Groups currently scattered across features (adbusers in android, etc.) — keep base groups here, feature-specific groups in features. |
+| **HM identity** | `home.username`, `home.homeDirectory`, `home.stateVersion`, `programs.home-manager.enable`. |
+| **Option values** | `my.git.userName/userEmail`, `my.theme.scheme/wallpaper`, `my.desktop.terminal/browser`. |
+| **What NOT to include** | Feature imports (those go in host configuration.nix), application installs, desktop config. |
+| **Boot-windows desktop entry** | Currently in `users/henhal/home.nix` — move to `bootWindows` feature (step 3.13). |
+
+---
+
+### Phase 12: Host Wiring
+
+Fill in each host's `configuration.nix` with the correct feature imports. This is where everything comes together.
+
+#### Step 12.1 — `hosts/workstation/hardware.nix`
+
+| Source | `systems/workstation/hardware-configuration.nix` |
+|---|---|
+| **Module name** | `nixosModules.workstationHardware` |
+| **What to include** | Auto-generated hardware config (initrd modules, fileSystems, swapDevices, nixpkgs.hostPlatform). Absorb NVIDIA-specific hardware from `systems/workstation/configuration.nix` (nvidia kernel modules, kernelParams, firmware). |
+
+#### Step 12.2 — `hosts/workstation/configuration.nix`
+
+| Source | `systems/workstation/configuration.nix` + `hosts/workstation.nix` (data) |
+|---|---|
+| **Module name** | `nixosModules.workstationConfig` |
+| **Imports** | Every feature this host needs (see below) |
+
+**Workstation feature imports:**
+```
+# Hardware & Core
+workstationHardware, base, home-manager.nixosModules.home-manager
+
+# Theme
+stylix, inputs.stylix.nixosModules.stylix
+
+# Boot & System
+secureBoot, networking, pipewire, bluetooth, externalIo, printer, android, syncthing
+
+# Graphics
+nvidiaGraphics
+
+# Desktop Session + Components
+desktopCommon, hyprland, sddm, waybar, hyprlock, hypridle, rofi, clipman, grimblast, mako, wlogout, waylandApplets, gammastep
+
+# Applications
+kitty, vivaldi, zenBrowser, brave, googleChrome, microsoftEdge, firefox
+zsh, tmux, yazi, obsidian, spotify, claudeCode, amazonQ, opencode, gimp, gthumb
+mpv, zathura, libreoffice, nautilus, missionCenter, gnomeCalculator, vial, nvf
+
+# Settings & Environment
+git, sshConfig, secrets, nerdFonts, udiskie, devTools, direnv, sessionVariables, bottles, utils
+
+# Scripts
+powerMonitor, yaziFloat, brightnessExternal
+
+# Server
+sshServer, tailscale, sunshine
+
+# Gaming
+gaming, virtualization
+
+# User
+userHenhal
+```
+
+**Workstation-specific inline config:**
+- `networking.hostName = "workstation"`
+- `hardware.logitech.wireless.enable = true`
+- `hardware.graphics.enable = true` + `enable32Bit`
+- NVIDIA kernel params and initrd modules
+- `security.pam.services.login.enableGnomeKeyring = true`
+- `boot.kernel.sysctl."fs.inotify.max_user_watches"` increase
+- `nixpkgs.config.allowUnfree = true`
+- `home-manager` settings (useGlobalPkgs, extraSpecialArgs, etc.)
+
+**Host-specific option values:**
+```nix
+# Set hyprland monitor config for workstation
+my.hyprland.monitors = [
+  "HDMI-A-1,1920x1080@144,0x0,1,transform,1"
+  "DP-1,2560x1440@144,1080x0,1"
+];
+my.hyprland.workspaceRules = [
+  "1, monitor:HDMI-A-1" "3, monitor:HDMI-A-1"
+  "2, monitor:DP-1" "4, monitor:DP-1" "5, monitor:DP-1" "6, monitor:DP-1"
+  "10, monitor:HEADLESS-1"
+];
+```
+
+#### Step 12.3 — `hosts/lenovo-yoga-pro-7/hardware.nix`
+
+| Source | `systems/lenovo-yoga-pro-7/hardware-configuration.nix` |
+|---|---|
+| **Module name** | `nixosModules.lenovoYogaPro7Hardware` |
+
+#### Step 12.4 — `hosts/lenovo-yoga-pro-7/configuration.nix`
+
+| Source | `systems/lenovo-yoga-pro-7/configuration.nix` + `hosts/lenovo-yoga-pro-7.nix` (data) |
+|---|---|
+| **Module name** | `nixosModules.lenovoYogaPro7Config` |
+
+**Laptop feature imports (differences from workstation):**
+- **Uses `niri` instead of `hyprland`**
+- **Uses `noctalia` instead of waybar + mako + wlogout** (noctalia handles all three)
+- **Uses `swaylock` + `swayidle`** instead of hyprlock + hypridle
+- **Uses `amdGraphics` instead of `nvidiaGraphics`**
+- **Uses `minimalBattery`** (laptop power management)
+- **Uses `systemdLogind`** (lid switch behavior)
+- **Uses `bootloader`** (not secureBoot)
+- **No `gaming`, `sunshine`**, `bootWindows`
+- **Has `grim-screenshot`** instead of `grimblast`
+- **Has `logitech` wireless** enabled
+
+#### Step 12.5 — `hosts/hp-server/hardware.nix`
+
+| Source | `systems/hp-server/hardware-configuration.nix` |
+|---|---|
+| **Module name** | `nixosModules.hpServerHardware` |
+| **Notes** | Also absorb `systems/hp-server/bootloader.nix` (GRUB config — currently all commented out, uses default bootloader). |
+
+#### Step 12.6 — `hosts/hp-server/configuration.nix`
+
+| Source | `systems/hp-server/configuration.nix` + `hosts/hp-server.nix` (data) |
+|---|---|
+| **Module name** | `nixosModules.hpServerConfig` |
+
+**Server feature imports (minimal — no desktop):**
+```
+# Hardware & Core
+hpServerHardware, base, home-manager.nixosModules.home-manager, bootloader, networking
+
+# System
+pipewire, bluetooth, nvidiaGraphics
+
+# Server
+serverBase, sshServer, tailscale, serverMonitoring, laptopServer
+inputs.vscode-server.nixosModules.default (+ enable)
+
+# CLI apps only (no desktop features)
+zsh, yazi, tmux, nvf, git, sshConfig, secrets, nerdFonts, devTools, direnv, sessionVariables, utils
+
+# User
+userHenhal
+```
+
+---
+
+### Phase 13: Dev Shells
+
+| Step | Source | Feature name | Notes |
+|---|---|---|---|
+| 13.1 | `shells/rust/flake.nix` | `modules/dev-shells/rust.nix` | Define `perSystem.devShells.rust`. Extract the shell definition from the standalone flake. |
+| 13.2 | `shells/js/react-native/flake.nix` | `modules/dev-shells/react-native.nix` | Define `perSystem.devShells.react-native`. The standalone flake (`flake-standalone.nix`) can remain for use outside this repo. |
+| 13.3 | `shells/sandboxes/catchall-sandbox.nix` | `modules/dev-shells/sandbox.nix` | If it's a dev shell, define as `perSystem.devShells.sandbox`. |
+
+---
+
+### Phase 14: Nix-on-Droid
+
+| Source | `nix-on-droid/default.nix` + `users/henhal-android/home.nix` |
+|---|---|
+| **Target** | `modules/nix-on-droid.nix` + `modules/users/henhal-android.nix` |
+| **Approach** | Define `flake.nixOnDroidConfigurations.default` in a flake-parts module. The home-manager config for the android user can import `self.homeModules.*` for shared modules (zsh, yazi, nvf, git, devTools, direnv, utils, nerdFonts). Android-specific modules (`nix-on-droid/modules/basic-cli-tools.nix`, `ssh-client.nix`) and theme (`nix-on-droid/theme.nix`) stay as local imports or become their own homeModules. |
+| **Shared modules** | `self.homeModules.zsh`, `self.homeModules.yazi`, `self.homeModules.nvf`, `self.homeModules.git`, `self.homeModules.devTools`, `self.homeModules.direnv`, `self.homeModules.utils`, `self.homeModules.nerdFonts`, `self.homeModules.sessionVariables` |
+| **Android-only** | Termux config, Nerd Font copying activation, hostname override, p10k-android config. These stay in the user module or become `homeModules.androidTermux`. |
+
+---
+
+### Phase 15: Validation & Cleanup
+
+#### Build all hosts
+```bash
+nix build .#nixosConfigurations.workstation.config.system.build.toplevel
+nix build .#nixosConfigurations.lenovo-yoga-pro-7.config.system.build.toplevel
+nix build .#nixosConfigurations.hp-server.config.system.build.toplevel
+```
+
+#### Test standalone packages
+```bash
+nix run .#kitty
+nix run .#nvim
+nix run .#zsh
+```
+
+#### Test dev shells
+```bash
+nix develop .#rust
+nix develop .#react-native
+```
+
+#### Delete old config directories
+- `hosts/*.nix` (old flat host data files — NOT the `hosts/` directories we created)
+- `systems/`
+- `nixos/`
+- `home/`
+- `lib/`
+- `users/`
+- `shells/`
+- `nix-on-droid/` (if fully absorbed)
+
+#### Move new-config to root
+```bash
+# After validation, move new-config contents to repo root
+cp -r new-config/* .
+rm -rf new-config/
+```
+
+#### Update documentation
+- `README.md`
+- `docs/DESKTOP_CONFIGURATION.md` (may be obsolete — the pattern is self-documenting)
+- `scripts/install.sh`
+
+---
+
+## Complete File Mapping
+
+### Files to DELETE (dispatcher/factory infrastructure)
 
 | File | Reason |
 |---|---|
-| `lib/mk-nixos-system.nix` | Replaced by per-host `default.nix` |
-| `lib/desktop.nix` | Dispatcher eliminated — explicit imports |
-| `lib/theme.nix` | Absorbed into `modules/theme.nix` |
+| `lib/mk-nixos-system.nix` | Replaced by per-host `default.nix` entry points |
+| `lib/desktop.nix` | Dispatcher eliminated — hosts explicitly import features |
+| `lib/theme.nix` | Absorbed into `modules/features/stylix.nix` |
+| `nixos/default.nix` | Absorbed into `modules/base.nix` |
 | `nixos/modules/desktop/default.nix` | NixOS dispatcher eliminated |
 | `home/modules/desktop/default.nix` | Home dispatcher eliminated |
-| `home/modules/desktop/lib.nix` | Helper functions no longer needed |
-| `systems/desktop/` | Legacy — already marked for deletion |
+| `home/modules/desktop/lib.nix` | `mkWlPasteWatchService` helper inlined into clipboard features |
+| `home/modules/desktop/*/none.nix` (×10) | No-op modules — not needed when features are explicit |
+| `home/modules/desktop/lock/loginctl.nix` | No-op — loginctl is just a command |
+| `home/modules/desktop/rofi/default.nix` | Alternate rofi config — determine if used, merge into `rofi.nix` |
+| `systems/desktop/` | Legacy host — already marked for deletion |
 
-### Hosts (restructured)
+### Host files (restructured)
 
-| Old | New |
-|---|---|
-| `hosts/workstation.nix` (data) + `systems/workstation/configuration.nix` | `hosts/workstation/configuration.nix` (merged) |
-| `systems/workstation/hardware-configuration.nix` | `hosts/workstation/hardware.nix` |
-| *(new)* | `hosts/workstation/default.nix` (entry point) |
-| `hosts/lenovo-yoga-pro-7.nix` + `systems/lenovo-yoga-pro-7/configuration.nix` | `hosts/lenovo-yoga-pro-7/configuration.nix` |
-| `systems/lenovo-yoga-pro-7/hardware-configuration.nix` | `hosts/lenovo-yoga-pro-7/hardware.nix` |
-| `hosts/hp-server.nix` + `systems/hp-server/configuration.nix` | `hosts/hp-server/configuration.nix` |
-| `systems/hp-server/hardware-configuration.nix` | `hosts/hp-server/hardware.nix` |
-
-### NixOS modules → Named features
-
-| Old | New feature name |
-|---|---|
-| `nixos/default.nix` | `base` (in `modules/base.nix`) |
-| `nixos/modules/bluetooth.nix` | `bluetooth` |
-| `nixos/modules/bootloader.nix` | `bootloader` |
-| `nixos/modules/networking.nix` | `networking` |
-| `nixos/modules/pipewire.nix` | `pipewire` |
-| `nixos/modules/nvidia-graphics.nix` | `nvidiaGraphics` |
-| `nixos/modules/gaming.nix` | `gaming` |
-| `nixos/modules/virtualization.nix` | `virtualization` |
-| `nixos/modules/syncthing.nix` | `syncthing` |
-| `nixos/modules/printer.nix` | `printer` |
-| `nixos/modules/external-io.nix` | `externalIo` |
-| `nixos/modules/android.nix` | `android` |
-| `nixos/modules/systemd-loginhd.nix` | `systemdLogind` |
-| `nixos/modules/desktop/common.nix` | `desktopCommon` |
-| `nixos/modules/desktop/sessions/hyprland.nix` | `hyprland` (colocated with HM) |
-| `nixos/modules/desktop/sessions/niri.nix` | `niri` (colocated with HM) |
-| `nixos/modules/desktop/sessions/sway.nix` | `sway` (colocated with HM) |
-| `nixos/modules/desktop/sessions/gnome.nix` | `gnome` (colocated with HM) |
-| `nixos/modules/desktop/display-managers/sddm.nix` | `sddm` |
-| `nixos/modules/desktop/display-managers/gdm.nix` | `gdm` |
-| `nixos/modules/server/default.nix` | `serverBase` |
-| `nixos/modules/server/ssh.nix` | `ssh` |
-| `nixos/modules/server/tailscale.nix` | `tailscale` |
-| `nixos/modules/server/server-monitoring.nix` | `serverMonitoring` |
-| `nixos/modules/server/sunshine/default.nix` | `sunshine` |
-| `nixos/modules/theme/stylix.nix` | `stylix` (colocated with HM) |
-| `systems/workstation/secure-boot.nix` | `secureBoot` |
-| `systems/lenovo-yoga-pro-7/amd-graphics.nix` | `amdGraphics` |
-| `systems/lenovo-yoga-pro-7/battery.nix` | `battery` |
-| `systems/lenovo-yoga-pro-7/minimal-battery.nix` | `minimalBattery` |
-
-### Home-manager modules → Named features (colocated or home-only)
-
-| Old | New feature name | Type |
+| Old file(s) | New file | What happens |
 |---|---|---|
-| `home/modules/desktop/sessions/hyprland.nix` | `hyprland` | Colocated (merged with NixOS) |
-| `home/modules/desktop/sessions/niri.nix` | `niri` | Colocated |
-| `home/modules/desktop/bars/waybar.nix` | `waybar` | Colocated + package |
-| `home/modules/desktop/bars/hyprpanel.nix` | `hyprpanel` | Colocated |
-| `home/modules/desktop/lock/hyprlock.nix` | `hyprlock` | Colocated |
-| `home/modules/desktop/lock/swaylock.nix` | `swaylock` | Colocated |
-| `home/modules/desktop/idle/hypridle.nix` | `hypridle` | Colocated |
-| `home/modules/desktop/idle/swayidle.nix` | `swayidle` | Colocated |
-| `home/modules/desktop/launchers/rofi.nix` | `rofi` | Colocated + package |
-| `home/modules/desktop/clipboard/clipman.nix` | `clipman` | Colocated |
-| `home/modules/desktop/clipboard/cliphist.nix` | `cliphist` | Colocated |
-| `home/modules/desktop/screenshot/grimblast.nix` | `grimblast` | Colocated |
-| `home/modules/desktop/screenshot/grim.nix` | `grimScreenshot` | Colocated |
-| `home/modules/desktop/notifications/mako.nix` | `mako` | Colocated |
-| `home/modules/desktop/notifications/dunst.nix` | `dunst` | Colocated |
-| `home/modules/desktop/nightlight/gammastep.nix` | `gammastep` | Colocated |
-| `home/modules/desktop/logout/wlogout.nix` | `wlogout` | Colocated |
-| `home/modules/desktop/applets/wayland.nix` | `waylandApplets` | Colocated |
-| `home/modules/desktop/shells/noctalia/` | `noctalia` | Colocated + package |
-| `home/modules/applications/kitty.nix` | `kitty` | Home-only + package |
-| `home/modules/applications/zsh.nix` | `zsh` | Home-only + package |
-| `home/modules/applications/vivaldi.nix` | `vivaldi` | Home-only |
-| `home/modules/applications/zen-browser.nix` | `zenBrowser` | Home-only |
-| `home/modules/applications/yazi.nix` | `yazi` | Home-only |
-| `home/modules/applications/nvf.nix` | `nvf` | Home-only + package |
-| `home/modules/applications/obsidian.nix` | `obsidian` | Home-only |
-| `home/modules/applications/spotify.nix` | `spotify` | Home-only |
-| *(all other apps)* | *(same pattern)* | Home-only |
-| `home/modules/settings/git.nix` | `git` | Option-based + thin NixOS |
-| `home/modules/settings/ssh.nix` | `sshConfig` | Option-based + thin NixOS |
-| `home/modules/settings/nerd-fonts.nix` | `nerdFonts` | Thin NixOS + HM |
-| `home/modules/settings/secrets/` | `secrets` | Option-based + thin NixOS |
-| `home/modules/settings/udiskie.nix` | `udiskie` | Thin NixOS + HM |
-| `home/modules/environment/dev-tools.nix` | `devTools` | Thin NixOS + HM |
-| `home/modules/environment/direnv.nix` | `direnv` | Thin NixOS + HM |
-| `home/modules/environment/session-variables.nix` | `sessionVariables` | Thin NixOS + HM |
-| `home/modules/environment/bottles.nix` | `bottles` | Thin NixOS + HM |
-| `home/modules/utils/default.nix` | `utils` | Thin NixOS + HM |
-| `home/modules/scripts/power-monitor.nix` | `powerMonitor` | Thin NixOS + HM |
-| `home/modules/scripts/yazi-float.nix` | `yaziFloat` | Thin NixOS + HM |
-| `home/modules/themes/stylix/` | `stylix` | Colocated (merged with NixOS) |
+| `hosts/workstation.nix` (data) | — | Data inlined into `hosts/workstation/configuration.nix` as option values |
+| `hosts/lenovo-yoga-pro-7.nix` (data) | — | Data inlined into `hosts/lenovo-yoga-pro-7/configuration.nix` |
+| `hosts/hp-server.nix` (data) | — | Data inlined into `hosts/hp-server/configuration.nix` |
+| `systems/workstation/hardware-configuration.nix` | `hosts/workstation/hardware.nix` | Wrapped in flake-parts boilerplate |
+| `systems/workstation/configuration.nix` | `hosts/workstation/configuration.nix` | Feature imports + host-specific config |
+| `systems/workstation/secure-boot.nix` | `modules/features/secure-boot.nix` | Becomes standalone feature |
+| `systems/workstation/scripts/boot-windows.nix` | `modules/features/boot-windows.nix` | Becomes colocated feature (NixOS + HM desktop entry) |
+| `systems/lenovo-yoga-pro-7/hardware-configuration.nix` | `hosts/lenovo-yoga-pro-7/hardware.nix` | Wrapped in flake-parts boilerplate |
+| `systems/lenovo-yoga-pro-7/configuration.nix` | `hosts/lenovo-yoga-pro-7/configuration.nix` | Feature imports + host-specific config |
+| `systems/lenovo-yoga-pro-7/amd-graphics.nix` | `modules/features/amd-graphics.nix` | Becomes standalone feature |
+| `systems/lenovo-yoga-pro-7/battery.nix` | — | Unused (minimal-battery.nix is used instead) |
+| `systems/lenovo-yoga-pro-7/minimal-battery.nix` | `modules/features/minimal-battery.nix` | Becomes standalone feature |
+| `systems/hp-server/hardware-configuration.nix` | `hosts/hp-server/hardware.nix` | Wrapped in flake-parts boilerplate |
+| `systems/hp-server/configuration.nix` | `hosts/hp-server/configuration.nix` | Feature imports + host-specific config |
+| `systems/hp-server/bootloader.nix` | — | Mostly commented out — use default bootloader feature |
+| `systems/hp-server/laptop-server.nix` | `modules/features/laptop-server.nix` | Becomes standalone feature |
+| `systems/desktop/*` | — | **Deleted** — legacy |
+| *(new)* | `hosts/*/default.nix` | Entry points defining `nixosConfigurations.*` |
+
+### NixOS modules → Features
+
+| Old file | Feature name | Template | Colocated with |
+|---|---|---|---|
+| `nixos/modules/bluetooth.nix` | `bluetooth` | A | — |
+| `nixos/modules/pipewire.nix` | `pipewire` | A | — |
+| `nixos/modules/networking.nix` | `networking` | A | — |
+| `nixos/modules/bootloader.nix` | `bootloader` | A | — |
+| `nixos/modules/external-io.nix` | `externalIo` | A | — |
+| `nixos/modules/printer.nix` | `printer` | A | — |
+| `nixos/modules/android.nix` | `android` | A | — |
+| `nixos/modules/systemd-loginhd.nix` | `systemdLogind` | A | — |
+| `nixos/modules/nvidia-graphics.nix` | `nvidiaGraphics` | A | — |
+| `nixos/modules/gaming.nix` | `gaming` | A | — |
+| `nixos/modules/virtualization.nix` | `virtualization` | A | — |
+| `nixos/modules/syncthing.nix` | `syncthing` | A | — |
+| `nixos/modules/desktop/common.nix` | `desktopCommon` | C | `home/modules/desktop/common.nix` |
+| `nixos/modules/desktop/sessions/hyprland.nix` | `hyprland` | C/D | `home/modules/desktop/sessions/hyprland.nix` |
+| `nixos/modules/desktop/sessions/niri.nix` | `niri` | C/D | `home/modules/desktop/sessions/niri.nix` |
+| `nixos/modules/desktop/sessions/sway.nix` | `sway` | C | `home/modules/desktop/sessions/sway.nix` |
+| `nixos/modules/desktop/sessions/gnome.nix` | `gnome` | C | `home/modules/desktop/sessions/gnome.nix` |
+| `nixos/modules/desktop/display-managers/sddm.nix` | `sddm` | A | — |
+| `nixos/modules/desktop/display-managers/gdm.nix` | `gdm` | A | — |
+| `nixos/modules/server/default.nix` | `serverBase` | A | — |
+| `nixos/modules/server/ssh.nix` | `sshServer` | A | — |
+| `nixos/modules/server/tailscale.nix` | `tailscale` | A | — |
+| `nixos/modules/server/server-monitoring.nix` | `serverMonitoring` | A | — |
+| `nixos/modules/server/sunshine/default.nix` | `sunshine` | A | — |
+| `nixos/modules/server/cockpit.nix` | `cockpit` | A | — |
+| `nixos/modules/theme/stylix.nix` | `stylix` | C | `home/modules/themes/stylix/default.nix` + `lib/theme.nix` |
+
+### Home-manager modules → Features
+
+| Old file | Feature name | Template | Colocated with | Standalone pkg? |
+|---|---|---|---|---|
+| `home/modules/desktop/sessions/hyprland.nix` | `hyprland` | C/D | NixOS hyprland | Possible |
+| `home/modules/desktop/sessions/niri.nix` | `niri` | C/D | NixOS niri | Possible |
+| `home/modules/desktop/sessions/sway.nix` | `sway` | C | NixOS sway | ✗ |
+| `home/modules/desktop/sessions/gnome.nix` | `gnome` | C | NixOS gnome | ✗ |
+| `home/modules/desktop/bars/waybar.nix` | `waybar` | B2 | — | ✓ |
+| `home/modules/desktop/bars/hyprpanel.nix` | `hyprpanel` | B2 | — | ✗ |
+| `home/modules/desktop/lock/hyprlock.nix` | `hyprlock` | B2 | — | ✗ |
+| `home/modules/desktop/lock/swaylock.nix` | `swaylock` | B2 | — | ✗ |
+| `home/modules/desktop/idle/hypridle.nix` | `hypridle` | B2 | — | ✗ |
+| `home/modules/desktop/idle/swayidle.nix` | `swayidle` | B2 | — | ✗ |
+| `home/modules/desktop/launchers/rofi.nix` + `rofi-theme.nix` | `rofi` | B2 | — | ✓ |
+| `home/modules/desktop/clipboard/clipman.nix` | `clipman` | B2 | — | ✗ |
+| `home/modules/desktop/clipboard/cliphist.nix` | `cliphist` | B2 | — | ✗ |
+| `home/modules/desktop/screenshot/grimblast.nix` | `grimblast` | B2 | — | ✗ |
+| `home/modules/desktop/screenshot/grim.nix` | `grimScreenshot` | B2 | — | ✗ |
+| `home/modules/desktop/notifications/mako.nix` | `mako` | B2 | — | ✗ |
+| `home/modules/desktop/notifications/dunst.nix` | `dunst` | B2 | — | ✗ |
+| `home/modules/desktop/nightlight/gammastep.nix` | `gammastep` | B2 | — | ✗ |
+| `home/modules/desktop/nightlight/redshift.nix` | `redshift` | B2 | — | ✗ |
+| `home/modules/desktop/logout/wlogout.nix` | `wlogout` | B2 | — | ✗ |
+| `home/modules/desktop/applets/wayland.nix` | `waylandApplets` | B2 | — | ✗ |
+| `home/modules/desktop/shells/noctalia/default.nix` | `noctalia` | B2 | — | ✓ |
+| `home/modules/desktop/common.nix` | `desktopCommon` | C | NixOS desktop/common.nix | ✗ |
+| `home/modules/applications/kitty.nix` | `kitty` | B2 | — | ✓ |
+| `home/modules/applications/zsh.nix` | `zsh` | B2 | — | ✓ |
+| `home/modules/applications/nvf.nix` | `nvf` | B2 | — | ✓ |
+| `home/modules/applications/tmux.nix` | `tmux` | B2 | — | ✓ |
+| `home/modules/applications/yazi.nix` | `yazi` | B2 | — | ✗ |
+| `home/modules/applications/vivaldi.nix` | `vivaldi` | B2 | — | ✗ |
+| `home/modules/applications/zen-browser.nix` | `zenBrowser` | B2 | — | ✗ |
+| `home/modules/applications/brave.nix` | `brave` | B2 | — | ✗ |
+| `home/modules/applications/firefox.nix` | `firefox` | B2 | — | ✗ |
+| `home/modules/applications/google-chrome.nix` | `googleChrome` | B2 | — | ✗ |
+| `home/modules/applications/microsoft-edge.nix` | `microsoftEdge` | B2 | — | ✗ |
+| `home/modules/applications/obsidian.nix` | `obsidian` | B2 | — | ✗ |
+| `home/modules/applications/spotify.nix` | `spotify` | B2 | — | ✗ |
+| `home/modules/applications/gimp.nix` | `gimp` | B2 | — | ✗ |
+| `home/modules/applications/gthumb.nix` | `gthumb` | B2 | — | ✗ |
+| `home/modules/applications/mpv.nix` | `mpv` | B2 | — | ✗ |
+| `home/modules/applications/zathura.nix` | `zathura` | B2 | — | ✗ |
+| `home/modules/applications/libreoffice.nix` | `libreoffice` | B2 | — | ✗ |
+| `home/modules/applications/nautilus.nix` | `nautilus` | B2 | — | ✗ |
+| `home/modules/applications/mission-center.nix` | `missionCenter` | B2 | — | ✗ |
+| `home/modules/applications/gnome-calculator.nix` | `gnomeCalculator` | B2 | — | ✗ |
+| `home/modules/applications/vial.nix` | `vial` | B2 | — | ✗ |
+| `home/modules/applications/claude-code.nix` | `claudeCode` | B2 | — | ✗ |
+| `home/modules/applications/amazon-q.nix` | `amazonQ` | B2 | — | ✗ |
+| `home/modules/applications/opencode/default.nix` | `opencode` | B2 | — | ✗ |
+| `home/modules/applications/aider-chat.nix` | `aiderChat` | B2 | — | ✗ |
+| `home/modules/applications/vscode.nix` | `vscode` | B2 | — | ✗ |
+| `home/modules/applications/cursor.nix` | `cursor` | B2 | — | ✗ |
+| `home/modules/applications/qalculate.nix` | `qalculate` | B2 | — | ✗ |
+| `home/modules/applications/nsxiv.nix` | `nsxiv` | B2 | — | ✗ |
+| `home/modules/settings/git.nix` | `git` | B | — | ✗ |
+| `home/modules/settings/ssh.nix` | `sshConfig` | B | — | ✗ |
+| `home/modules/settings/secrets/secrets.nix` | `secrets` | B2 | — | ✗ |
+| `home/modules/settings/nerd-fonts.nix` | `nerdFonts` | B2 | — | ✗ |
+| `home/modules/settings/udiskie.nix` | `udiskie` | B2 | — | ✗ |
+| `home/modules/environment/dev-tools.nix` | `devTools` | B2 | — | ✗ |
+| `home/modules/environment/session-variables.nix` | `sessionVariables` | B2 | — | ✗ |
+| `home/modules/environment/direnv.nix` | `direnv` | B2 | — | ✗ |
+| `home/modules/environment/bottles.nix` | `bottles` | B2 | — | ✗ |
+| `home/modules/utils/default.nix` | `utils` | B2 | — | ✗ |
+| `home/modules/scripts/power-monitor.nix` | `powerMonitor` | B2 | — | ✗ |
+| `home/modules/scripts/yazi-float.nix` | `yaziFloat` | B2 | — | ✗ |
+| `home/modules/scripts/brightness-external.nix` | `brightnessExternal` | B2 | — | ✗ |
+| `home/modules/scripts/search-with-zoxide.nix` | *(absorbed into zsh)* | — | — | ✗ |
+| `home/modules/scripts/toggle-monitors-*` (×3) | *(absorbed into WMs)* | — | — | ✗ |
+| `home/modules/themes/stylix/default.nix` | `stylix` | C | NixOS stylix | ✗ |
+| `home/modules/themes/catppuccin/default.nix` | `catppuccin` | B2 | — | ✗ |
 
 ### Users
 
-| Old | New |
-|---|---|
-| `users/henhal/home.nix` | `modules/users/henhal.nix` |
-| `users/henhal-android/home.nix` | `modules/users/henhal-android.nix` |
+| Old file | New file | Notes |
+|---|---|---|
+| `users/henhal/home.nix` | `modules/users/henhal.nix` | Slim: identity + `my.*` option values only |
+| `users/henhal-android/home.nix` | `modules/users/henhal-android.nix` or `modules/nix-on-droid.nix` | Android-specific HM config |
 
 ### Other
 
-| Old | New |
-|---|---|
-| `shells/rust/` | `modules/dev-shells/rust.nix` |
-| `shells/js/react-native/` | `modules/dev-shells/react-native.nix` |
-| `nix-on-droid/` | `modules/nix-on-droid.nix` + `modules/nix-on-droid-config/` |
+| Old file | New file | Notes |
+|---|---|---|
+| `shells/rust/flake.nix` | `modules/dev-shells/rust.nix` | `perSystem.devShells.rust` |
+| `shells/js/react-native/flake.nix` | `modules/dev-shells/react-native.nix` | `perSystem.devShells.react-native` |
+| `shells/js/react-native/flake-standalone.nix` | — | Keep as standalone flake |
+| `shells/sandboxes/catchall-sandbox.nix` | `modules/dev-shells/sandbox.nix` | `perSystem.devShells.sandbox` |
+| `nix-on-droid/default.nix` | `modules/nix-on-droid.nix` | `flake.nixOnDroidConfigurations.default` |
+| `nix-on-droid/modules/*.nix` | `modules/nix-on-droid.nix` or `homeModules.*` | Determine if reusable |
+| `nix-on-droid/theme.nix` | `modules/nix-on-droid.nix` | Terminal color definitions |
+| `flake.nix` (root) | `flake.nix` (rewritten) | mkFlake + import-tree |
+
+---
+
+## specialArgs Migration
+
+The current config passes many custom values through `specialArgs`. These need to be eliminated or replaced.
+
+| Current specialArg | Used by | Migration approach |
+|---|---|---|
+| `userSettings` | Many files | **Eliminated.** User identity → user module. `userSettings.term/browser` → `options.my.desktop.*`. `userSettings.username` → `config.users.users` introspection or hardcode. `userSettings.stylixTheme` → `options.my.theme.*`. `userSettings.stateVersion` → inline per-host. |
+| `hostConfig` | WM sessions, hyprpanel, desktop dispatchers | **Eliminated.** Monitor/workspace data → `options.my.hyprland.*`, `options.my.niri.*`. GPU/hardware → features decide themselves. Hostname conditionals → `config.networking.hostName`. |
+| `desktop` | Desktop dispatchers, idle, lock, rofi | **Eliminated.** The resolver + dispatcher is gone. Each feature is explicit. Cross-feature references (e.g., idle needing lock command) use `options.my.desktop.lockCommand` or detect via `config.programs.*.enable`. |
+| `unstable` / `pkgs-unstable` | nvf, obsidian, niri, hyprpanel | **Replaced** with `pkgs-unstable` passed via `specialArgs` from host `default.nix`. |
+| `pkgs24-11` | nvf (plugin builds) | **Replaced** with `pkgs-24-11` via `specialArgs`. |
+| `inputs` | nvf, noctalia, zen-browser, stylix | **Kept.** Pass `inputs` via `specialArgs` in host `default.nix`. |
+| `self` | Feature cross-referencing | **Kept.** Passed as top-level flake-parts arg. Features use `self.nixosModules.*`, `self.homeModules.*`, `self'.packages.*`. |
+| `hostname` / `systemName` | networking, various | **Eliminated.** Use `config.networking.hostName`. |
+| `windowManager` | Legacy compatibility | **Eliminated.** |
+| `zen-browser` / `nvf` / `nvim-nix` / `stylix` | Specific features | **Folded into `inputs`** — already there, just use `inputs.zen-browser`, etc. |
 
 ---
 
@@ -1039,26 +1581,30 @@ Convert all `home/modules/**/*.nix` to colocated features or home-only features:
 
 ### Risks
 
-1. **`home-manager.sharedModules` applies globally** — Every `nixosModules.X` that injects a `homeModules.X` applies it to ALL users on that machine. Fine for single-user; needs rethinking for multi-user.
+1. **`home-manager.sharedModules` applies globally** — Every `nixosModules.X` that injects a `homeModules.X` applies it to ALL users on that machine. Fine for single-user (this config); needs rethinking for multi-user.
 
 2. **Module name collisions** — `import-tree` loads everything. Two files defining `flake.nixosModules.hyprland` will conflict. Names must be globally unique. Use the feature name mapping above consistently.
 
-3. **`specialArgs` propagation** — Current features receive `hostConfig`, `desktop`, `userSettings`, `pkgs-unstable` via `specialArgs`. These need to be provided in each host's `nixosSystem` call, or features need to be rewritten to not depend on them (preferred).
+3. **`specialArgs` propagation** — Home-manager modules injected via `sharedModules` don't automatically get NixOS `specialArgs`. Use `home-manager.extraSpecialArgs` in the host to pass through `inputs`, `self`, `pkgs-unstable`, etc.
 
-4. **`homeModules` receiving `specialArgs`** — Home-manager modules injected via `sharedModules` don't automatically get NixOS `specialArgs`. Use `home-manager.extraSpecialArgs` in the host or user module to pass through what's needed.
+4. **`wrapper-modules` availability** — Not all programs have wrappers. Check [BirdeeHub/nix-wrapper-modules](https://github.com/BirdeeHub/nix-wrapper-modules) before planning which programs to wrap. For unsupported programs, use `symlinkJoin` + `makeWrapper`.
 
-5. **`wrapper-modules` availability** — Not all programs have wrappers. Check [BirdeeHub/nix-wrapper-modules](https://github.com/BirdeeHub/nix-wrapper-modules) before planning which programs to wrap. For unsupported programs, use `symlinkJoin` + `makeWrapper`.
+5. **Option namespace collisions** — Features define options under `my.*` (e.g., `my.git.userName`). This namespace must not collide with other NixOS/HM options. Using a unique prefix like `my.*` or `dotfiles.*` avoids this.
 
-6. **Option namespace collisions** — Features define options under `my.*` (e.g., `my.git.userName`). This namespace must not collide with other NixOS/HM options. Using a unique prefix like `my.*` or `dotfiles.*` avoids this.
+6. **Stylix dependency ordering** — Many features reference `config.lib.stylix.colors` or `config.stylix.fonts.*`. The `inputs.stylix.nixosModules.stylix` must be imported before these features evaluate. In practice, NixOS module system handles this via lazy evaluation, but test early.
+
+7. **Niri KDL config files** — Niri uses KDL config files with out-of-store symlinks. The `niri-config/` directory needs to be accessible from the new location. Either copy the directory alongside the feature file or use absolute paths.
 
 ### Open Questions
 
-1. **Bundle modules vs. explicit imports?** — Should each host list every feature individually, or use bundle modules (e.g., `bundleDesktopHyprland`)? Bundles are convenient but hide which features are active. Start explicit, add bundles later if the import lists get unwieldy.
+1. **Bundle modules vs. explicit imports?** — Should each host list every feature individually, or use bundle modules (e.g., `bundleDesktopHyprland`)? Start explicit, add bundles later if the import lists get unwieldy.
 
-2. **Monitor config** — Currently passed as host data. In the new pattern, monitor layouts could be NixOS options set in the host's `configuration.nix` and read by desktop session features. Need to decide the option schema.
+2. **Cross-feature dependencies (idle ↔ lock)** — The idle daemon needs to know the lock command. Options: (a) `options.my.desktop.lockCommand` set by host, (b) idle feature detects which lock is active via `config.programs.hyprlock.enable`, (c) just hardcode in the host. Approach (b) is most elegant.
 
-3. **Feature toggles** — The current null-defaulting pattern (set `null` → use session default) is elegant. Can we preserve something similar? One approach: bundle modules define the defaults, hosts override individual features by importing different ones.
+3. **Host-specific scripts in WMs** — Toggle-monitors scripts are workstation-only. Options: (a) `config.networking.hostName == "workstation"` conditional inside the WM feature, (b) separate `toggleMonitors` feature only imported by workstation, (c) options `my.hyprland.extraScripts`. Start with (a), refactor later.
 
-4. **Noctalia all-in-one shell** — Currently, when `shell = "noctalia"`, the dispatcher auto-disables bar, notifications, and logout. In the dendritic model, the host simply imports `self.nixosModules.noctalia` instead of importing waybar + mako + wlogout separately. The conflict goes away naturally.
+4. **Noctalia all-in-one shell** — When using Noctalia, the host simply doesn't import waybar + mako + wlogout. The conflict resolution is now implicit — solved by explicit feature selection per host.
 
-5. **Legacy `desktop` configuration** — Exclude from migration entirely, delete.
+5. **`home/modules/desktop/rofi/default.nix` vs `home/modules/desktop/launchers/rofi.nix`** — Two rofi configs exist. Determine which is actually used in the active config and migrate only that one. The other can be deleted.
+
+6. **catppuccin theme** — Currently commented out (stylix is used). Migrate for completeness or delete?
