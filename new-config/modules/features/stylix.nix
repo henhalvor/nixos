@@ -44,8 +44,8 @@
           schemes.${config.my.theme.scheme}
             or (throw "Unknown scheme: ${config.my.theme.scheme}. Valid: ${lib.concatStringsSep ", " (builtins.attrNames schemes)}");
 
-        # Path to wallpaper — relative to the repo root (new-config/ during migration, then ./)
-        image = ../../../assets/wallpapers/${config.my.theme.wallpaper};
+        # Path to wallpaper — ../../ goes from modules/features/ up to repo root
+        image = ../../assets/wallpapers/${config.my.theme.wallpaper};
 
         cursor = {
           package = pkgs.bibata-cursors;

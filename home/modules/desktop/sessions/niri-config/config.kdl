@@ -1,7 +1,0 @@
-// Repo-managed Niri config. Home Manager symlinks this directory into ~/.config/niri
-// using out-of-store symlinks so edits live-reload without a system rebuild.
-
-include "common/settings.kdl"
-include "common/window-rules.kdl"
-include "common/binds.kdl"
-include "host.kdl"
