@@ -53,6 +53,13 @@
       url = "github:noctalia-dev/noctalia-qs";
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
+
+    # Dev shell inputs
+    rust-overlay.url = "https://flakehub.com/f/oxalica/rust-overlay/*.tar.gz";
+    android-nixpkgs = {
+      url = "github:tadfisher/android-nixpkgs?rev=91170262072e4a5c09db45b44d72e71752b6204d";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
+    };
   };
 
   outputs = inputs:
