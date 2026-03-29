@@ -100,7 +100,12 @@
       self.nixosModules.bottles
       self.nixosModules.utils
 
-      # TODO: Phase 10+ features
+      # Scripts & Utilities (Phase 10)
+      self.nixosModules.powerMonitor
+      self.nixosModules.yaziFloat
+      self.nixosModules.brightnessExternal
+
+      # TODO: Phase 11+ features
 
       # User
       self.nixosModules.userHenhal
