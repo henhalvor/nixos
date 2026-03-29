@@ -51,7 +51,17 @@
       self.nixosModules.sway
       self.nixosModules.niri
 
-      # TODO: Phase 7+ features
+      # Desktop components (Phase 7)
+      self.nixosModules.waybar
+      self.nixosModules.hyprlock
+      self.nixosModules.mako
+      self.nixosModules.rofi
+      self.nixosModules.clipman
+      self.nixosModules.grimblast
+      self.nixosModules.waylandApplets
+      self.nixosModules.gammastep
+
+      # TODO: Phase 8+ features
 
       # User
       self.nixosModules.userHenhal
@@ -86,6 +96,9 @@
       launcher = "rofi";
       bar = "waybar";
     };
+
+    # Rofi lock command
+    my.rofi.lockCommand = "hyprlock";
 
     # Workstation-specific NVIDIA overrides (desktop GPU doesn't need power saving)
     hardware.nvidia.powerManagement.enable = lib.mkForce false;

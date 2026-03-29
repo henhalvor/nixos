@@ -46,7 +46,17 @@
       self.nixosModules.sway
       self.nixosModules.gnome
 
-      # TODO: Phase 7+ features
+      # Desktop components (Phase 7)
+      self.nixosModules.noctalia
+      self.nixosModules.swaylock
+      self.nixosModules.swayidle
+      self.nixosModules.rofi
+      self.nixosModules.clipman
+      self.nixosModules.grimScreenshot
+      self.nixosModules.waylandApplets
+      self.nixosModules.gammastep
+
+      # TODO: Phase 8+ features
 
       # User
       self.nixosModules.userHenhal
@@ -75,6 +85,15 @@
       lockCommand = "hyprlock";
       launcher = "rofi";
     };
+
+    # Swayidle config (niri session, swaylock)
+    my.swayidle = {
+      lockCommand = "swaylock";
+      session = "niri";
+    };
+
+    # Rofi lock command
+    my.rofi.lockCommand = "swaylock";
 
     # Laptop-specific hardware
     hardware.graphics = {
