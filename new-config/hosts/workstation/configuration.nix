@@ -46,7 +46,12 @@
       self.nixosModules.desktopCommon
       self.nixosModules.sddm
 
-      # TODO: Phase 6+ features
+      # Desktop sessions (Phase 6)
+      self.nixosModules.hyprland
+      self.nixosModules.sway
+      self.nixosModules.niri
+
+      # TODO: Phase 7+ features
 
       # User
       self.nixosModules.userHenhal
@@ -61,6 +66,26 @@
 
     # Sunshine user
     my.sunshine.user = "henhal";
+
+    # Hyprland host-specific config
+    my.hyprland = {
+      monitors = [
+        "HDMI-A-1,1920x1080@144,0x0,1,transform,1"
+        "DP-1,2560x1440@144,1080x0,1"
+      ];
+      workspaceRules = [
+        "1, monitor:HDMI-A-1"
+        "3, monitor:HDMI-A-1"
+        "2, monitor:DP-1"
+        "4, monitor:DP-1"
+        "5, monitor:DP-1"
+        "6, monitor:DP-1"
+        "10, monitor:HEADLESS-1"
+      ];
+      lockCommand = "hyprlock";
+      launcher = "rofi";
+      bar = "waybar";
+    };
 
     # Workstation-specific NVIDIA overrides (desktop GPU doesn't need power saving)
     hardware.nvidia.powerManagement.enable = lib.mkForce false;

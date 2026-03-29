@@ -40,7 +40,13 @@
       self.nixosModules.desktopCommon
       self.nixosModules.sddm
 
-      # TODO: Phase 6+ features
+      # Desktop sessions (Phase 6)
+      self.nixosModules.hyprland
+      self.nixosModules.niri
+      self.nixosModules.sway
+      self.nixosModules.gnome
+
+      # TODO: Phase 7+ features
 
       # User
       self.nixosModules.userHenhal
@@ -52,6 +58,23 @@
 
     # Syncthing user
     my.syncthing.user = "henhal";
+
+    # Hyprland host-specific config
+    my.hyprland = {
+      monitors = [
+        "eDP-1,2560x1600@60,0x0,1.6"
+      ];
+      workspaceRules = [
+        "2, monitor:DP-9"
+        "3, monitor:DP-9"
+        "1, monitor:DP-8"
+        "1, monitor:eDP-1"
+        "2, monitor:eDP-1"
+        "3, monitor:eDP-1"
+      ];
+      lockCommand = "hyprlock";
+      launcher = "rofi";
+    };
 
     # Laptop-specific hardware
     hardware.graphics = {

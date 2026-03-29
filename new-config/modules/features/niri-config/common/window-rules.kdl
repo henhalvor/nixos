@@ -1,0 +1,156 @@
+window-rule {
+    geometry-corner-radius 25
+    clip-to-geometry true
+}
+
+window-rule {
+    match app-id=r#"vivaldi"#
+    open-on-workspace "1"
+    open-maximized true
+}
+
+window-rule {
+    match app-id=r#"^zen$"#
+    open-on-workspace "1"
+    open-maximized true
+}
+
+window-rule {
+    match at-startup=true app-id=r#"^chrome-mail\.google\.com__-Default$"#
+    open-on-workspace "gmail"
+    open-focused false
+}
+
+window-rule {
+    match app-id=r#"^chrome-mail\.google\.com__-Default$"#
+    open-on-workspace "gmail"
+    open-floating true
+    default-column-width { fixed 1111; }
+    default-window-height { fixed 650; }
+}
+
+window-rule {
+    match title="^Picture-in-Picture$"
+    open-floating true
+    default-column-width { fixed 480; }
+    default-window-height { fixed 270; }
+    default-floating-position x=100 y=100 relative-to="bottom-right"
+}
+
+window-rule {
+    match title="^yazi-float$"
+    open-floating true
+    default-column-width { fixed 1111; }
+    default-window-height { fixed 650; }
+}
+
+window-rule {
+    match title="^btop-float$"
+    open-floating true
+    default-column-width { fixed 1111; }
+    default-window-height { fixed 650; }
+}
+
+window-rule {
+    match title="^bluetui-float$"
+    open-floating true
+    default-column-width { fixed 1111; }
+    default-window-height { fixed 650; }
+}
+
+window-rule {
+    match title="^opencode-ai$"
+    open-floating true
+    default-column-width { fixed 1111; }
+    default-window-height { fixed 650; }
+}
+
+window-rule {
+    match title="^nmtui-popup$"
+    open-floating true
+    default-column-width { fixed 1111; }
+    default-window-height { fixed 650; }
+}
+
+window-rule {
+    match title="^wiremix-popup$"
+    open-floating true
+    default-column-width { fixed 1111; }
+    default-window-height { fixed 650; }
+}
+
+window-rule {
+    match title="^bluetui-popup$"
+    open-floating true
+    default-column-width { fixed 1111; }
+    default-window-height { fixed 650; }
+}
+
+window-rule {
+    match app-id=r#"^org\.gnome\.Calculator$"#
+    open-floating true
+}
+
+window-rule {
+    match app-id=r#"^org\.gnome\.FileRoller$"#
+    open-floating true
+}
+
+window-rule {
+    match app-id=r#"^pavucontrol$"#
+    open-floating true
+    default-column-width { fixed 700; }
+    default-window-height { fixed 450; }
+}
+
+window-rule {
+    match app-id=r#"^SoundWireServer$"#
+    open-floating true
+}
+
+window-rule {
+    match app-id=r#"^emulator64-crash-service$"#
+    open-floating true
+}
+
+window-rule {
+    match app-id=r#"^qemu-system-x86_64$"#
+    open-floating true
+    default-column-width { fixed 400; }
+    default-window-height { fixed 800; }
+}
+
+window-rule {
+    match app-id=r#"^Emulator$"#
+    open-floating true
+}
+
+window-rule {
+    match title="^Android Emulator$"
+    open-floating true
+}
+
+window-rule {
+    match title="^Emulator$"
+    open-floating true
+}
+
+window-rule {
+    match title="^Extended controls$"
+    open-floating true
+}
+
+window-rule {
+    match app-id=r#"^xwaylandvideobridge$"#
+    opacity 0.0
+    min-width 1
+    max-width 1
+    min-height 1
+    max-height 1
+    focus-ring {
+        off
+    }
+    shadow {
+        off
+    }
+}
