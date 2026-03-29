@@ -12,17 +12,22 @@
       self.nixosModules.networking
       inputs.home-manager.nixosModules.home-manager
 
-      # Theme (Phase 2) — server uses stylix too for terminal theming
+      # Theme (Phase 2) — terminal theming
       inputs.stylix.nixosModules.stylix
       self.nixosModules.stylix
 
-      # Features (Phase 3+)
+      # System services (Phase 3)
+      self.nixosModules.pipewire
       self.nixosModules.bluetooth
-      # TODO: Add remaining feature imports as they are migrated
+      self.nixosModules.nvidiaGraphics
+      self.nixosModules.laptopServer
+
+      # TODO: Phase 4 server features
+      # self.nixosModules.serverBase
       # self.nixosModules.sshServer
       # self.nixosModules.tailscale
       # self.nixosModules.serverMonitoring
-      # ...
+      # self.nixosModules.cockpit
 
       # User
       self.nixosModules.userHenhal
@@ -31,6 +36,8 @@
     # Host identity
     networking.hostName = "hp-server";
     system.stateVersion = "25.05";
+
+    programs.dconf.enable = true;
 
     # Home-manager settings
     home-manager = {
@@ -45,7 +52,5 @@
         };
       };
     };
-
-    # TODO: Migrate remaining server-specific config in later phases
   };
 }
