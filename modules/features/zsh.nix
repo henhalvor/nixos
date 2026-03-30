@@ -86,27 +86,15 @@
         source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme
         [[ -f ~/.p10k.zsh ]] && source ~/.p10k.zsh
 
-        # Secrets loader
+        # Secrets loader (reads sops-nix decrypted secrets from /run/secrets/)
         load_secrets() {
-          local secrets_file="$HOME/.dotfiles/home/modules/settings/secrets/secrets.env"
-          if [[ ! -f "$secrets_file" ]]; then
-            echo "Error: Secrets file does not exist"
-            return 1
-          fi
-          if [[ ! -r "$secrets_file" ]]; then
-            echo "Error: Secrets file is not readable"
-            return 1
-          fi
-          local file_perms=$(stat -c %a "$secrets_file")
-          if [[ "$file_perms" != "600" ]]; then
-            echo "Warning: Secrets file should have permissions 600"
-          fi
-          while IFS= read -r line || [[ -n "$line" ]]; do
-            if [[ "$line" =~ ^[[:space:]]*$ ]] || [[ "$line" =~ ^[[:space:]]*# ]]; then
-              continue
-            fi
-            export "$line"
-          done < "$secrets_file"
+          for f in /run/secrets/*; do
+            [ -f "$f" ] || continue
+            local name="$(basename "$f")"
+            [[ "$name" == *.* ]] && continue
+            local value="$(cat "$f" 2>/dev/null)" || continue
+            export "$name=$value"
+          done
         }
         alias reload_secrets='load_secrets'
 
