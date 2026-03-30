@@ -88,7 +88,11 @@
 
         # Secrets loader (reads sops-nix decrypted secrets from /run/secrets/)
         load_secrets() {
-          for f in /run/secrets/*; do
+          local secret_dir="/run/secrets"
+          [[ -d "$secret_dir" ]] || return 0
+          local files=("$secret_dir"/*(N))
+          (( ''${#files[@]} )) || return 0
+          for f in "''${files[@]}"; do
             [ -f "$f" ] || continue
             local name="$(basename "$f")"
             [[ "$name" == *.* ]] && continue

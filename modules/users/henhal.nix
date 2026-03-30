@@ -6,7 +6,7 @@
       isNormalUser = true;
       description = "Henrik";
       initialPassword = "password";
-      extraGroups = ["wheel" "networkmanager" "docker" "video" "input" "i2c" "libvirtd"];
+      extraGroups = ["wheel" "networkmanager" "docker" "video" "input" "i2c" "libvirtd" "keys"];
       shell = pkgs.zsh;
       home = "/home/henhal";
 
@@ -41,7 +41,7 @@
       home.stateVersion = "25.05";
       programs.home-manager.enable = true;
 
-      home.packages = with pkgs; [ vim ];
+      home.packages = with pkgs; [vim];
     };
   };
 }
