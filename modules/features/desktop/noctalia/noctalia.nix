@@ -21,6 +21,27 @@
       enable = true;
       systemd.enable = true;
       settings = lib.mkDefault (builtins.fromJSON (builtins.readFile ./settings.json));
+      plugins = {
+        sources = [
+          {
+            enabled = true;
+            name = "Official Noctalia Plugins";
+            url = "https://github.com/noctalia-dev/noctalia-plugins";
+          }
+        ];
+        states = {
+          kde-connect = {
+            enabled = true;
+            sourceUrl = "https://github.com/noctalia-dev/noctalia-plugins";
+          };
+        };
+      };
+
+      pluginSettings = {
+        kde-connect = {
+        };
+        # this may also be a string or a path to a JSON file.
+      };
     };
   };
 }
