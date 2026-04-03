@@ -184,7 +184,8 @@
       # Per-host desktop preference overrides
       users.henhal.my.desktop = {
         terminal = "kitty";
-        browser = "vivaldi";
+        browser = "zen-beta";
       };
-    };  };
+    };
+  };
 }

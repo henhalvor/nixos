@@ -88,5 +88,9 @@
     # Use qtct for Qt theming (avoids deprecated "gnome" platform warning)
     stylix.targets.qt.platform = "qtct";
     qt.platformTheme.name = "qtct";
+
+    stylix.targets.kde = {
+      enable = true;
+    };
   };
 }

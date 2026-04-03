@@ -1,29 +1,29 @@
 # Vivaldi — browser with custom left-tabs CSS
 # Source: home/modules/applications/vivaldi.nix
 # Template B2: HM-only
-{ self, ... }: {
-  flake.nixosModules.vivaldi = { ... }: {
-    home-manager.sharedModules = [ self.homeModules.vivaldi ];
+{self, ...}: {
+  flake.nixosModules.vivaldi = {...}: {
+    home-manager.sharedModules = [self.homeModules.vivaldi];
   };
 
-  flake.homeModules.vivaldi = { pkgs, ... }: {
-    home.packages = with pkgs; [ vivaldi ];
+  flake.homeModules.vivaldi = {pkgs, ...}: {
+    home.packages = with pkgs; [vivaldi];
 
-    xdg.mimeApps = {
-      enable = true;
-      defaultApplications = {
-        "text/html" = [ "vivaldi-stable.desktop" ];
-        "x-scheme-handler/http" = [ "vivaldi-stable.desktop" ];
-        "x-scheme-handler/https" = [ "vivaldi-stable.desktop" ];
-        "x-scheme-handler/chrome" = [ "vivaldi-stable.desktop" ];
-        "application/x-extension-htm" = [ "vivaldi-stable.desktop" ];
-        "application/x-extension-html" = [ "vivaldi-stable.desktop" ];
-        "application/x-extension-shtml" = [ "vivaldi-stable.desktop" ];
-        "application/xhtml+xml" = [ "vivaldi-stable.desktop" ];
-        "application/x-extension-xhtml" = [ "vivaldi-stable.desktop" ];
-        "application/x-extension-xht" = [ "vivaldi-stable.desktop" ];
-      };
-    };
+    # xdg.mimeApps = {
+    #   enable = true;
+    #   defaultApplications = {
+    #     "text/html" = [ "vivaldi-stable.desktop" ];
+    #     "x-scheme-handler/http" = [ "vivaldi-stable.desktop" ];
+    #     "x-scheme-handler/https" = [ "vivaldi-stable.desktop" ];
+    #     "x-scheme-handler/chrome" = [ "vivaldi-stable.desktop" ];
+    #     "application/x-extension-htm" = [ "vivaldi-stable.desktop" ];
+    #     "application/x-extension-html" = [ "vivaldi-stable.desktop" ];
+    #     "application/x-extension-shtml" = [ "vivaldi-stable.desktop" ];
+    #     "application/xhtml+xml" = [ "vivaldi-stable.desktop" ];
+    #     "application/x-extension-xhtml" = [ "vivaldi-stable.desktop" ];
+    #     "application/x-extension-xht" = [ "vivaldi-stable.desktop" ];
+    #   };
+    # };
 
     # Expanding left-tabs CSS
     home.file.".config/vivaldi/custom.css".text = ''

@@ -10,7 +10,12 @@
 #
 # Run standalone:  nix run .#wrappedNiri
 # NixOS module:    self.nixosModules.niri  (auto-selects package by hostname)
-{self, inputs, lib, ...}: let
+{
+  self,
+  inputs,
+  lib,
+  ...
+}: let
   wallpaperPath = ../../../../assets/wallpapers/catppuccin_landscape.png;
 in {
   # ── Wrapper Module ─────────────────────────────────────────────────────
@@ -109,7 +114,8 @@ in {
     '';
 
     # Wallpaper launcher (spawn-at-startup)
-    start-wallpaper = pkgs.writeShellScriptBin "start-wallpaper"
+    start-wallpaper =
+      pkgs.writeShellScriptBin "start-wallpaper"
       ''${lib.getExe pkgs.swaybg} -i ${wallpaperPath} -m fill'';
 
     # Helper to create a floating-popup window-rule for a given title
@@ -132,7 +138,7 @@ in {
       };
       browser = lib.mkOption {
         type = lib.types.str;
-        default = "firefox";
+        default = "zen-beta";
         description = "Web browser command";
       };
       hostVariant = lib.mkOption {
