@@ -5,7 +5,64 @@
     pkgs,
     lib,
     ...
-  }: {
+  }: let
+    applyPowerCaps = pkgs.writeShellScript "apply-power-caps" ''
+      set -euo pipefail
+
+      ac_online=0
+      for ac in /sys/class/power_supply/AC*; do
+        if [ -f "$ac/online" ] && [ "$(cat "$ac/online")" = "1" ]; then
+          ac_online=1
+          break
+        fi
+      done
+
+      if [ "$ac_online" = "1" ]; then
+        cpu_cap="0"
+        platform_profile="balanced"
+        gpu_level="auto"
+        ryzenadj_args="--stapm-limit=35000 --fast-limit=45000 --slow-limit=35000 --tctl-temp=90"
+      else
+        cpu_cap="2400000"
+        platform_profile="low-power"
+        gpu_level="low"
+        ryzenadj_args="--stapm-limit=15000 --fast-limit=20000 --slow-limit=15000 --tctl-temp=75"
+      fi
+
+      for policy in /sys/devices/system/cpu/cpufreq/policy*; do
+        [ -d "$policy" ] || continue
+
+        if [ -w "$policy/scaling_max_freq" ]; then
+          if [ "$ac_online" = "1" ] && [ -f "$policy/cpuinfo_max_freq" ]; then
+            cat "$policy/cpuinfo_max_freq" > "$policy/scaling_max_freq"
+          else
+            printf '%s' "$cpu_cap" > "$policy/scaling_max_freq"
+          fi
+        fi
+
+        if [ -w "$policy/energy_performance_preference" ]; then
+          if [ "$ac_online" = "1" ]; then
+            printf 'balance_performance' > "$policy/energy_performance_preference"
+          else
+            printf 'power' > "$policy/energy_performance_preference"
+          fi
+        fi
+      done
+
+      if [ -w /sys/firmware/acpi/platform_profile ]; then
+        printf '%s' "$platform_profile" > /sys/firmware/acpi/platform_profile
+      fi
+
+      for gpu in /sys/class/drm/card*/device; do
+        [ -d "$gpu" ] || continue
+        if [ -w "$gpu/power_dpm_force_performance_level" ]; then
+          printf '%s' "$gpu_level" > "$gpu/power_dpm_force_performance_level"
+        fi
+      done
+
+      ${pkgs.ryzenadj}/bin/ryzenadj $ryzenadj_args >/dev/null 2>&1 || true
+    '';
+  in {
     environment.systemPackages = with pkgs; [powertop acpi btop htop];
 
     services.spice-vdagentd.enable = lib.mkDefault false;
@@ -18,6 +75,24 @@
 
     services.tuned.enable = true;
     services.upower.enable = true;
+
+    systemd.services.apply-power-caps = {
+      description = "Apply aggressive CPU/GPU power caps";
+      serviceConfig = {
+        Type = "oneshot";
+        ExecStart = "${applyPowerCaps}";
+      };
+      wantedBy = ["multi-user.target"];
+    };
+
+    systemd.timers.apply-power-caps = {
+      wantedBy = ["timers.target"];
+      timerConfig = {
+        OnBootSec = "30s";
+        OnUnitActiveSec = "1m";
+        Unit = "apply-power-caps.service";
+      };
+    };
 
     # Block NVIDIA drivers on AMD-only laptop
     boot.blacklistedKernelModules = [
