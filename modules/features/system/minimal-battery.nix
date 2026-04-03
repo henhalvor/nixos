@@ -23,10 +23,10 @@
         gpu_level="auto"
         ryzenadj_args="--stapm-limit=35000 --fast-limit=45000 --slow-limit=35000 --tctl-temp=90"
       else
-        cpu_cap="2400000"
+        cpu_cap="1800000"
         platform_profile="low-power"
         gpu_level="low"
-        ryzenadj_args="--stapm-limit=15000 --fast-limit=20000 --slow-limit=15000 --tctl-temp=75"
+        ryzenadj_args="--stapm-limit=12000 --fast-limit=15000 --slow-limit=12000 --tctl-temp=72"
       fi
 
       for policy in /sys/devices/system/cpu/cpufreq/policy*; do
