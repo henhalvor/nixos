@@ -88,6 +88,7 @@
       self.nixosModules.claudeCode
       self.nixosModules.amazonQ
       self.nixosModules.opencode
+      self.nixosModules.kdeconnect
 
       # Settings & Environment (Phase 9)
       self.nixosModules.git
