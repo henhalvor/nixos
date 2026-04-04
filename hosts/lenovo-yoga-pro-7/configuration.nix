@@ -52,9 +52,9 @@
 
       # Desktop components (Phase 7)
       self.nixosModules.noctalia
-      # self.nixosModules.swaylock
-      # self.nixosModules.swayidle
-      # self.nixosModules.rofi
+      self.nixosModules.swaylock
+      self.nixosModules.swayidle
+      self.nixosModules.rofi
       self.nixosModules.clipman
       self.nixosModules.grimScreenshot
       self.nixosModules.waylandApplets
