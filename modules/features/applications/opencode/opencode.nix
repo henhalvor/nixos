@@ -52,18 +52,18 @@
       dest="$HOME/.config/opencode"
       mkdir -p "$dest"
 
-      for name in ${namesStr}; do
-        if [ ! -e "$dest/$name" ]; then
-          echo "opencode: seeding $name into $dest" >&2
-          if [ -d "$src/$name" ]; then
-            cp -a "$src/$name" "$dest/"
-          else
-            install -m 0644 "$src/$name" "$dest/$name"
-          fi
+      while IFS= read -r -d "" file; do
+        rel="''${file#$src/}"
+        dest_file="$dest/$rel"
+        if [ ! -e "$dest_file" ]; then
+          echo "opencode: seeding $rel into $dest" >&2
+          mkdir -p "$(dirname "$dest_file")"
+          chmod u+w "$(dirname "$dest_file")"
+          install -m 0644 "$file" "$dest_file"
         else
-          echo "opencode: $dest/$name exists; skipping" >&2
+          echo "opencode: $dest_file exists; skipping" >&2
         fi
-      done
+      done < <(find "$src" -type f -print0)
     '';
 
     # Update service
