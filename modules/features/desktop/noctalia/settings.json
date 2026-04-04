@@ -9,13 +9,12 @@
     "showCapsule": true,
     "capsuleOpacity": 1,
     "capsuleColorKey": "none",
-    "widgetSpacing": 10,
+    "widgetSpacing": 6,
     "contentPadding": 2,
     "fontScale": 1,
     "enableExclusionZoneInset": true,
     "backgroundOpacity": 1,
-    "useSeparateOpacity": true,
-    "floating": false,
+    "useSeparateOpacity": false,
     "marginVertical": 4,
     "marginHorizontal": 4,
     "frameThickness": 8,
@@ -120,6 +119,10 @@
       ],
       "right": [
         {
+          "defaultSettings": {},
+          "id": "plugin:kde-connect"
+        },
+        {
           "blacklist": [],
           "chevronColor": "none",
           "colorizeIcons": false,
@@ -186,15 +189,15 @@
     "dimmerOpacity": 0.2,
     "showScreenCorners": false,
     "forceBlackScreenCorners": false,
-    "scaleRatio": 0.9500000000000001,
-    "radiusRatio": 2,
-    "iRadiusRatio": 2,
+    "scaleRatio": 1,
+    "radiusRatio": 1,
+    "iRadiusRatio": 1,
     "boxRadiusRatio": 1,
     "screenRadiusRatio": 1,
     "animationSpeed": 1,
-    "animationDisabled": true,
-    "compactLockScreen": false,
-    "lockScreenAnimations": false,
+    "animationDisabled": false,
+    "compactLockScreen": true,
+    "lockScreenAnimations": true,
     "lockOnSuspend": true,
     "showSessionButtonsOnLockScreen": true,
     "showHibernateOnLockScreen": false,
@@ -210,14 +213,14 @@
     "telemetryEnabled": false,
     "enableLockScreenCountdown": true,
     "lockScreenCountdownDuration": 10000,
-    "autoStartAuth": false,
+    "autoStartAuth": true,
     "allowPasswordWithFprintd": false,
     "clockStyle": "custom",
     "clockFormat": "hh\\nmm",
     "passwordChars": false,
     "lockScreenMonitors": [],
-    "lockScreenBlur": 0,
-    "lockScreenTint": 0,
+    "lockScreenBlur": 0.5,
+    "lockScreenTint": 0.51,
     "keybinds": {
       "keyUp": [
         "Up"
@@ -242,7 +245,8 @@
         "Del"
       ]
     },
-    "reverseScroll": false
+    "reverseScroll": false,
+    "smoothScrollEnabled": true
   },
   "ui": {
     "fontDefault": "Inter",
@@ -259,7 +263,7 @@
     "settingsPanelSideBarCardStyle": false
   },
   "location": {
-    "name": "Bergen",
+    "name": "Oslo",
     "weatherEnabled": true,
     "weatherShowEffects": true,
     "useFahrenheit": false,
@@ -295,8 +299,9 @@
     "monitorDirectories": [],
     "enableMultiMonitorDirectories": false,
     "showHiddenFiles": false,
-    "viewMode": "browse",
+    "viewMode": "single",
     "setWallpaperOnAllMonitors": true,
+    "linkLightAndDarkWallpapers": true,
     "fillMode": "crop",
     "fillColor": "#000000",
     "useSolidColor": false,
@@ -317,6 +322,7 @@
     "transitionEdgeSmoothness": 0.05,
     "panelPosition": "follow_bar",
     "hideWallpaperFilenames": false,
+    "useOriginalImages": false,
     "overviewBlur": 0.4,
     "overviewTint": 0.6,
     "useWallhaven": false,
@@ -330,7 +336,7 @@
     "wallhavenResolutionMode": "atleast",
     "wallhavenResolutionWidth": "",
     "wallhavenResolutionHeight": "",
-    "sortOrder": "date_asc",
+    "sortOrder": "name",
     "favorites": []
   },
   "appLauncher": {
@@ -479,8 +485,6 @@
     "indicatorOpacity": 0.6
   },
   "network": {
-    "wifiEnabled": true,
-    "airplaneModeEnabled": false,
     "bluetoothRssiPollingEnabled": false,
     "bluetoothRssiPollIntervalMs": 60000,
     "networkPanelView": "wifi",
@@ -492,7 +496,7 @@
   },
   "sessionMenu": {
     "enableCountdown": true,
-    "countdownDuration": 5000,
+    "countdownDuration": 3000,
     "position": "center",
     "showHeader": true,
     "showKeybinds": true,
@@ -606,6 +610,7 @@
     "volumeOverdrive": false,
     "spectrumFrameRate": 30,
     "visualizerType": "linear",
+    "spectrumMirrored": true,
     "mprisBlacklist": [],
     "preferredPlayer": "",
     "volumeFeedback": false,
@@ -619,13 +624,14 @@
   },
   "colorSchemes": {
     "useWallpaperColors": false,
-    "predefinedScheme": "Ayu",
+    "predefinedScheme": "Noctalia (default)",
     "darkMode": true,
     "schedulingMode": "off",
     "manualSunrise": "06:30",
     "manualSunset": "18:30",
     "generationMethod": "tonal-spot",
-    "monitorForColors": ""
+    "monitorForColors": "",
+    "syncGsettings": true
   },
   "templates": {
     "activeTemplates": [],
@@ -671,7 +677,7 @@
     "customCommands": "[]"
   },
   "desktopWidgets": {
-    "enabled": false,
+    "enabled": true,
     "overviewEnabled": true,
     "gridSnap": false,
     "gridSnapScale": false,

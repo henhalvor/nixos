@@ -20,7 +20,7 @@
     programs.noctalia-shell = {
       enable = true;
       systemd.enable = true;
-      settings = lib.mkDefault (builtins.fromJSON (builtins.readFile ./settings.json));
+      settings = lib.mkForce (builtins.fromJSON (builtins.readFile ./settings.json));
       plugins = {
         sources = [
           {
