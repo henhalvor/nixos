@@ -45,16 +45,16 @@
       self.nixosModules.sddm
 
       # Desktop sessions (Phase 6)
-      self.nixosModules.hyprland
+      # self.nixosModules.hyprland
       self.nixosModules.niri
-      self.nixosModules.sway
-      self.nixosModules.gnome
+      # self.nixosModules.sway
+      # self.nixosModules.gnome
 
       # Desktop components (Phase 7)
       self.nixosModules.noctalia
-      self.nixosModules.swaylock
-      self.nixosModules.swayidle
-      self.nixosModules.rofi
+      # self.nixosModules.swaylock
+      # self.nixosModules.swayidle
+      # self.nixosModules.rofi
       self.nixosModules.clipman
       self.nixosModules.grimScreenshot
       self.nixosModules.waylandApplets
@@ -118,31 +118,32 @@
     # Default session
     services.displayManager.defaultSession = "niri";
 
-    # Hyprland host-specific config
-    my.hyprland = {
-      monitors = [
-        "eDP-1,2560x1600@60,0x0,1.6"
-      ];
-      workspaceRules = [
-        "2, monitor:DP-9"
-        "3, monitor:DP-9"
-        "1, monitor:DP-8"
-        "1, monitor:eDP-1"
-        "2, monitor:eDP-1"
-        "3, monitor:eDP-1"
-      ];
-      lockCommand = "hyprlock";
-      launcher = "rofi";
-    };
-
-    # Swayidle config (niri session, swaylock)
-    my.swayidle = {
-      lockCommand = "swaylock";
-      session = "niri";
-    };
-
-    # Rofi lock command
-    my.rofi.lockCommand = "swaylock";
+    # # Hyprland host-specific config
+    # my.hyprland = {
+    #   monitors = [
+    #     "eDP-1,2560x1600@60,0x0,1.6"
+    #   ];
+    #   workspaceRules = [
+    #     "2, monitor:DP-9"
+    #     "3, monitor:DP-9"
+    #     "1, monitor:DP-8"
+    #     "1, monitor:eDP-1"
+    #     "2, monitor:eDP-1"
+    #     "3, monitor:eDP-1"
+    #   ];
+    #   lockCommand = "hyprlock";
+    #   launcher = "rofi";
+    # };
+    #
+    # # Swayidle config (niri session, swaylock)
+    # my.swayidle = {
+    #   lockCommand = "swaylock";
+    #   session = "niri";
+    # };
+    #
+    # # Rofi lock command
+    # my.rofi.lockCommand = "swaylock";
+    #
 
     # Laptop-specific hardware
     hardware.graphics = {

@@ -16,7 +16,15 @@
   lib,
   ...
 }: let
-  wallpaperPath = ../../../../assets/wallpapers/catppuccin_landscape.png;
+  mkNiriPackage = {
+    pkgs,
+    hostVariant ? "laptop",
+    wallpaper ? ../../../../assets/wallpapers/atoms.png,
+  }:
+    inputs.wrapper-modules.wrappers.niri.wrap {
+      inherit pkgs hostVariant wallpaper;
+      imports = [self.wrapperModules.niriConfig];
+    };
 in {
   # ── Wrapper Module ─────────────────────────────────────────────────────
   # Composable settings module consumed by wrapper-modules.wrappers.niri.wrap
@@ -116,7 +124,7 @@ in {
     # Wallpaper launcher (spawn-at-startup)
     start-wallpaper =
       pkgs.writeShellScriptBin "start-wallpaper"
-      ''${lib.getExe pkgs.swaybg} -i ${wallpaperPath} -m fill'';
+      ''${lib.getExe pkgs.swaybg} -i ${config.wallpaper} -m fill'';
 
     # Helper to create a floating-popup window-rule for a given title
     mkFloatingPopup = {
@@ -145,6 +153,11 @@ in {
         type = lib.types.enum ["laptop" "workstation"];
         default = "laptop";
         description = "Host variant — selects outputs, workspace-to-output mappings, and extra binds";
+      };
+      wallpaper = lib.mkOption {
+        type = lib.types.path;
+        default = ../../../../assets/wallpapers/atoms.png;
+        description = "Wallpaper image path";
       };
     };
 
@@ -669,12 +682,15 @@ in {
     config,
     ...
   }: let
-    system = pkgs.stdenv.hostPlatform.system;
     hostname = config.networking.hostName;
-    niriPkg =
-      if hostname == "workstation"
-      then self.packages.${system}.wrappedNiri-workstation
-      else self.packages.${system}.wrappedNiri;
+    niriPkg = mkNiriPackage {
+      inherit pkgs;
+      hostVariant =
+        if hostname == "workstation"
+        then "workstation"
+        else "laptop";
+      wallpaper = ../../../../assets/wallpapers/${config.my.theme.wallpaper};
+    };
   in {
     programs.niri = {
       enable = true;
@@ -701,14 +717,9 @@ in {
 
   # ── Wrapped Packages ─────────────────────────────────────────────────
   perSystem = {pkgs, ...}: {
-    packages.wrappedNiri = inputs.wrapper-modules.wrappers.niri.wrap {
+    packages.wrappedNiri = mkNiriPackage {inherit pkgs;};
+    packages.wrappedNiri-workstation = mkNiriPackage {
       inherit pkgs;
-      imports = [self.wrapperModules.niriConfig];
-    };
-
-    packages.wrappedNiri-workstation = inputs.wrapper-modules.wrappers.niri.wrap {
-      inherit pkgs;
-      imports = [self.wrapperModules.niriConfig];
       hostVariant = "workstation";
     };
   };
