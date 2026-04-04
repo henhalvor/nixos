@@ -6,13 +6,13 @@
     home-manager.sharedModules = [self.homeModules.swaylock];
   };
 
-  flake.homeModules.swaylock = {config, lib, ...}: let
+  flake.homeModules.swaylock = {config, lib, osConfig, ...}: let
     colors = config.lib.stylix.colors;
   in {
     programs.swaylock = {
       enable = true;
       settings = {
-        image = lib.mkDefault "${config.stylix.image}";
+        image = lib.mkDefault ../../../../assets/wallpapers/${osConfig.my.theme.wallpaper};
         scaling = lib.mkDefault "fill";
         indicator-radius = lib.mkDefault 100;
         show-failed-attempts = lib.mkDefault true;
