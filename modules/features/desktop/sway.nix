@@ -40,7 +40,7 @@
     browser = config.my.desktop.browser or "firefox";
     lockBin = "${pkgs.swaylock}/bin/swaylock -f";
 
-    toggle-monitors = pkgs.writeShellScriptBin "toggle-monitors" ''
+    sway-toggle-monitors = pkgs.writeShellScriptBin "sway-toggle-monitors" ''
       #!/bin/bash
       DEBUG_FILE="/tmp/sway-monitor-toggle.log"
       echo "=== Monitor Toggle Debug $(date) ===" >> "$DEBUG_FILE"
@@ -68,12 +68,12 @@
 
     hostPackages =
       if hostname == "workstation"
-      then [toggle-monitors]
+      then [sway-toggle-monitors]
       else [];
 
     hostKeybindings =
       if hostname == "workstation"
-      then {"Mod4+m" = "exec toggle-monitors";}
+      then {"Mod4+m" = "exec sway-toggle-monitors";}
       else if hostname == "lenovo-yoga-pro-7"
       then {
         "XF86MonBrightnessUp" = "exec brightnessctl s +10%";

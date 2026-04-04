@@ -108,7 +108,7 @@
     monitorsConfig = lib.concatMapStringsSep "\n" (m: "monitor=${m}") hyprCfg.monitors;
 
     # --- Inline scripts ---
-    toggle-monitors = pkgs.writeShellScriptBin "toggle-monitors" ''
+    hyprland-toggle-monitors = pkgs.writeShellScriptBin "hyprland-toggle-monitors" ''
       #!/bin/bash
       DEBUG_FILE="/tmp/hypr-monitor-toggle.log"
       echo "=== Monitor Toggle Debug $(date) ===" >> "$DEBUG_FILE"
@@ -135,7 +135,7 @@
       echo "=== End Debug ===" >> "$DEBUG_FILE"
     '';
 
-    brightness-external = pkgs.writeShellScriptBin "brightness-external" ''
+    hyprland-brightness-external = pkgs.writeShellScriptBin "hyprland-brightness-external" ''
       #!/usr/bin/env bash
       VCP_BRIGHTNESS=10
       STEP=10
@@ -187,16 +187,16 @@
     # Host-specific packages
     hostPackages =
       if hostname == "workstation"
-      then [toggle-monitors brightness-external]
+      then [hyprland-toggle-monitors hyprland-brightness-external]
       else [];
 
     # Host-specific keybinds
     hostBinds =
       if hostname == "workstation"
       then [
-        "$mainMod, M, exec, toggle-monitors"
-        ",XF86MonBrightnessUp,exec, brightness-external --increase"
-        ",XF86MonBrightnessDown,exec, brightness-external --decrease"
+        "$mainMod, M, exec, hyprland-toggle-monitors"
+        ",XF86MonBrightnessUp,exec, hyprland-brightness-external --increase"
+        ",XF86MonBrightnessDown,exec, hyprland-brightness-external --decrease"
       ]
       else if hostname == "lenovo-yoga-pro-7"
       then [

@@ -37,7 +37,7 @@ in {
     isWorkstation = config.hostVariant == "workstation";
 
     # Workstation-only helper: toggle HDMI-A-1 / DP-1 on/off
-    toggle-monitors = pkgs.writeShellScriptBin "toggle-monitors" ''
+    niri-toggle-monitors = pkgs.writeShellScriptBin "niri-toggle-monitors" ''
       DEBUG_FILE="/tmp/niri-monitor-toggle.log"
       echo "=== Monitor Toggle Debug $(date) ===" >> "$DEBUG_FILE"
 
@@ -73,7 +73,7 @@ in {
     '';
 
     # Workstation-only helper: DDC/CI brightness for external monitors
-    brightness-external = pkgs.writeShellScriptBin "brightness-external" ''
+    niri-brightness-external = pkgs.writeShellScriptBin "niri-brightness-external" ''
       VCP_BRIGHTNESS=10
       STEP=10
       ASUS_BUS=3
@@ -454,20 +454,20 @@ in {
           // lib.optionalAttrs isWorkstation {
             "Mod+M" = _: {
               props.repeat = false;
-              content.spawn = lib.getExe toggle-monitors;
+              content.spawn = lib.getExe niri-toggle-monitors;
             };
             # Override laptop brightness with DDC/CI external-monitor control
             "XF86MonBrightnessUp" = _: {
               props.allow-when-locked = true;
               content.spawn = [
-                (lib.getExe brightness-external)
+                (lib.getExe niri-brightness-external)
                 "--increase"
               ];
             };
             "XF86MonBrightnessDown" = _: {
               props.allow-when-locked = true;
               content.spawn = [
-                (lib.getExe brightness-external)
+                (lib.getExe niri-brightness-external)
                 "--decrease"
               ];
             };

@@ -52,7 +52,8 @@
       self.nixosModules.niri
 
       # Desktop components (Phase 7)
-      self.nixosModules.waybar
+      self.nixosModules.noctalia
+      # self.nixosModules.waybar
       self.nixosModules.hyprlock
       self.nixosModules.mako
       self.nixosModules.rofi
@@ -148,6 +149,9 @@
       "modprobe.blacklist=amdgpu"
       "mem_sleep_default=s2idle"
     ];
+
+    # Default session
+    services.displayManager.defaultSession = "hyprland";
 
     # Workstation-specific hardware
     hardware.logitech.wireless.enable = true;
