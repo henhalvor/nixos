@@ -51,6 +51,7 @@
       # self.nixosModules.gnome
 
       # Desktop components (Phase 7)
+      self.nixosModules.mako
       self.nixosModules.noctalia
       self.nixosModules.swaylock
       self.nixosModules.swayidle
@@ -62,6 +63,7 @@
 
       # Applications (Phase 8)
       self.nixosModules.kitty
+      self.nixosModules.thunderbird
       self.nixosModules.nvf
       self.nixosModules.zsh
       self.nixosModules.tmux

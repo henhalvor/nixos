@@ -101,7 +101,9 @@
         swaylock = "${pkgs.swaylock}/bin/swaylock";
         loginctl = "loginctl lock-session";
       }
-      .${hyprCfg.lockCommand}
+      .${
+        hyprCfg.lockCommand
+      }
       or "loginctl lock-session";
 
     # Monitor config
@@ -277,8 +279,8 @@
         debug.disable_logs = true;
 
         exec-once =
-          ["${browser}" "[workspace special:gmail silent] gmail"]
-          ++ hostExecOnce
+          # ["${browser}" "[workspace special:mail silent] mail"]
+          hostExecOnce
           ++ barExecOnce;
 
         input =
@@ -391,7 +393,7 @@
             "$mainMod SHIFT, comma, layoutmsg, swapcol l"
 
             # Special workspaces
-            "$mainMod, G, exec, toggle-gmail"
+            "$mainMod, G, exec, toggle-thunderbird"
 
             # Screenshot
             ",Print, exec, screenshot --copy"
@@ -606,11 +608,11 @@
           # Workspace assignments
           "workspace 1, match:class ^(vivaldi)$"
 
-          # Gmail special workspace
-          "workspace special:gmail silent, match:class ^(chrome-mail\\.google\\.com__-Default)$"
-          "float on, match:class ^(chrome-mail\\.google\\.com__-Default)$"
-          "size 1111 650, match:class ^(chrome-mail\\.google\\.com__-Default)$"
-          "center on, match:class ^(chrome-mail\\.google\\.com__-Default)$"
+          # Thunderbird special workspace
+          "workspace special:mail silent, match:class ^(thunderbird|thunderbird-bin)$"
+          "float on, match:class ^(thunderbird|thunderbird-bin)$"
+          "size 1111 650, match:class ^(thunderbird|thunderbird-bin)$"
+          "center on, match:class ^(thunderbird|thunderbird-bin)$"
         ];
 
         workspace =

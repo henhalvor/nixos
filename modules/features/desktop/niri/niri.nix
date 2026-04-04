@@ -330,7 +330,7 @@ in {
             };
             "Mod+G" = _: {
               props.repeat = false;
-              content.spawn-sh = "toggle-gmail";
+              content.spawn-sh = "toggle-thunderbird";
             };
 
             # Screenshots (uses grim-screenshot module's `screenshot` script)
@@ -494,21 +494,21 @@ in {
               open-maximized = true;
             }
 
-            # Gmail PWA — startup instance goes to gmail workspace, unfocused
+            # Thunderbird — startup instance goes to mail workspace, unfocused
             {
               matches = [
                 {
                   at-startup = true;
-                  app-id = ''^chrome-mail\.google\.com__-Default$'';
+                  app-id = ''^(thunderbird|thunderbird-bin)$'';
                 }
               ];
-              open-on-workspace = "gmail";
+              open-on-workspace = "mail";
               open-focused = false;
             }
-            # Gmail PWA — subsequent instances float on gmail workspace
+            # Thunderbird — subsequent instances float on mail workspace
             {
-              matches = [{app-id = ''^chrome-mail\.google\.com__-Default$'';}];
-              open-on-workspace = "gmail";
+              matches = [{app-id = ''^(thunderbird|thunderbird-bin)$'';}];
+              open-on-workspace = "mail";
               open-floating = true;
               default-column-width = {fixed = 1111;};
               default-window-height = {fixed = 650;};
@@ -629,7 +629,7 @@ in {
             "8" = _: {};
             "9" = _: {};
             "10" = {open-on-output = "HEADLESS-1";};
-            "gmail" = {open-on-output = "DP-1";};
+            "mail" = {open-on-output = "DP-1";};
           }
           else {
             # Laptop: plain workspaces
@@ -643,7 +643,7 @@ in {
             "8" = _: {};
             "9" = _: {};
             "10" = _: {};
-            "gmail" = _: {};
+            "mail" = _: {};
           };
 
         # ── Outputs (workstation only) ─────────────────────────────────
