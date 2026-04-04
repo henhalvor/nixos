@@ -1,0 +1,18 @@
+keys:
+  # Personal key (for editing secrets)
+  - &henhal age13azyggpzlzzsp3levku6ecjaqd3cq3eapeu9e6nnrzp6eguk6cwscsted0
+
+  # Machine keys (SSH host key → age, for decryption at boot)
+  - &lenovo age1sxv8q8hlyc8lhy3ydzexds93rl8pdql944hm4y2df56pq4qssujskg3k9q
+  # TODO: Add workstation and hp-server keys
+  # - &workstation age1...
+  # - &hp-server age1...
+
+creation_rules:
+  - path_regex: secrets/[^/]+\.(yaml|json|env)$
+    key_groups:
+      - age:
+        - *henhal
+        - *lenovo
+        # - *workstation
+        # - *hp-server
