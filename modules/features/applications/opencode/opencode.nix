@@ -10,8 +10,10 @@
     lib,
     pkgs,
     config,
+    osConfig,
     ...
   }: let
+    isWorkstation = osConfig.networking.hostName == "workstation";
     repo = ./config;
     repoEntries = builtins.readDir repo;
     repoNames = builtins.attrNames repoEntries;
@@ -27,11 +29,11 @@
     want = lib.filter (n: !(skip n)) repoNames;
     namesStr = lib.concatStringsSep " " want;
 
-    opencodeWebScript = pkgs.writeShellScript "opencode-web" ''
+    opencodeWebScript = port: pkgs.writeShellScript "opencode-web-${toString port}" ''
       export PATH=$HOME/.npm-global/bin:$PATH
       export OPENCODE_SERVER_PASSWORD=password123
       export OPENCODE_SERVER_USERNAME=henhal
-      exec opencode web --mdns --port 4096
+      exec opencode web --hostname 0.0.0.0 --port ${toString port}
     '';
 
     opencodeUpdateScript = pkgs.writeShellScript "opencode-update" ''
@@ -45,6 +47,25 @@
         echo "opencode already up to date ($current)"
       fi
     '';
+
+    mkWebService = {
+      description,
+      port,
+      workingDirectory,
+    }: {
+      Unit = {
+        inherit description;
+        After = ["network.target" "opencode-update.service"];
+        Requires = ["opencode-update.service"];
+      };
+      Service = {
+        ExecStart = opencodeWebScript port;
+        Restart = "always";
+        RestartSec = 5;
+        WorkingDirectory = workingDirectory;
+      };
+      Install.WantedBy = ["default.target"];
+    };
   in {
     # Seed config files on first activation
     home.activation.seedOpencode = lib.hm.dag.entryAfter ["writeBoundary"] ''
@@ -66,30 +87,28 @@
       done < <(find "$src" -type f -print0)
     '';
 
-    # Update service
-    systemd.user.services.opencode-update = {
-      Unit.Description = "Update opencode (npm)";
-      Service = {
-        Type = "oneshot";
-        ExecStart = opencodeUpdateScript;
+    systemd.user.services = {
+      opencode-update = {
+        Unit.Description = "Update opencode (npm)";
+        Service = {
+          Type = "oneshot";
+          ExecStart = opencodeUpdateScript;
+        };
+        Install.WantedBy = ["default.target"];
       };
-      Install.WantedBy = ["default.target"];
-    };
+    }
+    // lib.optionalAttrs isWorkstation {
+      opencode-web = mkWebService {
+        description = "OpenCode Web UI";
+        port = 4096;
+        workingDirectory = "%h";
+      };
 
-    # Web UI service
-    systemd.user.services.opencode-web = {
-      Unit = {
-        Description = "OpenCode Web UI";
-        After = ["network.target" "opencode-update.service"];
-        Requires = ["opencode-update.service"];
+      opencode-vault-web = mkWebService {
+        description = "OpenCode Vault Web UI";
+        port = 4097;
+        workingDirectory = "%h/vault";
       };
-      Service = {
-        ExecStart = opencodeWebScript;
-        Restart = "always";
-        RestartSec = 5;
-        WorkingDirectory = "%h";
-      };
-      Install.WantedBy = ["default.target"];
     };
   };
 }
