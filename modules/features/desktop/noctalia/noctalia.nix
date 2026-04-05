@@ -34,12 +34,39 @@
             enabled = true;
             sourceUrl = "https://github.com/noctalia-dev/noctalia-plugins";
           };
+          tailscale = {
+            enabled = true;
+            sourceUrl = "https://github.com/noctalia-dev/noctalia-plugins";
+          };
+          syncthing-status = {
+            enabled = true;
+            sourceUrl = "https://github.com/noctalia-dev/noctalia-plugins";
+          };
+
+          keybind-cheatsheet = {
+            enabled = true;
+            sourceUrl = "https://github.com/noctalia-dev/noctalia-plugins";
+          };
+          usb-drive-manager = {
+            enabled = true;
+            sourceUrl = "https://github.com/noctalia-dev/noctalia-plugins";
+          };
         };
       };
 
       pluginSettings = {
         kde-connect = {
         };
+        tailscale = {
+          compactMode = true;
+        };
+        syncthing-status = {
+        };
+        keybind-cheatsheet = {
+        };
+        usb-drive-manager = {
+        };
+        # Add other plugins here
         # this may also be a string or a path to a JSON file.
       };
     };
