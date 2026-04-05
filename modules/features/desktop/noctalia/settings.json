@@ -119,10 +119,6 @@
       ],
       "right": [
         {
-          "defaultSettings": {},
-          "id": "plugin:kde-connect"
-        },
-        {
           "blacklist": [],
           "chevronColor": "none",
           "colorizeIcons": false,
@@ -170,6 +166,21 @@
           "icon": "noctalia",
           "id": "ControlCenter",
           "useDistroLogo": false
+        },
+        {
+          "id": "plugin:keybind-cheatsheet"
+        },
+        {
+          "id": "plugin:syncthing-status"
+        },
+        {
+          "id": "plugin:tailscale"
+        },
+        {
+          "id": "plugin:usb-drive-manager"
+        },
+        {
+          "id": "plugin:kde-connect"
         }
       ]
     },
@@ -659,7 +670,7 @@
     "colorGeneration": ""
   },
   "plugins": {
-    "autoUpdate": false,
+    "autoUpdate": true,
     "notifyUpdates": true
   },
   "idle": {
