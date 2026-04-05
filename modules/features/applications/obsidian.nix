@@ -10,7 +10,7 @@
     programs.obsidian = {
       enable = true;
       package = pkgs-unstable.obsidian;
-      vaults.default.target = "vault";
+      vaults.default.target = "Vault";
     };
   };
 }
