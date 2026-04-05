@@ -53,11 +53,11 @@
           };
 
           folders = {
-            "code" = {
-              path = "${homeDir}/code";
-              devices = ["workstation" "yoga-pro-7"];
-              ignorePerms = false;
-            };
+            # "code" = {
+            #   path = "${homeDir}/code";
+            #   devices = ["workstation" "yoga-pro-7"];
+            #   ignorePerms = false;
+            # };
             "documents" = {
               path = "${homeDir}/Documents";
               devices = ["workstation" "yoga-pro-7"];
