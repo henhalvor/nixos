@@ -6,7 +6,20 @@
     home-manager.sharedModules = [ self.homeModules.tmux ];
   };
 
-  flake.homeModules.tmux = { pkgs, ... }: let
+  flake.homeModules.tmux = { config, lib, pkgs, ... }: let
+    terminal = config.my.desktop.terminal;
+    launchTerminal = pkgs.writeShellScriptBin "launch-terminal" ''
+      # Auto-attach tmux for local shells (not in SSH)
+      if [ -z "$TMUX" ] && [ -z "$SSH_CONNECTION" ]; then
+        exec ${terminal} -e ${lib.getExe pkgs.tmux} new-session -A -s main
+      fi
+
+      exec ${terminal}
+    '';
+    launchTerminalPlain = pkgs.writeShellScriptBin "launch-terminal-plain" ''
+      exec ${terminal}
+    '';
+
     is_vim = pkgs.writeShellScriptBin "is_vim.sh" ''
       pane_pid=$(tmux display -p "#{pane_pid}")
       [ -z "$pane_pid" ] && exit 1
@@ -122,5 +135,7 @@
         bind - split-window -v -c "#{pane_current_path}"
       '';
     };
+
+    home.packages = [ launchTerminal launchTerminalPlain ];
   };
 }

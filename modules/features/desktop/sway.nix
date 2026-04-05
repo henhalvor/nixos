@@ -148,7 +148,8 @@
           modifier = config.wayland.windowManager.sway.config.modifier;
         in
           lib.mkOptionDefault ({
-              "${modifier}+Return" = "exec ${pkgs.kitty}/bin/kitty";
+              "${modifier}+Return" = "exec launch-terminal";
+              "${modifier}+Shift+Return" = "exec launch-terminal-plain";
               "${modifier}+Shift+q" = "kill";
               "${modifier}+Shift+c" = "exec reload";
               "${modifier}+o" = "exec clipboard-history";

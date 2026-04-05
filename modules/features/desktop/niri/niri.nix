@@ -267,7 +267,11 @@ in {
             # App launchers
             "Mod+Return" = _: {
               props.repeat = false;
-              content.spawn = config.terminal;
+              content.spawn-sh = "launch-terminal";
+            };
+            "Mod+Shift+Return" = _: {
+              props.repeat = false;
+              content.spawn-sh = "launch-terminal-plain";
             };
             "Mod+Shift+Q" = _: {
               props.repeat = false;

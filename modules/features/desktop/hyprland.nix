@@ -370,7 +370,8 @@
 
         bind =
           [
-            "$mainMod, Return, exec, ${terminal}"
+            "$mainMod, Return, exec, launch-terminal"
+            "$mainMod SHIFT, Return, exec, launch-terminal-plain"
             "$mainMod SHIFT, C, exec, hyprctl reload"
             "$mainMod SHIFT, Q, killactive,"
             "$mainMod, F, fullscreen, 0"
