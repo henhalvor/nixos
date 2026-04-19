@@ -1,11 +1,15 @@
 # Dev Tools — development toolchains + lazygit config
 # Source: home/modules/environment/dev-tools.nix
-{ self, ... }: {
-  flake.nixosModules.devTools = { ... }: {
-    home-manager.sharedModules = [ self.homeModules.devTools ];
+{self, ...}: {
+  flake.nixosModules.devTools = {...}: {
+    home-manager.sharedModules = [self.homeModules.devTools];
   };
 
-  flake.homeModules.devTools = { config, pkgs, ... }: {
+  flake.homeModules.devTools = {
+    config,
+    pkgs,
+    ...
+  }: {
     home.packages = with pkgs; [
       lazygit
       lazydocker
@@ -19,6 +23,7 @@
       # Rust
       rustc
       cargo
+      clippy
 
       # Python
       python311

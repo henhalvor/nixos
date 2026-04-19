@@ -167,7 +167,7 @@
     home-manager = {
       useGlobalPkgs = false;
       useUserPackages = true;
-      backupFileExtension = "backup";
+      backupFileExtension = "hm-backup";
       extraSpecialArgs = {
         inherit inputs self;
         pkgs-unstable = import inputs.nixpkgs-unstable {

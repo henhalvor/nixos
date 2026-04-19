@@ -173,7 +173,9 @@
     home-manager = {
       useGlobalPkgs = false;
       useUserPackages = true;
-      backupFileExtension = "backup";
+      # Obsidian keeps its own `.backup` files inside the vault, so use a
+      # distinct Home Manager backup suffix to avoid collisions during activation.
+      backupFileExtension = "hm-backup";
       extraSpecialArgs = {
         inherit inputs self;
         pkgs-unstable = import inputs.nixpkgs-unstable {
