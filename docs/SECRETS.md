@@ -208,8 +208,10 @@ age-keygen -o ~/.config/sops/age/keys.txt
 This prints your public key (starts with `age1...`). Add it to `.sops.yaml`
 under the `keys:` section.
 
-**Keep `keys.txt` safe.** Back it up somewhere secure. If you lose it, you
-cannot edit secrets (though machines can still decrypt via their own keys).
+**Keep `keys.txt` safe.** Back it up somewhere secure. If you lose it, a newly
+generated key will **not** unlock existing secrets by itself. You must either
+restore the old key from backup or use an already-authorized machine key to
+rotate in the new personal key.
 
 ### Editing Existing Secrets
 
@@ -399,16 +401,53 @@ sops.secrets.DATABASE_PASSWORD = {
 
 ### `Failed to get the data key required to decrypt the SOPS file`
 
-**Cause:** SOPS can't find your age private key.
+**Cause:** SOPS can't find a matching private key for any recipient in the
+file. In this repo, normal interactive editing uses your personal age key from
+`~/.config/sops/age/keys.txt`.
 
-**Fix:** Ensure your key file exists at the expected path:
+**Check:** Ensure your personal key file exists at the expected path:
 
 ```bash
 ls -la ~/.config/sops/age/keys.txt
 ```
 
-The file should contain a line starting with `AGE-SECRET-KEY-...`. If missing,
-regenerate with `age-keygen`.
+The file should contain a line starting with `AGE-SECRET-KEY-...`.
+
+If `keys.txt` is missing, there are two recovery paths:
+
+1. Restore the original `~/.config/sops/age/keys.txt` from backup.
+2. If you are on a machine whose SSH host key is already listed in
+   `.sops.yaml`, use that machine key once to rotate in a new personal key.
+
+On this repo, `workstation` is already a recipient, so you can recover on that
+host like this:
+
+```bash
+mkdir -p ~/.config/sops/age
+nix-shell -p age --run 'age-keygen -o ~/.config/sops/age/keys.txt'
+```
+
+Copy the new public key (`age1...`) into `.sops.yaml`, adding it as a recipient.
+Then re-encrypt using the workstation SSH host key converted to a temporary age
+identity:
+
+```bash
+cd ~/.dotfiles
+tmp_age_key="$(mktemp)"
+sudo nix-shell -p ssh-to-age --run 'ssh-to-age -private-key -i /etc/ssh/ssh_host_ed25519_key' > "$tmp_age_key"
+chmod 600 "$tmp_age_key"
+SOPS_AGE_KEY_FILE="$tmp_age_key" nix-shell -p sops --run "sops updatekeys secrets/secrets.yaml"
+rm -f "$tmp_age_key"
+```
+
+After that, normal editing works again:
+
+```bash
+nix-shell -p sops --run "sops secrets/secrets.yaml"
+```
+
+If the current machine key is **not** a recipient, restoring a backup of your
+old personal key (or using another already-authorized machine) is required.
 
 ### `no matching creation rules found`
 
