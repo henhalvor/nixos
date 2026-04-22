@@ -82,6 +82,12 @@
         default = "${cfg.backupRoot}/snapshot";
         description = "Overwrite-in-place Hermes backup snapshot directory.";
       };
+
+      firecrawlComposeFile = lib.mkOption {
+        type = lib.types.path;
+        default = "${cfg.repoRoot}/modules/features/hermes-agent/firecrawl-compose.yml";
+        description = "Path to the firecrawl docker-compose.yml file.";
+      };
     };
 
     config = {
@@ -99,6 +105,19 @@
           TELEGRAM_BOT_TOKEN=${config.sops.placeholder.TELEGRAM_BOT_TOKEN}
           TELEGRAM_ALLOWED_USERS=${config.sops.placeholder.TELEGRAM_ALLOWED_USERS}
           OLLAMA_API_KEY=${config.sops.placeholder.OLLAMA_API_KEY}
+          FIRECRAWL_API_URL=http://localhost:3002
+        '';
+      };
+
+      # Expose OPENAI_API_KEY as a readable env file so the firecrawl
+      # docker-compose service (running as root) can source it.
+      sops.templates."firecrawl-env" = {
+        owner = "root";
+        group = "root";
+        mode = "0644";
+        path = "/etc/firecrawl.env";
+        content = ''
+          OPENAI_API_KEY=${config.sops.placeholder.OPENAI_API_KEY}
         '';
       };
 
@@ -175,6 +194,53 @@
           OnUnitActiveSec = "24h";
           Persistent = true;
           Unit = "hermes-agent-backup.service";
+        };
+      };
+
+      # ─── Self-hosted Firecrawl (docker-compose) ───────────────────────────
+      # Clone firecrawl repo during activation so docker build can access sibling
+      # files (compose build contexts are resolved relative to the compose file).
+      # Runs once; subsequent activations skip if already cloned.
+      system.activationScripts.firecrawl-clone = lib.stringAfter ["hermes-agent-setup"] ''
+        firecrawl_src='${cfg.repoRoot}/.firecrawl-src'
+        if [ ! -d "$firecrawl_src/.git" ]; then
+          ${pkgs.git}/bin/git clone --depth 1 https://github.com/mendableai/firecrawl.git "$firecrawl_src"
+        fi
+        # Copy our compose override into the clone so relative build contexts resolve
+        cp '${cfg.firecrawlComposeFile}' "$firecrawl_src/firecrawl-override.yml"
+      '';
+
+      systemd.services.firecrawl = {
+        description = "Self-hosted Firecrawl web scraping API";
+        wantedBy = ["multi-user.target"];
+        after = ["docker.service"];
+        requires = ["docker.service"];
+        serviceConfig.Type = "oneshot";
+        serviceConfig.RemainAfterExit = true;
+        serviceConfig.TimeoutStopSec = 300;
+        serviceConfig.User = "root";
+        serviceConfig.ExecStart =
+          "${pkgs.docker}/bin/docker compose "
+          + "--env-file /etc/firecrawl.env "
+          + "-f '${cfg.repoRoot}/.firecrawl-src/docker-compose.yaml' "
+          + "-f '${cfg.repoRoot}/.firecrawl-src/firecrawl-override.yml' "
+          + "up -d";
+        serviceConfig.ExecStop =
+          "${pkgs.docker}/bin/docker compose "
+          + "-f '${cfg.repoRoot}/.firecrawl-src/docker-compose.yaml' "
+          + "down";
+      };
+
+      # ─── Firecrawl MCP Server ────────────────────────────────────────────
+      # Connects to the local self-hosted Firecrawl instance. Tools appear
+      # in Hermes as mcp_firecrawl_*.
+      services.hermes-agent.mcpServers = {
+        firecrawl = {
+          command = "npx";
+          args = ["-y" "firecrawl-mcp"];
+          env = {
+            FIRECRAWL_API_URL = "http://localhost:3002";
+          };
         };
       };
     };
