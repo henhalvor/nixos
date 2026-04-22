@@ -35,6 +35,23 @@
           group = "keys";
           mode = "0440";
         };
+        COPILOT_GITHUB_TOKEN = {
+          group = "keys";
+          mode = "0440";
+        };
+        TELEGRAM_BOT_TOKEN = {
+          group = "keys";
+          mode = "0440";
+        };
+        TELEGRAM_ALLOWED_USERS = {
+          group = "keys";
+          mode = "0440";
+        };
+
+        OLLAMA_API_KEY = {
+          group = "keys";
+          mode = "0440";
+        };
       };
     };
 

@@ -25,6 +25,8 @@
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
+    hermes-agent.url = "github:NousResearch/hermes-agent/c9e8d82ef42970b31d683b9c3e8319b2d54d8b08";
+
     nvim-nix.url = "github:henhalvor/nvim-nix";
 
     stylix = {
