@@ -147,8 +147,10 @@ echo -e "  $((CONFIG_COUNT + 2))) ${BLUE}Create new host configuration${NC}"
 echo -e "  $((CONFIG_COUNT + 3))) ${BLUE}View setup documentation${NC}"
 echo ""
 
-if ! read -p "Select host configuration (1-$((CONFIG_COUNT + 3))): " choice; then
-    error "Failed to read input. Are you running interactively? (curl | sh requires a TTY)"
+read -p "Select host configuration (1-$((CONFIG_COUNT + 3))): " choice
+
+if [ -z "$choice" ]; then
+    error "No input received. Are you running interactively? (curl | sh requires a TTY)"
 fi
 
 if ! [[ "$choice" =~ ^[0-9]+$ ]]; then
