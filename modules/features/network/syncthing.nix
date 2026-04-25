@@ -50,14 +50,15 @@
             "yoga-pro-7" = {id = "T2SDKBB-6W6PC6S-2MOF26Y-ISGI7GM-NV3G7U3-XQKVF7N-WD76D4R-IEIURQQ";};
             "android-phone" = {id = "GCRWWEH-SVM56QX-Z6BIO6J-LBVY2Z5-2KETSSL-ULFPLSQ-J25KU6W-GJIQTAO";};
             "android-tablet" = {id = "OMVTIWA-LM256KO-JDZPTK3-BTALD4W-LG6JTND-7VZQO7X-3KU5HEQ-LP6ELQX";};
+            "hp-server" = {id = "32LVQHB-KVKBTRF-ZLOZATD-NAHXNFI-3SINNKH-DR4LGOB-HTGYK3O-UA3VPAZ";};
           };
 
           folders = {
-            # "code" = {
-            #   path = "${homeDir}/code";
-            #   devices = ["workstation" "yoga-pro-7"];
-            #   ignorePerms = false;
-            # };
+            "code" = {
+              path = "${homeDir}/code";
+              devices = ["workstation" "yoga-pro-7" "hp-server"];
+              ignorePerms = false;
+            };
             "documents" = {
               path = "${homeDir}/Documents";
               devices = ["workstation" "yoga-pro-7"];
@@ -85,7 +86,7 @@
             };
             "vault" = {
               path = "${homeDir}/Vault";
-              devices = ["workstation" "yoga-pro-7" "android-phone" "android-tablet"];
+              devices = ["workstation" "yoga-pro-7" "android-phone" "android-tablet" "hp-server"];
               ignorePerms = true;
             };
             "screenshots" = {
