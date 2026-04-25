@@ -6,6 +6,7 @@ keys:
   # Machine keys (SSH host key → age, for decryption at boot)
   - &lenovo age1sxv8q8hlyc8lhy3ydzexds93rl8pdql944hm4y2df56pq4qssujskg3k9q
   - &workstation age1qrxkpmvytq3cfrka4nkl2sn79nyg2r7t8qm55m0rl7vrlqc7v3zqadq2yj
+  - &hp-server age1w05f4s0uqatmctt2vpz786722ux4y30fe89lsw3rzz7xtkuxa9tqefmyzw
 
   # TODO: Add workstation and hp-server keys
   # - &workstation age1...
@@ -19,4 +20,4 @@ creation_rules:
         - *henhal-workstation
         - *lenovo
         - *workstation
-        # - *hp-server
+        - *hp-server
