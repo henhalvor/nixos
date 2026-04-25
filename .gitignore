@@ -3,3 +3,4 @@ home/secrets/*
 **/*.env
 .aider*
 .firecrawl-src
+
