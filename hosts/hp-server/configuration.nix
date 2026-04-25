@@ -1,52 +1,103 @@
 # HP Server — system configuration
 # Source: systems/hp-server/configuration.nix + hosts/hp-server.nix
-{self, inputs, ...}: {
+{
+  self,
+  inputs,
+  ...
+}: {
   flake.nixosModules.hpServerConfig = {pkgs, ...}: {
     imports = [
       # Hardware
       self.nixosModules.hpServerHardware
-
       # Core
       self.nixosModules.base
       self.nixosModules.bootloader
       self.nixosModules.networking
       inputs.home-manager.nixosModules.home-manager
 
-      # Theme (Phase 2) — terminal theming
+      # Theme (Phase 2)
       inputs.stylix.nixosModules.stylix
       self.nixosModules.stylix
 
       # System services (Phase 3)
       self.nixosModules.pipewire
       self.nixosModules.bluetooth
-      self.nixosModules.nvidiaGraphics
+      self.nixosModules.externalIo
+      self.nixosModules.printer
+      self.nixosModules.systemdLogind
+      self.nixosModules.virtualization
+      self.nixosModules.syncthing
       self.nixosModules.laptopServer
 
-      # Server features (Phase 4)
-      self.nixosModules.serverBase
+      # Server/connectivity (Phase 4)
       self.nixosModules.sshServer
       self.nixosModules.tailscale
-      self.nixosModules.serverMonitoring
-      # self.nixosModules.cockpit  # Currently unused
 
-      # VS Code Remote Server
-      inputs.vscode-server.nixosModules.default
+      # Desktop foundation (Phase 5)
+      self.nixosModules.desktopCommon
+      self.nixosModules.sddm
 
-      # Shell & tools (Phase 8)
+      # Desktop sessions (Phase 6)
+      # self.nixosModules.hyprland
+      self.nixosModules.niri
+      # self.nixosModules.sway
+      # self.nixosModules.gnome
+
+      # Desktop components (Phase 7)
+      self.nixosModules.mako
+#      self.nixosModules.noctalia
+      self.nixosModules.swaylock
+      self.nixosModules.swayidle
+      self.nixosModules.rofi
+      self.nixosModules.clipman
+      self.nixosModules.grimScreenshot
+      self.nixosModules.waylandApplets
+      self.nixosModules.gammastep
+
+      # Applications (Phase 8)
+      self.nixosModules.kitty
+      # self.nixosModules.thunderbird
+      self.nixosModules.nvf
       self.nixosModules.zsh
       self.nixosModules.tmux
       self.nixosModules.yazi
-      self.nixosModules.nvf
+      # self.nixosModules.vivaldi
+      self.nixosModules.zenBrowser
+      # self.nixosModules.brave
+      self.nixosModules.firefox
+      self.nixosModules.googleChrome
+      # self.nixosModules.microsoftEdge
+      self.nixosModules.obsidian
+      # self.nixosModules.spotify
+      self.nixosModules.gimp
+      self.nixosModules.gthumb
+      self.nixosModules.mpv
+      self.nixosModules.zathura
+      self.nixosModules.libreoffice
+      self.nixosModules.nautilus
+      self.nixosModules.missionCenter
+      self.nixosModules.gnomeCalculator
+      # self.nixosModules.vial
+      self.nixosModules.claudeCode
+      # self.nixosModules.amazonQ
+      self.nixosModules.opencode
+      # self.nixosModules.kdeconnect
 
       # Settings & Environment (Phase 9)
       self.nixosModules.git
       self.nixosModules.sshConfig
       self.nixosModules.secrets
       self.nixosModules.nerdFonts
+      self.nixosModules.udiskie
       self.nixosModules.devTools
       self.nixosModules.sessionVariables
       self.nixosModules.direnv
+      self.nixosModules.bottles
       self.nixosModules.utils
+
+      # Scripts & Utilities (Phase 10)
+      self.nixosModules.powerMonitor
+      self.nixosModules.yaziFloat
 
       # User
       self.nixosModules.userHenhal
@@ -56,10 +107,54 @@
     networking.hostName = "hp-server";
     system.stateVersion = "25.05";
 
-    programs.dconf.enable = true;
+    # Syncthing user
+    my.syncthing.user = "henhal";
 
-    # VS Code Remote Server (for remote development)
-    services.vscode-server.enable = true;
+    # Default session
+    services.displayManager.defaultSession = "niri";
+
+    # # Hyprland host-specific config
+    # my.hyprland = {
+    #   monitors = [
+    #     "eDP-1,2560x1600@60,0x0,1.6"
+    #   ];
+    #   workspaceRules = [
+    #     "2, monitor:DP-9"
+    #     "3, monitor:DP-9"
+    #     "1, monitor:DP-8"
+    #     "1, monitor:eDP-1"
+    #     "2, monitor:eDP-1"
+    #     "3, monitor:eDP-1"
+    #   ];
+    #   lockCommand = "hyprlock";
+    #   launcher = "rofi";
+    # };
+    #
+    # # Swayidle config (niri session, swaylock)
+    # my.swayidle = {
+    #   lockCommand = "swaylock";
+    #   session = "niri";
+    # };
+    #
+    # # Rofi lock command
+    # my.rofi.lockCommand = "swaylock";
+    #
+
+    # Laptop-specific hardware
+    hardware.graphics = {
+      enable = true;
+      enable32Bit = true;
+    };
+
+    # Logitech wireless peripherals
+    # hardware.logitech.wireless.enable = true;
+    # hardware.logitech.wireless.enableGraphical = true;
+
+    # Fixes battery percentage in hyprpanel
+    services.upower.enable = true;
+
+    # Drivers for usb-c to ethernet adapter
+    boot.kernelModules = ["ax88179_178a"];
 
     # Home-manager settings
     home-manager = {
@@ -76,6 +171,12 @@
           system = "x86_64-linux";
           config.allowUnfree = true;
         };
+      };
+
+      # Per-host desktop preference overrides
+      users.henhal.my.desktop = {
+        terminal = "kitty";
+        browser = "zen-beta";
       };
     };
   };
