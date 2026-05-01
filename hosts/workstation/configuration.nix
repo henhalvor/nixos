@@ -41,7 +41,7 @@
       self.nixosModules.sshServer
       self.nixosModules.tailscale
       self.nixosModules.sunshine
-      self.nixosModules.hermesAgent
+      # self.nixosModules.hermesAgent
 
       # Desktop foundation (Phase 5)
       self.nixosModules.desktopCommon
@@ -122,12 +122,12 @@
     # Sunshine user
     my.sunshine.user = "henhal";
 
-    my.hermesAgent = {
-      ownerUser = "henhal";
-      repoRoot = "/home/henhal/.dotfiles";
-      provider = "ollama-cloud";
-      model = "minimax-m2.7:cloud";
-    };
+    # my.hermesAgent = {
+    #   ownerUser = "henhal";
+    #   repoRoot = "/home/henhal/.dotfiles";
+    #   provider = "ollama-cloud";
+    #   model = "minimax-m2.7:cloud";
+    # };
 
     # Hyprland host-specific config
     my.hyprland = {

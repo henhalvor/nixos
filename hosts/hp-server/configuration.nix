@@ -50,6 +50,7 @@
       # self.nixosModules.swayidle
       self.nixosModules.rofi
       self.nixosModules.clipman
+
       self.nixosModules.grimScreenshot
       self.nixosModules.waylandApplets
       self.nixosModules.gammastep
@@ -58,6 +59,7 @@
       self.nixosModules.kitty
       # self.nixosModules.thunderbird
       self.nixosModules.nvf
+      self.nixosModules.hermesAgent
       self.nixosModules.zsh
       self.nixosModules.tmux
       self.nixosModules.yazi
@@ -109,6 +111,13 @@
 
     # Syncthing user
     my.syncthing.user = "henhal";
+
+    my.hermesAgent = {
+      ownerUser = "henhal";
+      repoRoot = "/home/henhal/.dotfiles";
+      provider = "ollama-cloud";
+      model = "minimax-m2.7:cloud";
+    };
 
     # Default session
     services.displayManager.defaultSession = "niri";
