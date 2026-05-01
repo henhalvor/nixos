@@ -59,7 +59,7 @@
       self.nixosModules.kitty
       # self.nixosModules.thunderbird
       self.nixosModules.nvf
-      self.nixosModules.hermesAgent
+      # self.nixosModules.hermesAgent
       self.nixosModules.zsh
       self.nixosModules.tmux
       self.nixosModules.yazi
@@ -100,6 +100,7 @@
       # Scripts & Utilities (Phase 10)
       self.nixosModules.powerMonitor
       self.nixosModules.yaziFloat
+      self.nixosModules.firecrawl
 
       # User
       self.nixosModules.userHenhal
@@ -112,12 +113,12 @@
     # Syncthing user
     my.syncthing.user = "henhal";
 
-    my.hermesAgent = {
-      ownerUser = "henhal";
-      repoRoot = "/home/henhal/.dotfiles";
-      provider = "ollama-cloud";
-      model = "minimax-m2.7:cloud";
-    };
+    # my.hermesAgent = {
+    #   ownerUser = "henhal";
+    #   repoRoot = "/home/henhal/.dotfiles";
+    #   provider = "ollama-cloud";
+    #   model = "minimax-m2.7:cloud";
+    # };
 
     # Default session
     services.displayManager.defaultSession = "niri";

@@ -134,8 +134,8 @@
         createUser = false;
         addToSystemPackages = true;
         environmentFiles = [config.sops.templates."hermes-agent-env".path];
-        documents."USER.md" = ./USER.md;
-        documents."AGENTS.md" = ./AGENTS.md;
+        documents."USER.md" = ./USER.md; # NOT WORKING FOR SOME REASON
+        documents."AGENTS.md" = ./AGENTS.md; # NOT WORKING FOR SOME REASON
         extraPackages = with pkgs; [
           curl
           gh
@@ -184,81 +184,93 @@
           ${./SOUL.md} \
           ${hermesStateDir}/.hermes/SOUL.md
       '';
+      #
+      # system.activationScripts."hermes-agent-user" = lib.stringAfter ["hermes-agent-setup"] ''
+      #   install -o ${hermesUser} -g ${hermesGroup} -m 0640 \
+      #     ${./USER.md} \
+      #     ${hermesStateDir}/.hermes/USER.md
+      # '';
+      #
+      # system.activationScripts."hermes-agent-agents" = lib.stringAfter ["hermes-agent-setup"] ''
+      #   install -o ${hermesUser} -g ${hermesGroup} -m 0640 \
+      #     ${./AGENTS.md} \
+      #     ${hermesStateDir}/.hermes/AGENTS.md
+      # '';
 
       system.activationScripts."hermes-vault-init" = lib.stringAfter ["hermes-agent-setup"] ''
-        vault_root=${lib.escapeShellArg cfg.vaultPath}
-        owner=${lib.escapeShellArg cfg.ownerUser}
-        group=${lib.escapeShellArg ownerGroup}
+                vault_root=${lib.escapeShellArg cfg.vaultPath}
+                owner=${lib.escapeShellArg cfg.ownerUser}
+                group=${lib.escapeShellArg ownerGroup}
 
-        # Create main directories
-        ${pkgs.coreutils}/bin/mkdir -p "$vault_root"/Agent-Shared/projects
-        ${pkgs.coreutils}/bin/mkdir -p "$vault_root"/Agent-Hermes/daily
+                # Create main directories
+                ${pkgs.coreutils}/bin/mkdir -p "$vault_root"/Agent-Shared/projects
+                ${pkgs.coreutils}/bin/mkdir -p "$vault_root"/Agent-Hermes/daily
 
-        # Helper to create a file only if it doesn't exist
-        create_if_missing() {
-          local file=$1
-          local content=$2
-          if [ ! -f "$file" ]; then
-            printf '%s\n' "$content" > "$file"
-            ${pkgs.coreutils}/bin/chown "$owner:$group" "$file"
-            ${pkgs.coreutils}/bin/chmod 0640 "$file"
-          fi
-        }
+                # Helper to create a file only if it doesn't exist
+                create_if_missing() {
+                  local file=$1
+                  local content=$2
+                  if [ ! -f "$file" ]; then
+                    printf '%s\n' "$content" > "$file"
+                    ${pkgs.coreutils}/bin/chown "$owner:$group" "$file"
+                    ${pkgs.coreutils}/bin/chmod 0640 "$file"
+                  fi
+                }
 
-        # Initialize vault files with templates if missing
-        create_if_missing "$vault_root/Agent-Shared/today.md" \
-          "## Tasks Today
-- [ ] Review vault structure
+                # Initialize vault files with templates if missing
+                create_if_missing "$vault_root/Agent-Shared/today.md" \
+                  "## Tasks Today
+        - [ ] Review vault structure
 
-## Scheduled
-"
+        ## Scheduled
+        "
 
-        create_if_missing "$vault_root/Agent-Shared/project-state.md" \
-          "## Active projects
-(none)
+                create_if_missing "$vault_root/Agent-Shared/project-state.md" \
+                  "## Active projects
+        (none)
 
-## On hold
-(none)
+        ## On hold
+        (none)
 
-## Completed
-(none)
-"
+        ## Completed
+        (none)
+        "
 
-        create_if_missing "$vault_root/Agent-Shared/decisions-log.md" \
-          "# Decisions Log
-Append-only record of decisions made.
-"
+                create_if_missing "$vault_root/Agent-Shared/decisions-log.md" \
+                  "# Decisions Log
+        Append-only record of decisions made.
+        "
 
-        create_if_missing "$vault_root/Agent-Shared/user-profile.md" \
-          "## Identity
-Name: Henrik
+                create_if_missing "$vault_root/Agent-Shared/user-profile.md" \
+                  "## Identity
+        Name: Henrik
 
-## Working style
-(to be filled)
+        ## Working style
+        (to be filled)
 
-## Tools
-Editor: nvim
-Shell: zsh
-Default code directory: ~/code
+        ## Tools
+        Editor: nvim
+        Shell: zsh
+        Default code directory: ~/code
 
-## Stable facts
-(to be filled)
-"
+        ## Stable facts
+        (to be filled)
+        "
 
-        create_if_missing "$vault_root/Agent-Hermes/working-context.md" \
-          "# Working Context
-Current task: (empty)
-"
+                create_if_missing "$vault_root/Agent-Hermes/working-context.md" \
+                  "# Working Context
+        Current task: (empty)
+        "
 
-        create_if_missing "$vault_root/Agent-Hermes/mistakes.md" \
-          "# Mistakes Log
-Append-only record of errors and corrections.
-"
+                create_if_missing "$vault_root/Agent-Hermes/mistakes.md" \
+                  "# Mistakes Log
+        Append-only record of errors and corrections.
+        "
 
-        # Set permissions recursively
-        ${pkgs.coreutils}/bin/chown -R "$owner:$group" "$vault_root"
-        ${pkgs.findutils}/bin/find "$vault_root" -type f -exec ${pkgs.coreutils}/bin/chmod 0640 {} \;
-        ${pkgs.findutils}/bin/find "$vault_root" -type d -exec ${pkgs.coreutils}/bin/chmod 0750 {} \;
+                # Set permissions recursively
+                ${pkgs.coreutils}/bin/chown -R "$owner:$group" "$vault_root"
+                ${pkgs.findutils}/bin/find "$vault_root" -type f -exec ${pkgs.coreutils}/bin/chmod 0640 {} \;
+                ${pkgs.findutils}/bin/find "$vault_root" -type d -exec ${pkgs.coreutils}/bin/chmod 0750 {} \;
       '';
 
       systemd.services.hermes-agent-backup = {

@@ -1,0 +1,21 @@
+# Firecrawl compose override — merges with upstream docker-compose.yaml from the
+# cloned repo. This file adds env_file (for secrets) and environment overrides.
+#
+# The systemd service does:
+#   git clone … ~/.dotfiles/.firecrawl-src
+#   docker compose -f .firecrawl-src/docker-compose.yaml -f firecrawl-compose.yml up -d
+#
+# So service definitions come from upstream; this file only overrides env/settings.
+
+services:
+  api:
+    env_file:
+      - /etc/firecrawl.env
+    environment:
+      OPENAI_API_KEY: "${OPENAI_API_KEY}"
+    ports:
+      - "3002:3002"
+
+  playwright-service:
+    ports:
+      - "3003:3000"
