@@ -52,6 +52,11 @@
           group = "keys";
           mode = "0440";
         };
+
+        HERMES_WORKSPACE_PASSWORD = {
+          group = "keys";
+          mode = "0440";
+        };
       };
     };
 

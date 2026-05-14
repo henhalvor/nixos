@@ -18,7 +18,9 @@
       neofetch
 
       # Node.js
-      nodejs_20
+      nodejs_22
+
+      pnpm
 
       # Rust
       rustc

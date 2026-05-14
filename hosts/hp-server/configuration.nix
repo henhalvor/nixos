@@ -102,6 +102,10 @@
       self.nixosModules.yaziFloat
       self.nixosModules.firecrawl
 
+      # Hermes Dashboard + Workspace (exposed via Tailscale Serve)
+      self.nixosModules.hermesDashboard
+      self.nixosModules.hermesWorkspace
+
       # User
       self.nixosModules.userHenhal
     ];
@@ -119,6 +123,12 @@
     #   provider = "ollama-cloud";
     #   model = "minimax-m2.7:cloud";
     # };
+
+    # Hermes Dashboard (exposed via Tailscale Serve on tailnet)
+    my.hermesDashboard.enable = true;
+
+    # Hermes Workspace (exposed via Tailscale Serve on tailnet port 3001)
+    my.hermesWorkspace.enable = true;
 
     # Default session
     services.displayManager.defaultSession = "niri";
