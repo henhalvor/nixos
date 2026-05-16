@@ -54,11 +54,11 @@
           };
 
           folders = {
-            "code" = {
-              path = "${homeDir}/code";
-              devices = ["workstation" "yoga-pro-7" "hp-server"];
-              ignorePerms = false;
-            };
+            # "code" = {
+            #   path = "${homeDir}/code";
+            #   devices = ["workstation" "yoga-pro-7" "hp-server"];
+            #   ignorePerms = false;
+            # };
             "documents" = {
               path = "${homeDir}/Documents";
               devices = ["workstation" "yoga-pro-7"];
@@ -81,7 +81,7 @@
             };
             "camera" = {
               path = "${homeDir}/Pictures/Camera";
-              devices = ["workstation" "yoga-pro-7" "android-phone" "android-tablet"];
+              devices = ["workstation" "android-phone"];
               ignorePerms = true;
             };
             "vault" = {
