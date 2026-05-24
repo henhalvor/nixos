@@ -6,7 +6,7 @@
       isNormalUser = true;
       description = "Henrik";
       initialPassword = "password";
-      extraGroups = ["wheel" "networkmanager" "docker" "video" "input" "i2c" "libvirtd" "keys"];
+      extraGroups = ["wheel" "networkmanager" "docker" "video" "input" "i2c" "libvirtd" "keys" "bluetooth"];
       shell = pkgs.zsh;
       home = "/home/henhal";
 
