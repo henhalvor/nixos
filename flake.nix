@@ -20,14 +20,12 @@
 
     vscode-server.url = "github:nix-community/nixos-vscode-server";
 
-    nvf = {
-      url = "github:notashelf/nvf/v0.8";
-      inputs.nixpkgs.follows = "nixpkgs-unstable";
-    };
-
     hermes-agent.url = "github:NousResearch/hermes-agent/c9e8d82ef42970b31d683b9c3e8319b2d54d8b08";
 
-    nvim-nix.url = "github:henhalvor/nvim-nix";
+    garbage-day-nvim = {
+      url = "github:Zeioth/garbage-day.nvim";
+      flake = false;
+    };
 
     stylix = {
       url = "github:nix-community/stylix/release-25.11";
@@ -71,6 +69,7 @@
   outputs = inputs:
     inputs.flake-parts.lib.mkFlake {inherit inputs;} {
       imports = [
+        inputs.wrapper-modules.flakeModules.default
         (inputs.import-tree ./hosts)
         (inputs.import-tree ./modules)
       ];

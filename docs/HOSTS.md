@@ -68,7 +68,7 @@ Detailed breakdown of what each host includes and its specific settings.
 <summary>Applications (26)</summary>
 
 - `kitty` — terminal
-- `nvf` — Neovim (NixVim)
+- `nvim` — Neovim
 - `zsh` — shell
 - `tmux` — multiplexer
 - `yazi` — file manager
@@ -183,7 +183,7 @@ my.desktop.browser = "vivaldi";
 <summary>Applications (26)</summary>
 
 - `kitty` — terminal
-- `nvf` — Neovim
+- `nvim` — Neovim
 - `zsh` — shell
 - `tmux` — multiplexer
 - `yazi` — file manager
@@ -281,7 +281,7 @@ my.desktop.browser = "vivaldi";
 - `zsh` — shell
 - `tmux` — multiplexer
 - `yazi` — file manager
-- `nvf` — Neovim
+- `nvim` — Neovim
 </details>
 
 <details>
@@ -319,7 +319,7 @@ the `self.nixosModules.*` wrapper.
 
 ### Shared Modules (from features/)
 
-`zsh`, `tmux`, `yazi`, `nvf`, `git`, `nerdFonts`, `devTools`,
+`zsh`, `tmux`, `yazi`, `nvim`, `git`, `nerdFonts`, `devTools`,
 `sessionVariables`, `direnv`, `utils`
 
 ### Android-Specific Modules
@@ -374,5 +374,5 @@ nix-on-droid switch --flake .#default
 | AI tools | ✅ | ✅ | — | — |
 | Dev tools | ✅ | ✅ | ✅ | ✅ |
 | SSH client | — | — | — | ✅ |
-| Neovim (nvf) | ✅ | ✅ | ✅ | ✅ |
+| Neovim (nvim) | ✅ | ✅ | ✅ | ✅ |
 | Zsh + p10k | ✅ | ✅ | ✅ | ✅ |

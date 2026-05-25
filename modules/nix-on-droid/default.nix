@@ -78,14 +78,12 @@ in {
             programs.home-manager.enable = true;
             fonts.fontconfig.enable = true;
 
-            home.packages = [ pkgs.vim ];
-
             # Shared homeModules from dendritic features
             imports = [
               self.homeModules.zsh
               self.homeModules.tmux
               self.homeModules.yazi
-              self.homeModules.nvf
+              self.homeModules.nvim
               self.homeModules.git
               self.homeModules.nerdFonts
               self.homeModules.devTools

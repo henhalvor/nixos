@@ -28,10 +28,11 @@
 in {
   # ── Wrapper Module ─────────────────────────────────────────────────────
   # Composable settings module consumed by wrapper-modules.wrappers.niri.wrap
-  flake.wrapperModules.niriConfig = {
+  flake.wrappers.niriConfig = {
     config,
     lib,
     pkgs,
+    wlib,
     ...
   }: let
     isWorkstation = config.hostVariant == "workstation";
@@ -138,6 +139,8 @@ in {
       default-window-height = {fixed = height;};
     };
   in {
+    imports = [wlib.wrapperModules.niri];
+
     options = {
       terminal = lib.mkOption {
         type = lib.types.str;

@@ -64,7 +64,7 @@
       # Applications (Phase 8)
       self.nixosModules.kitty
       self.nixosModules.thunderbird
-      self.nixosModules.nvf
+      self.nixosModules.nvim
       self.nixosModules.zsh
       self.nixosModules.tmux
       self.nixosModules.yazi

@@ -260,8 +260,8 @@ Usage: `nix develop .#rust`
 
 ## Key Conventions
 
-1. **Module names are globally unique** — `nvf` not `features-nvf` or
-   `modules-features-nvf`.
+1. **Module names are globally unique** — `nvim` not `features-nvim` or
+   `modules-features-nvim`.
 2. **camelCase for module names** — `desktopCommon`, `sshServer`, `zenBrowser`.
 3. **kebab-case for file names** — `desktop-common.nix`, `ssh-server.nix`.
 4. **All features imported at host level** — never in user modules.

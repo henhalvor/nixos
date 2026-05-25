@@ -98,8 +98,7 @@ These are imported by every host.
 | Module | File | Pattern | Description |
 |--------|------|---------|-------------|
 | `kitty` | `kitty.nix` | HM + Package | Kitty terminal. Standalone: `nix run .#kitty` |
-| `nvf` | `nvf.nix` | Colocated + Pkg | Neovim via NixVim (~2510 lines). Standalone: `nix run .#nvim` |
-| `nvim` | `nvim.nix` | HM-only | Minimal neovim (non-NixVim) |
+| `nvim` | `nvim.nix` | Colocated + Pkg | Neovim via native Lua + nix-wrapper-modules. Standalone: `nix run .#nvim` |
 | `vscode` | `vscode.nix` | HM-only | VS Code with extensions |
 | `cursor` | `cursor.nix` | HM-only | Cursor AI editor (~530 lines) |
 
@@ -207,5 +206,5 @@ These are specific to the Android tablet configuration:
 | `sshClient` | `nix-on-droid/ssh-client.nix` | SSH/mosh profiles to workstation |
 
 The nix-on-droid config also reuses these shared homeModules: `zsh`, `tmux`,
-`yazi`, `nvf`, `git`, `nerdFonts`, `devTools`, `sessionVariables`, `direnv`,
+`yazi`, `nvim`, `git`, `nerdFonts`, `devTools`, `sessionVariables`, `direnv`,
 `utils`.

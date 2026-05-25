@@ -10,8 +10,10 @@
     home-manager.sharedModules = [self.homeModules.zenBrowser];
   };
 
-  flake.homeModules.zenBrowser = {pkgs, ...}: {
-    home.packages = [inputs.zen-browser.packages.${pkgs.system}.default];
+  flake.homeModules.zenBrowser = {pkgs, ...}: let
+    system = pkgs.stdenv.hostPlatform.system;
+  in {
+    home.packages = [inputs.zen-browser.packages.${system}.default];
 
     xdg.mimeApps.enable = true;
     xdg.mimeApps.defaultApplications = {
