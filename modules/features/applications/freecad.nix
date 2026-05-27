@@ -1,6 +1,17 @@
 # freecad — browser
 # Source: home/modules/applications/freecad.nix
 # Template B2: HM-only
+#
+# FreeCAD profile sync via Syncthing-backed ~/Shared:
+#
+# Workstation -> shared profile, with FreeCAD closed:
+#   mkdir -p ~/Shared/FreeCAD-profile/config ~/Shared/FreeCAD-profile/data
+#   rsync -a --delete ~/.config/FreeCAD/ ~/Shared/FreeCAD-profile/config/
+#   rsync -a --delete ~/.local/share/FreeCAD/ ~/Shared/FreeCAD-profile/data/
+#
+# Shared profile -> Lenovo, with FreeCAD closed:
+#   rsync -a --delete ~/Shared/FreeCAD-profile/config/ ~/.config/FreeCAD/
+#   rsync -a --delete ~/Shared/FreeCAD-profile/data/ ~/.local/share/FreeCAD/
 { self, ... }:
 {
   flake.nixosModules.freecad =
