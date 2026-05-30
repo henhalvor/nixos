@@ -2,7 +2,9 @@
 # Source: home/modules/desktop/shells/noctalia/default.nix
 # Template B2: HM-only, imports noctalia flake input
 #
-# Settings in noctalia/settings.json (co-located).
+# Settings are host-exact JSON exports, co-located in this directory.
+# Generate/update from the target host after configuring Noctalia manually:
+#   noctalia-shell ipc call state all | jq .settings > modules/features/desktop/noctalia/$(hostname).json
 # When noctalia manages bar/notifications/logout, those individual features
 # should NOT be imported for the same host.
 {
@@ -14,13 +16,16 @@
     home-manager.sharedModules = [self.homeModules.noctalia];
   };
 
-  flake.homeModules.noctalia = {lib, ...}: {
+  flake.homeModules.noctalia = {lib, osConfig, ...}: let
+    hostname = osConfig.networking.hostName;
+    settingsFile = ./. + "/${hostname}.json";
+  in {
     imports = [inputs.noctalia.homeModules.default];
 
     programs.noctalia-shell = {
       enable = true;
       systemd.enable = true;
-      settings = lib.mkForce (builtins.fromJSON (builtins.readFile ./settings.json));
+      settings = lib.mkForce (builtins.fromJSON (builtins.readFile settingsFile));
       plugins = {
         sources = [
           {
