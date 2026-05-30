@@ -47,6 +47,7 @@
           dataDir = "${homeDir}/.syncthing";
           configDir = "${homeDir}/.config/syncthing";
           openDefaultPorts = true;
+          overrideFolders = false;
 
           settings = {
             devices = {
