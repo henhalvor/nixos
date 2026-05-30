@@ -168,18 +168,93 @@
           "useDistroLogo": false
         },
         {
+          "defaultSettings": {
+            "autoHeight": true,
+            "bindOverrides": {},
+            "cheatsheetData": [],
+            "columnCount": 3,
+            "descriptionTextColor": "#E0E0E0",
+            "detectedCompositor": "",
+            "hyprlandConfigPath": "~/.config/hypr/hyprland.conf",
+            "hyprlandLuaConfigPath": "~/.config/hypr/hyprland.lua",
+            "hyprlandParserMode": "auto",
+            "keyColorAlt": "#FF6B6B",
+            "keyColorCtrl": "",
+            "keyColorDefault": "#6C757D",
+            "keyColorMouse": "#F38181",
+            "keyColorNumeric": "#A8DADC",
+            "keyColorPrint": "#95E1D3",
+            "keyColorShift": "",
+            "keyColorSuper": "",
+            "keyColorXF86": "#4ECDC4",
+            "keyLabelColor": "#FFFFFF",
+            "keyTextAlt": "",
+            "keyTextCtrl": "",
+            "keyTextDefault": "",
+            "keyTextMouse": "",
+            "keyTextNumeric": "",
+            "keyTextPrint": "",
+            "keyTextShift": "",
+            "keyTextSuper": "",
+            "keyTextXF86": "",
+            "mangoConfigPath": "~/.config/mango/config.conf",
+            "mergeSequentialBinds": true,
+            "modKeyVariable": "$mod",
+            "niriConfigPath": "~/.config/niri/config.kdl",
+            "showUndescribedBinds": true,
+            "splitLargeWorkspaceCategory": true,
+            "windowHeight": 850,
+            "windowWidth": 1400,
+            "workspaceSplitThreshold": 12
+          },
           "id": "plugin:keybind-cheatsheet"
         },
         {
+          "defaultSettings": {
+            "apiKey": "",
+            "apiUrl": "",
+            "configPath": "",
+            "enabled": true,
+            "folderIds": [],
+            "pollIntervalMs": 10000,
+            "verifyTls": false
+          },
           "id": "plugin:syncthing-status"
         },
         {
+          "defaultSettings": {
+            "compactMode": false,
+            "defaultPeerAction": "copy-ip",
+            "hideDisconnected": false,
+            "hideMullvadExitNodes": true,
+            "loginServer": "",
+            "pingCount": 5,
+            "refreshInterval": 5000,
+            "showIpAddress": true,
+            "showPeerCount": true,
+            "showSearchBar": false,
+            "sshUsername": "",
+            "taildropDownloadDir": "~/Downloads",
+            "taildropEnabled": true,
+            "taildropReceiveMode": "operator",
+            "terminalCommand": ""
+          },
           "id": "plugin:tailscale"
         },
         {
+          "defaultSettings": {
+            "autoMount": false,
+            "fileBrowser": "yazi",
+            "hideWhenEmpty": false,
+            "iconColor": "none",
+            "showBadge": false,
+            "showNotifications": true,
+            "terminalCommand": "kitty"
+          },
           "id": "plugin:usb-drive-manager"
         },
         {
+          "defaultSettings": {},
           "id": "plugin:kde-connect"
         }
       ]
@@ -674,7 +749,7 @@
     "notifyUpdates": true
   },
   "idle": {
-    "enabled": true,
+    "enabled": false,
     "screenOffTimeout": 600,
     "lockTimeout": 660,
     "suspendTimeout": 1800,
