@@ -21,15 +21,20 @@
     };
 
   flake.homeModules.freecad =
-    { pkgs, ... }:
+    {
+      pkgs,
+      pkgs-unstable,
+      ...
+    }:
     let
+      freecad = pkgs-unstable.freecad;
       freecadXcb = pkgs.symlinkJoin {
         name = "freecad-xcb";
-        paths = [ pkgs.freecad ];
+        paths = [ freecad ];
         nativeBuildInputs = [ pkgs.makeWrapper ];
         postBuild = ''
           rm -f $out/share/applications/org.freecad.FreeCAD.desktop
-          cp ${pkgs.freecad}/share/applications/org.freecad.FreeCAD.desktop \
+          cp ${freecad}/share/applications/org.freecad.FreeCAD.desktop \
             $out/share/applications/org.freecad.FreeCAD.desktop
           substituteInPlace $out/share/applications/org.freecad.FreeCAD.desktop \
             --replace-fail "Exec=FreeCAD - --single-instance %F" \
