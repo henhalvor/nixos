@@ -545,6 +545,18 @@ in {
             (mkFloatingPopup {title = "wiremix-popup";})
             (mkFloatingPopup {title = "bluetui-popup";})
 
+            # FreeCAD dialogs. Parented dialogs normally auto-float in Niri;
+            # this also covers Sketcher dimension dialogs explicitly.
+            {
+              matches = [
+                {
+                  app-id = ''^(FreeCAD|freecad)$'';
+                  title = "^(Preferences|Addon [Mm]anager|Insert (Angle|Datum|Diameter|Knot|Length|Radius|Weight)|Change Value)$";
+                }
+              ];
+              open-floating = true;
+            }
+
             # GNOME utilities float
             {
               matches = [{app-id = ''^org\.gnome\.Calculator$'';}];

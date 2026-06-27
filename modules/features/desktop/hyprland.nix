@@ -567,6 +567,12 @@
           "float on, match:title ^(Confirm to replace files)$"
           "float on, match:title ^(File Operation Progress)$"
 
+          # FreeCAD: keep the main window tiled, but float modal dialogs and
+          # prevent floating child windows from repeatedly reclaiming focus.
+          "float on, match:class ^(FreeCAD|freecad)$, match:modal true"
+          "center on, match:class ^(FreeCAD|freecad)$, match:modal true"
+          "focus_on_activate off, match:class ^(FreeCAD|freecad)$, match:float true"
+
           # xwaylandvideobridge
           "opacity 0.0 override, match:class ^(xwaylandvideobridge)$"
           "no_anim on, match:class ^(xwaylandvideobridge)$"
