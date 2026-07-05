@@ -118,8 +118,10 @@
       networking.hostName = "lenovo-yoga-pro-7";
       system.stateVersion = "25.05";
 
-      # Syncthing user
-      my.syncthing.user = "henhal";
+      my.syncthing = {
+        user = "henhal";
+        deviceName = "yoga-pro-7";
+      };
 
       # Default session
       services.displayManager.defaultSession = "niri";

@@ -121,8 +121,11 @@
       networking.hostName = "workstation";
       system.stateVersion = "25.05";
 
-      # Syncthing user
-      my.syncthing.user = "henhal";
+      my.syncthing = {
+        user = "henhal";
+        deviceName = "workstation";
+        identitySopsFile = ../../secrets/syncthing/workstation.yaml;
+      };
 
       # Sunshine user
       my.sunshine.user = "henhal";

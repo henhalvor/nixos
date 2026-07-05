@@ -114,8 +114,11 @@
     networking.hostName = "hp-server";
     system.stateVersion = "25.05";
 
-    # Syncthing user
-    my.syncthing.user = "henhal";
+    my.syncthing = {
+      user = "henhal";
+      deviceName = "hp-server";
+      identitySopsFile = ../../secrets/syncthing/hp-server.yaml;
+    };
 
     # my.hermesAgent = {
     #   ownerUser = "henhal";

@@ -8,11 +8,25 @@ keys:
   - &workstation age1qrxkpmvytq3cfrka4nkl2sn79nyg2r7t8qm55m0rl7vrlqc7v3zqadq2yj
   - &hp-server age1w05f4s0uqatmctt2vpz786722ux4y30fe89lsw3rzz7xtkuxa9tqefmyzw
 
-  # TODO: Add workstation and hp-server keys
-  # - &workstation age1...
-  # - &hp-server age1...
-
 creation_rules:
+  - path_regex: secrets/syncthing/workstation\.yaml$
+    key_groups:
+      - age:
+        - *henhal-lenovo
+        - *henhal-workstation
+        - *workstation
+  - path_regex: secrets/syncthing/lenovo-yoga-pro-7\.yaml$
+    key_groups:
+      - age:
+        - *henhal-lenovo
+        - *henhal-workstation
+        - *lenovo
+  - path_regex: secrets/syncthing/hp-server\.yaml$
+    key_groups:
+      - age:
+        - *henhal-lenovo
+        - *henhal-workstation
+        - *hp-server
   - path_regex: secrets/[^/]+\.(yaml|json|env)$
     key_groups:
       - age:
