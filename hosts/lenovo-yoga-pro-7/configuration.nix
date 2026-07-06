@@ -121,6 +121,7 @@
       my.syncthing = {
         user = "henhal";
         deviceName = "yoga-pro-7";
+        identitySopsFile = ../../secrets/syncthing/lenovo-yoga-pro-7.yaml;
       };
 
       # Default session

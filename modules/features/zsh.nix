@@ -95,7 +95,8 @@
           for f in "''${files[@]}"; do
             [ -f "$f" ] || continue
             local name="$(basename "$f")"
-            [[ "$name" == *.* ]] && continue
+            # Service secrets are not necessarily valid environment variable names.
+            [[ "$name" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || continue
             local value="$(cat "$f" 2>/dev/null)" || continue
             export "$name=$value"
           done

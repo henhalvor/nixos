@@ -76,8 +76,8 @@
         for f in "$secret_dir"/*; do
           [ -f "$f" ] || continue
           name="$(basename "$f")"
-          # Skip files with dots (sops metadata)
-          case "$name" in *.*) continue;; esac
+          # Service secrets are not necessarily valid environment variable names.
+          [[ "$name" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || continue
           value="$(cat "$f" 2>/dev/null)" || continue
           export "$name=$value"
         done
