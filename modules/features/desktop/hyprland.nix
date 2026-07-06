@@ -250,9 +250,16 @@
       then ["[workspace 2 silent] ${terminal}"]
       else [];
 
+    noctaliaV5 = osConfig.my.noctalia.version == "v5";
+
     # Launcher binds
     launcherBinds =
-      if hyprCfg.launcher == "rofi"
+      if noctaliaV5
+      then [
+        "$mainMod, D, exec, noctalia msg panel-toggle launcher"
+        "$mainMod, W, exec, noctalia msg panel-toggle wallpaper"
+      ]
+      else if hyprCfg.launcher == "rofi"
       then [
         "$mainMod, D, exec, ${pkgs.rofi}/bin/rofi -show drun"
         "$mainMod, W, exec, ${config.home.homeDirectory}/.config/rofi/scripts/wallpaper-picker.sh"
@@ -378,7 +385,11 @@
           ]
           ++ launcherBinds
           ++ [
-            "$mainMod, O, exec, clipboard-history"
+            "$mainMod, O, exec, ${
+              if noctaliaV5
+              then "noctalia msg panel-toggle clipboard"
+              else "clipboard-history"
+            }"
             "$mainMod SHIFT, O, exec, clipboard-clear"
             "$mainMod, X, togglesplit,"
             "$mainMod, E, exec, hyprctl dispatch exec '[float; size 1111 650] kitty -e yazi-float'"
@@ -397,8 +408,16 @@
             "$mainMod, G, exec, toggle-thunderbird"
 
             # Screenshot
-            ",Print, exec, screenshot --copy"
-            "$mainMod, Print, exec, screenshot --save"
+            ",Print, exec, ${
+              if noctaliaV5
+              then "noctalia msg screenshot-region"
+              else "screenshot --copy"
+            }"
+            "$mainMod, Print, exec, ${
+              if noctaliaV5
+              then "noctalia msg screenshot-fullscreen"
+              else "screenshot --save"
+            }"
             "$mainMod SHIFT, Print, exec, screenshot --swappy"
 
             # Focus movement
@@ -487,16 +506,23 @@
           "$mainMod, mouse:273, resizewindow"
         ];
 
-        layerrule = [
-          "blur on, match:namespace notifications"
-          "ignore_alpha 0, match:namespace notifications"
-          "blur on, match:namespace rofi"
-          "ignore_alpha 0, match:namespace rofi"
-          "no_anim on, match:namespace rofi"
-          "blur on, match:namespace waybar"
-          "ignore_alpha 0, match:namespace waybar"
-          "no_anim on, match:namespace waybar"
-        ];
+        layerrule =
+          [
+            "blur on, match:namespace notifications"
+            "ignore_alpha 0, match:namespace notifications"
+            "blur on, match:namespace rofi"
+            "ignore_alpha 0, match:namespace rofi"
+            "no_anim on, match:namespace rofi"
+            "blur on, match:namespace waybar"
+            "ignore_alpha 0, match:namespace waybar"
+            "no_anim on, match:namespace waybar"
+          ]
+          ++ lib.optionals (osConfig.my.noctalia.version == "v5") [
+            "no_anim on, match:namespace ^noctalia-(bar-.+|notification|dock|panel|attached-panel|osd)$"
+            "blur on, match:namespace ^noctalia-(bar-.+|notification|dock|panel|attached-panel|osd)$"
+            "blur_popups on, match:namespace ^noctalia-(bar-.+|notification|dock|panel|attached-panel|osd)$"
+            "ignore_alpha 0.5, match:namespace ^noctalia-(bar-.+|notification|dock|panel|attached-panel|osd)$"
+          ];
 
         windowrule = [
           "float on, match:title ^(Transmission)$"
@@ -620,6 +646,11 @@
           "float on, match:class ^(thunderbird|thunderbird-bin)$"
           "size 1111 650, match:class ^(thunderbird|thunderbird-bin)$"
           "center on, match:class ^(thunderbird|thunderbird-bin)$"
+        ]
+        ++ lib.optionals (osConfig.my.noctalia.version == "v5") [
+          "float on, match:class ^(dev.noctalia.Noctalia)$"
+          "size 1080 920, match:class ^(dev.noctalia.Noctalia)$"
+          "center on, match:class ^(dev.noctalia.Noctalia)$"
         ];
 
         workspace =

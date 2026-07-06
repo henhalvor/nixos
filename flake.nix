@@ -1,6 +1,11 @@
 {
   description = "NixOS configuration";
 
+  nixConfig = {
+    extra-substituters = ["https://noctalia.cachix.org"];
+    extra-trusted-public-keys = ["noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4="];
+  };
+
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
@@ -43,16 +48,22 @@
       inputs.home-manager.follows = "home-manager";
     };
 
-    noctalia = {
-      url = "github:noctalia-dev/noctalia-shell";
+    # Final stable Quickshell-based v4 release. Keep this pinned so that the
+    # fallback remains reproducible while v5 is under active development.
+    noctalia-v4 = {
+      url = "github:noctalia-dev/noctalia-shell/v4.7.7";
       inputs.nixpkgs.follows = "nixpkgs-unstable";
-      inputs.noctalia-qs.follows = "noctalia-qs";
+      inputs.noctalia-qs.follows = "noctalia-v4-qs";
     };
 
-    noctalia-qs = {
-      url = "github:noctalia-dev/noctalia-qs";
+    noctalia-v4-qs = {
+      url = "github:noctalia-dev/noctalia-qs/1c0710cd7c9f1483bb6dbf5e69023da97136646d";
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
+
+    # The cachix branch follows the newest v5 commit successfully built by CI.
+    # Do not override its nixpkgs input: doing so would disable cache hits.
+    noctalia-v5.url = "github:noctalia-dev/noctalia/cachix";
 
     # Dev shell inputs
     rust-overlay.url = "https://flakehub.com/f/oxalica/rust-overlay/*.tar.gz";

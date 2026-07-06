@@ -39,6 +39,7 @@
     terminal = config.my.desktop.terminal or "kitty";
     browser = config.my.desktop.browser or "firefox";
     lockBin = "${pkgs.swaylock}/bin/swaylock -f";
+    noctaliaV5 = osConfig.my.noctalia.version == "v5";
 
     sway-toggle-monitors = pkgs.writeShellScriptBin "sway-toggle-monitors" ''
       #!/bin/bash
@@ -107,6 +108,9 @@
         for_window [class=".*"] border none
         for_window [app_id="kitty-yazi"] floating enable, resize set 1111 px 650 px, move position center, border pixel 2
         for_window [title="^Picture-in-Picture$"] floating enable, resize set 480 px 270 px, move position 100 ppt 100 ppt, move left 500 px, move up 290 px, sticky enable, border pixel 0
+        ${lib.optionalString (osConfig.my.noctalia.version == "v5") ''
+          for_window [app_id="dev.noctalia.Noctalia"] floating enable, resize set 1080 px 920 px, move position center
+        ''}
       '';
 
       config = {
@@ -152,7 +156,11 @@
               "${modifier}+Shift+Return" = "exec launch-terminal-plain";
               "${modifier}+Shift+q" = "kill";
               "${modifier}+Shift+c" = "exec reload";
-              "${modifier}+o" = "exec clipboard-history";
+              "${modifier}+o" = "exec ${
+                if noctaliaV5
+                then "noctalia msg panel-toggle clipboard"
+                else "clipboard-history"
+              }";
               "${modifier}+Shift+o" = "exec clipboard-clear";
               "${modifier}+e" = "exec ${pkgs.kitty}/bin/kitty --class=kitty-yazi -o background_opacity=1.0 -e yazi";
               "${modifier}+Shift+l" = "exec ${lockBin}";
@@ -160,7 +168,22 @@
               "XF86AudioRaiseVolume" = "exec pactl set-sink-volume @DEFAULT_SINK@ +10%";
               "XF86AudioLowerVolume" = "exec pactl set-sink-volume @DEFAULT_SINK@ -10%";
               "XF86AudioMute" = "exec pactl set-sink-mute @DEFAULT_SINK@ toggle";
-              "${modifier}+d" = "exec ${pkgs.rofi}/bin/rofi -show drun -theme ${config.home.homeDirectory}/.config/rofi/theme.rasi";
+              "${modifier}+d" = "exec ${
+                if noctaliaV5
+                then "noctalia msg panel-toggle launcher"
+                else "${pkgs.rofi}/bin/rofi -show drun -theme ${config.home.homeDirectory}/.config/rofi/theme.rasi"
+              }";
+              "Print" = "exec ${
+                if noctaliaV5
+                then "noctalia msg screenshot-region"
+                else "screenshot --copy"
+              }";
+              "${modifier}+Print" = "exec ${
+                if noctaliaV5
+                then "noctalia msg screenshot-fullscreen"
+                else "screenshot --save"
+              }";
+              "${modifier}+Shift+Print" = "exec screenshot --swappy";
             }
             // hostKeybindings);
       };

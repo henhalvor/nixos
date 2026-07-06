@@ -1,0 +1,15 @@
+# Noctalia v5 baseline for Lenovo Yoga Pro 7.
+# Runtime changes made in Settings are stored separately under
+# ~/.local/state/noctalia/settings.toml and override this file.
+
+[shell]
+setup_wizard_enabled = false
+launch_apps_as_systemd_services = true
+telemetry_enabled = false
+polkit_agent = false
+niri_overview_type_to_launch_enabled = false
+
+[theme]
+mode = "dark"
+source = "builtin"
+builtin = "Catppuccin"

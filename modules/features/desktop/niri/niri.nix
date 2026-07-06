@@ -19,10 +19,11 @@
   mkNiriPackage = {
     pkgs,
     hostVariant ? "laptop",
+    noctaliaVersion ? "v4",
     wallpaper ? ../../../../assets/wallpapers/atoms.png,
   }:
     inputs.wrapper-modules.wrappers.niri.wrap {
-      inherit pkgs hostVariant wallpaper;
+      inherit pkgs hostVariant noctaliaVersion wallpaper;
       imports = [self.wrapperModules.niriConfig];
     };
 in {
@@ -157,6 +158,11 @@ in {
         default = "laptop";
         description = "Host variant — selects outputs, workspace-to-output mappings, and extra binds";
       };
+      noctaliaVersion = lib.mkOption {
+        type = lib.types.enum ["v4" "v5"];
+        default = "v4";
+        description = "Noctalia IPC version used by compositor bindings";
+      };
       wallpaper = lib.mkOption {
         type = lib.types.path;
         default = ../../../../assets/wallpapers/atoms.png;
@@ -286,11 +292,17 @@ in {
             };
             "Mod+D" = _: {
               props.repeat = false;
-              content.spawn = ["noctalia-shell" "ipc" "call" "launcher" "toggle"];
+              content.spawn =
+                if config.noctaliaVersion == "v5"
+                then ["noctalia" "msg" "panel-toggle" "launcher"]
+                else ["noctalia-shell" "ipc" "call" "launcher" "toggle"];
             };
             "Mod+O" = _: {
               props.repeat = false;
-              content.spawn = "clipboard-history";
+              content.spawn =
+                if config.noctaliaVersion == "v5"
+                then ["noctalia" "msg" "panel-toggle" "clipboard"]
+                else "clipboard-history";
             };
             "Mod+Shift+O" = _: {
               props.repeat = false;
@@ -298,7 +310,10 @@ in {
             };
             "Mod+W" = _: {
               props.repeat = false;
-              content.spawn-sh = "$HOME/.config/rofi/scripts/wallpaper-picker.sh";
+              content.spawn-sh =
+                if config.noctaliaVersion == "v5"
+                then "noctalia msg panel-toggle wallpaper"
+                else "$HOME/.config/rofi/scripts/wallpaper-picker.sh";
             };
             "Mod+X" = _: {
               props.repeat = false;
@@ -340,14 +355,20 @@ in {
               content.spawn-sh = "toggle-thunderbird";
             };
 
-            # Screenshots (uses grim-screenshot module's `screenshot` script)
+            # Screenshots (v5 uses Noctalia; swappy stays on the grim wrapper)
             "Print" = _: {
               props.repeat = false;
-              content.spawn = ["screenshot" "--copy"];
+              content.spawn =
+                if config.noctaliaVersion == "v5"
+                then ["noctalia" "msg" "screenshot-region"]
+                else ["screenshot" "--copy"];
             };
             "Mod+Print" = _: {
               props.repeat = false;
-              content.spawn = ["screenshot" "--save"];
+              content.spawn =
+                if config.noctaliaVersion == "v5"
+                then ["noctalia" "msg" "screenshot-fullscreen"]
+                else ["screenshot" "--save"];
             };
             "Mod+Shift+Print" = _: {
               props.repeat = false;
@@ -619,6 +640,14 @@ in {
               shadow.off = _: {};
             }
           ]
+          ++ lib.optionals (config.noctaliaVersion == "v5") [
+            {
+              matches = [{app-id = ''^dev\.noctalia\.Noctalia$'';}];
+              open-floating = true;
+              default-column-width = {fixed = 1080;};
+              default-window-height = {fixed = 920;};
+            }
+          ]
           # Workstation: startup terminal goes to workspace 2
           ++ lib.optionals isWorkstation [
             {
@@ -708,6 +737,7 @@ in {
         if hostname == "workstation"
         then "workstation"
         else "laptop";
+      noctaliaVersion = config.my.noctalia.version or "v4";
       wallpaper = ../../../../assets/wallpapers/${config.my.theme.wallpaper};
     };
   in {
