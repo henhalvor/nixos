@@ -2,8 +2,34 @@
 # Source: home/modules/applications/opencode/default.nix
 # Template B2: HM-only with systemd services
 {self, ...}: {
-  flake.nixosModules.opencode = {...}: {
+  flake.nixosModules.opencode = {
+    config,
+    lib,
+    ...
+  }: {
     home-manager.sharedModules = [self.homeModules.opencode];
+
+    sops.secrets = lib.mkIf (config.networking.hostName == "workstation") {
+      opencode-server-username = {
+        key = "OPENCODE_SERVER_USERNAME";
+        owner = "henhal";
+        mode = "0400";
+      };
+      opencode-server-password = {
+        key = "OPENCODE_SERVER_PASSWORD";
+        owner = "henhal";
+        mode = "0400";
+      };
+    };
+
+    sops.templates.opencode-web-env = lib.mkIf (config.networking.hostName == "workstation") {
+      owner = "henhal";
+      mode = "0400";
+      content = ''
+        OPENCODE_SERVER_USERNAME=${config.sops.placeholder.opencode-server-username}
+        OPENCODE_SERVER_PASSWORD=${config.sops.placeholder.opencode-server-password}
+      '';
+    };
   };
 
   flake.homeModules.opencode = {
@@ -31,8 +57,6 @@
 
     opencodeWebScript = port: pkgs.writeShellScript "opencode-web-${toString port}" ''
       export PATH=$HOME/.npm-global/bin:$PATH
-      export OPENCODE_SERVER_PASSWORD=password123
-      export OPENCODE_SERVER_USERNAME=henhal
       exec opencode web --hostname 0.0.0.0 --port ${toString port}
     '';
 
@@ -60,6 +84,7 @@
       };
       Service = {
         ExecStart = opencodeWebScript port;
+        EnvironmentFile = osConfig.sops.templates.opencode-web-env.path;
         Restart = "always";
         RestartSec = 5;
         WorkingDirectory = workingDirectory;
