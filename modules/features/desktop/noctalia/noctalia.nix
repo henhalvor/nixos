@@ -6,7 +6,8 @@
 
 # export config after it has been set in GUI:
 # V4 run: noctalia-shell ipc call state all | jq .settings > modules/features/desktop/noctalia/$(hostname).json
-# V5 run: noctalia config export \ > modules/features/desktop/noctalia/v5/$(hostname).toml && noctalia config validate \ modules/features/desktop/noctalia/v5/$(hostname).toml
+# V5 run: noctalia config export \
+#    > modules/features/desktop/noctalia/v5/$(hostname).toml
 
 {
   self,

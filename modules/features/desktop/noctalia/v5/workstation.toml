@@ -1,14 +1,38 @@
 [bar.default]
 background_opacity = 0.4999999888241291
 color = "primary"
+end = [
+    "media",
+    "notifications",
+    "clipboard",
+    "network",
+    "bluetooth",
+    "volume",
+    "brightness",
+    "battery",
+    "control-center",
+    "session"
+]
 icon_color = "secondary"
-radius = 70
+margin_edge = 0
+margin_ends = 0
+radius = 0
 thickness = 30
 widget_spacing = 16
 
     [bar.default.monitor.HDMI-A-1]
     auto_hide = true
     enabled = false
+
+[brightness]
+enable_ddcutil = true
+sync_all_monitors = true
+
+[calendar]
+enabled = true
+
+    [calendar.account.personal_google]
+    type = "google"
 
 [dock]
 auto_hide = true
@@ -125,5 +149,14 @@ directory = "/home/henhal/.dotfiles/assets/wallpapers"
     path = "/home/henhal/.dotfiles/assets/wallpapers/mountains-3.jpg"
     theme_mode = "dark"
 
+[widget.brightness]
+enabled = true
+
 [widget.clock]
 format = "{:%d.%m %H:%M}  "
+
+[widget.session]
+enabled = true
+
+[widget.tray]
+enabled = true
