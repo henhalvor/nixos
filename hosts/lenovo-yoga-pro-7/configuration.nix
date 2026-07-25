@@ -119,7 +119,7 @@
       system.stateVersion = "25.05";
 
       # v4 is the stable fallback; change to "v5" to test the new shell.
-      my.noctalia.version = "v4";
+      my.noctalia.version = "v5";
 
       my.syncthing = {
         user = "henhal";
