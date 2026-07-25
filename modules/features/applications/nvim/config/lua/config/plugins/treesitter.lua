@@ -1,9 +1,10 @@
-require("nvim-treesitter.configs").setup({
-  highlight = {
-    enable = true,
-    additional_vim_regex_highlighting = { "ruby" },
-  },
-  indent = { enable = true, disable = { "ruby" } },
+require("nvim-treesitter").setup({})
+
+vim.api.nvim_create_autocmd("FileType", {
+  group = vim.api.nvim_create_augroup("treesitter-highlight", { clear = true }),
+  callback = function(event)
+    pcall(vim.treesitter.start, event.buf)
+  end,
 })
 
 require("treesitter-context").setup({

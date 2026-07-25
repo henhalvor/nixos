@@ -59,7 +59,7 @@ in {
     };
 
     config.specs.core = with pkgs.vimPlugins; [
-      nvim-lspconfig
+      pkgs-unstable.vimPlugins.nvim-lspconfig
       blink-cmp
       pkgs-unstable.vimPlugins.blink-compat
       luasnip
@@ -75,11 +75,11 @@ in {
       barbecue-nvim
       nvim-osc52
       tabout-nvim
-      nvim-ts-context-commentstring
-      nvim-treesitter.withAllGrammars
-      nvim-treesitter-context
-      nvim-ts-autotag
-      render-markdown-nvim
+      pkgs-unstable.vimPlugins.nvim-ts-context-commentstring
+      pkgs-unstable.vimPlugins.nvim-treesitter.withAllGrammars
+      pkgs-unstable.vimPlugins.nvim-treesitter-context
+      pkgs-unstable.vimPlugins.nvim-ts-autotag
+      pkgs-unstable.vimPlugins.render-markdown-nvim
       rustaceanvim
       pkgs-unstable.vimPlugins.codediff-nvim
       plenary-nvim
@@ -174,6 +174,7 @@ in {
       rust-analyzer
       lua-language-server
       nil
+      pkgs-unstable.typescript-go
       nodePackages.typescript-language-server
       tailwindcss-language-server
       nodePackages.vscode-langservers-extracted
