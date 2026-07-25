@@ -227,6 +227,12 @@ in
             default-column-width = {
               proportion = 0.5;
             };
+            preset-column-widths = [
+              { proportion = 0.33333; }
+              { proportion = 0.5; }
+              { proportion = 0.66667; }
+              { proportion = 1.0; }
+            ];
             background-color = "transparent";
 
             focus-ring.off = _: { };
