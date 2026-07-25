@@ -15,264 +15,289 @@
   inputs,
   lib,
   ...
-}: let
-  mkNiriPackage = {
-    pkgs,
-    hostVariant ? "laptop",
-    noctaliaVersion ? "v4",
-    wallpaper ? ../../../../assets/wallpapers/atoms.png,
-  }:
+}:
+let
+  mkNiriPackage =
+    {
+      pkgs,
+      hostVariant ? "laptop",
+      noctaliaVersion ? "v4",
+      wallpaper ? ../../../../assets/wallpapers/atoms.png,
+    }:
     inputs.wrapper-modules.wrappers.niri.wrap {
-      inherit pkgs hostVariant noctaliaVersion wallpaper;
-      imports = [self.wrapperModules.niriConfig];
+      inherit
+        pkgs
+        hostVariant
+        noctaliaVersion
+        wallpaper
+        ;
+      imports = [ self.wrapperModules.niriConfig ];
     };
-in {
+in
+{
   # ── Wrapper Module ─────────────────────────────────────────────────────
   # Composable settings module consumed by wrapper-modules.wrappers.niri.wrap
-  flake.wrappers.niriConfig = {
-    config,
-    lib,
-    pkgs,
-    wlib,
-    ...
-  }: let
-    isWorkstation = config.hostVariant == "workstation";
+  flake.wrappers.niriConfig =
+    {
+      config,
+      lib,
+      pkgs,
+      wlib,
+      ...
+    }:
+    let
+      isWorkstation = config.hostVariant == "workstation";
 
-    # Workstation-only helper: toggle HDMI-A-1 / DP-1 on/off
-    niri-toggle-monitors = pkgs.writeShellScriptBin "niri-toggle-monitors" ''
-      DEBUG_FILE="/tmp/niri-monitor-toggle.log"
-      echo "=== Monitor Toggle Debug $(date) ===" >> "$DEBUG_FILE"
+      # Workstation-only helper: toggle HDMI-A-1 / DP-1 on/off
+      niri-toggle-monitors = pkgs.writeShellScriptBin "niri-toggle-monitors" ''
+        DEBUG_FILE="/tmp/niri-monitor-toggle.log"
+        echo "=== Monitor Toggle Debug $(date) ===" >> "$DEBUG_FILE"
 
-      outputs_json=$(niri msg --json outputs)
+        outputs_json=$(niri msg --json outputs)
 
-      get_output_enabled() {
-        printf '%s' "$outputs_json" | ${pkgs.jq}/bin/jq -r --arg name "$1" '
-          if type == "array" then
-            any(.[]; (.name // .connector // .output // "") == $name and .current_mode != null)
-          else
-            .[$name].current_mode != null
-          end
-        '
-      }
+        get_output_enabled() {
+          printf '%s' "$outputs_json" | ${pkgs.jq}/bin/jq -r --arg name "$1" '
+            if type == "array" then
+              any(.[]; (.name // .connector // .output // "") == $name and .current_mode != null)
+            else
+              .[$name].current_mode != null
+            end
+          '
+        }
 
-      hdmi_on=$(get_output_enabled "HDMI-A-1")
-      dp_on=$(get_output_enabled "DP-1")
+        hdmi_on=$(get_output_enabled "HDMI-A-1")
+        dp_on=$(get_output_enabled "DP-1")
 
-      echo "HDMI-A-1 enabled: $hdmi_on" >> "$DEBUG_FILE"
-      echo "DP-1 enabled: $dp_on" >> "$DEBUG_FILE"
+        echo "HDMI-A-1 enabled: $hdmi_on" >> "$DEBUG_FILE"
+        echo "DP-1 enabled: $dp_on" >> "$DEBUG_FILE"
 
-      if [[ "$hdmi_on" == "true" || "$dp_on" == "true" ]]; then
-        echo "Turning monitors OFF" >> "$DEBUG_FILE"
-        niri msg output HDMI-A-1 off >> "$DEBUG_FILE" 2>&1
-        niri msg output DP-1 off >> "$DEBUG_FILE" 2>&1
-      else
-        echo "Turning monitors ON" >> "$DEBUG_FILE"
-        niri msg output HDMI-A-1 on >> "$DEBUG_FILE" 2>&1
-        niri msg output DP-1 on >> "$DEBUG_FILE" 2>&1
-        sleep 2
-      fi
-      echo "=== End Debug ===" >> "$DEBUG_FILE"
-    '';
-
-    # Workstation-only helper: DDC/CI brightness for external monitors
-    niri-brightness-external = pkgs.writeShellScriptBin "niri-brightness-external" ''
-      VCP_BRIGHTNESS=10
-      STEP=10
-      ASUS_BUS=3
-      SAMSUNG_BUS=4
-
-      get_brightness() {
-        local bus=$1
-        ${pkgs.ddcutil}/bin/ddcutil --bus="$bus" getvcp "$VCP_BRIGHTNESS" 2>/dev/null \
-          | grep -oP 'current value =\s+\K\d+'
-        sleep 0.05
-      }
-      set_brightness() {
-        local bus=$1 value=$2
-        ${pkgs.ddcutil}/bin/ddcutil --bus="$bus" setvcp "$VCP_BRIGHTNESS" "$value" 2>/dev/null
-        sleep 0.1
-      }
-      increase_brightness() {
-        local bus=$1 current
-        current=$(get_brightness "$bus")
-        if [[ -n "$current" ]]; then
-          local new=$((current + STEP))
-          [[ $new -gt 100 ]] && new=100
-          set_brightness "$bus" "$new"
+        if [[ "$hdmi_on" == "true" || "$dp_on" == "true" ]]; then
+          echo "Turning monitors OFF" >> "$DEBUG_FILE"
+          niri msg output HDMI-A-1 off >> "$DEBUG_FILE" 2>&1
+          niri msg output DP-1 off >> "$DEBUG_FILE" 2>&1
+        else
+          echo "Turning monitors ON" >> "$DEBUG_FILE"
+          niri msg output HDMI-A-1 on >> "$DEBUG_FILE" 2>&1
+          niri msg output DP-1 on >> "$DEBUG_FILE" 2>&1
+          sleep 2
         fi
-      }
-      decrease_brightness() {
-        local bus=$1 current
-        current=$(get_brightness "$bus")
-        if [[ -n "$current" ]]; then
-          local new=$((current - STEP))
-          [[ $new -lt 0 ]] && new=0
-          set_brightness "$bus" "$new"
-        fi
-      }
-      case "$1" in
-        --increase|up)
-          increase_brightness "$ASUS_BUS" &
-          increase_brightness "$SAMSUNG_BUS" &
-          wait ;;
-        --decrease|down)
-          decrease_brightness "$ASUS_BUS" &
-          decrease_brightness "$SAMSUNG_BUS" &
-          wait ;;
-        *) echo "Usage: $0 {--increase|--decrease}"; exit 1 ;;
-      esac
-    '';
+        echo "=== End Debug ===" >> "$DEBUG_FILE"
+      '';
 
-    # Wallpaper launcher (spawn-at-startup)
-    start-wallpaper =
-      pkgs.writeShellScriptBin "start-wallpaper"
-      ''${lib.getExe pkgs.swaybg} -i ${config.wallpaper} -m fill'';
+      # Workstation-only helper: DDC/CI brightness for external monitors
+      niri-brightness-external = pkgs.writeShellScriptBin "niri-brightness-external" ''
+        VCP_BRIGHTNESS=10
+        STEP=10
+        ASUS_BUS=3
+        SAMSUNG_BUS=4
 
-    # Helper to create a floating-popup window-rule for a given title
-    mkFloatingPopup = {
-      title,
-      width ? 1111,
-      height ? 650,
-    }: {
-      matches = [{title = "^${title}$";}];
-      open-floating = true;
-      default-column-width = {fixed = width;};
-      default-window-height = {fixed = height;};
-    };
-  in {
-    imports = [wlib.wrapperModules.niri];
+        get_brightness() {
+          local bus=$1
+          ${pkgs.ddcutil}/bin/ddcutil --bus="$bus" getvcp "$VCP_BRIGHTNESS" 2>/dev/null \
+            | grep -oP 'current value =\s+\K\d+'
+          sleep 0.05
+        }
+        set_brightness() {
+          local bus=$1 value=$2
+          ${pkgs.ddcutil}/bin/ddcutil --bus="$bus" setvcp "$VCP_BRIGHTNESS" "$value" 2>/dev/null
+          sleep 0.1
+        }
+        increase_brightness() {
+          local bus=$1 current
+          current=$(get_brightness "$bus")
+          if [[ -n "$current" ]]; then
+            local new=$((current + STEP))
+            [[ $new -gt 100 ]] && new=100
+            set_brightness "$bus" "$new"
+          fi
+        }
+        decrease_brightness() {
+          local bus=$1 current
+          current=$(get_brightness "$bus")
+          if [[ -n "$current" ]]; then
+            local new=$((current - STEP))
+            [[ $new -lt 0 ]] && new=0
+            set_brightness "$bus" "$new"
+          fi
+        }
+        case "$1" in
+          --increase|up)
+            increase_brightness "$ASUS_BUS" &
+            increase_brightness "$SAMSUNG_BUS" &
+            wait ;;
+          --decrease|down)
+            decrease_brightness "$ASUS_BUS" &
+            decrease_brightness "$SAMSUNG_BUS" &
+            wait ;;
+          *) echo "Usage: $0 {--increase|--decrease}"; exit 1 ;;
+        esac
+      '';
 
-    options = {
-      terminal = lib.mkOption {
-        type = lib.types.str;
-        default = lib.getExe pkgs.kitty;
-        description = "Terminal emulator executable path";
-      };
-      browser = lib.mkOption {
-        type = lib.types.str;
-        default = "zen-beta";
-        description = "Web browser command";
-      };
-      hostVariant = lib.mkOption {
-        type = lib.types.enum ["laptop" "workstation"];
-        default = "laptop";
-        description = "Host variant — selects outputs, workspace-to-output mappings, and extra binds";
-      };
-      noctaliaVersion = lib.mkOption {
-        type = lib.types.enum ["v4" "v5"];
-        default = "v4";
-        description = "Noctalia IPC version used by compositor bindings";
-      };
-      wallpaper = lib.mkOption {
-        type = lib.types.path;
-        default = ../../../../assets/wallpapers/atoms.png;
-        description = "Wallpaper image path";
-      };
-    };
+      # Wallpaper launcher (spawn-at-startup)
+      start-wallpaper = pkgs.writeShellScriptBin "start-wallpaper" "${lib.getExe pkgs.swaybg} -i ${config.wallpaper} -m fill";
 
-    config = {
-      v2-settings = true;
-
-      settings = {
-        # ── Input ──────────────────────────────────────────────────────
-        input = {
-          mod-key = "Super";
-          mod-key-nested = "Alt";
-          workspace-auto-back-and-forth = _: {};
-          focus-follows-mouse = _: {
-            props.max-scroll-amount = "0%";
+      # Helper to create a floating-popup window-rule for a given title
+      mkFloatingPopup =
+        {
+          title,
+          width ? 1111,
+          height ? 650,
+        }:
+        {
+          matches = [ { title = "^${title}$"; } ];
+          open-floating = true;
+          default-column-width = {
+            fixed = width;
           };
-
-          keyboard = {
-            xkb = {
-              layout = "no";
-              options = "caps:escape";
-            };
-            numlock = _: {};
-          };
-
-          touchpad = {
-            tap = _: {};
-            natural-scroll = _: {};
-            dwt = _: {};
+          default-window-height = {
+            fixed = height;
           };
         };
+    in
+    {
+      imports = [ wlib.wrapperModules.niri ];
 
-        # ── Layout ─────────────────────────────────────────────────────
-        layout = {
-          gaps = 25;
-          center-focused-column = "on-overflow";
-          always-center-single-column = _: {};
-          default-column-width = {proportion = 0.9;};
-          background-color = "transparent";
+      options = {
+        terminal = lib.mkOption {
+          type = lib.types.str;
+          default = lib.getExe pkgs.kitty;
+          description = "Terminal emulator executable path";
+        };
+        browser = lib.mkOption {
+          type = lib.types.str;
+          default = "zen-beta";
+          description = "Web browser command";
+        };
+        hostVariant = lib.mkOption {
+          type = lib.types.enum [
+            "laptop"
+            "workstation"
+          ];
+          default = "laptop";
+          description = "Host variant — selects outputs, workspace-to-output mappings, and extra binds";
+        };
+        noctaliaVersion = lib.mkOption {
+          type = lib.types.enum [
+            "v4"
+            "v5"
+          ];
+          default = "v4";
+          description = "Noctalia IPC version used by compositor bindings";
+        };
+        wallpaper = lib.mkOption {
+          type = lib.types.path;
+          default = ../../../../assets/wallpapers/atoms.png;
+          description = "Wallpaper image path";
+        };
+      };
 
-          focus-ring.off = _: {};
+      config = {
+        v2-settings = true;
 
-          border = {
-            off = _: {};
-            width = 0;
-          };
+        settings = {
+          # ── Input ──────────────────────────────────────────────────────
+          input = {
+            mod-key = "Super";
+            mod-key-nested = "Alt";
+            workspace-auto-back-and-forth = _: { };
+            focus-follows-mouse = _: {
+              props.max-scroll-amount = "0%";
+            };
 
-          shadow = {
-            on = _: {};
-            draw-behind-window = true;
-            softness = 50;
-            spread = 5;
-            offset = _: {
-              props = {
-                x = 0;
-                y = 5;
+            keyboard = {
+              xkb = {
+                layout = "no";
+                options = "caps:escape";
               };
+              numlock = _: { };
             };
-            color = "#00000070";
+
+            touchpad = {
+              tap = _: { };
+              natural-scroll = _: { };
+              dwt = _: { };
+            };
           };
 
-          tab-indicator.off = _: {};
-        };
+          # ── Layout ─────────────────────────────────────────────────────
+          layout = {
+            gaps = 25;
+            center-focused-column = "on-overflow";
+            always-center-single-column = _: { };
+            default-column-width = {
+              proportion = 0.5;
+            };
+            background-color = "transparent";
 
-        # ── Global settings ────────────────────────────────────────────
-        prefer-no-csd = _: {};
-        clipboard.disable-primary = _: {};
+            focus-ring.off = _: { };
 
-        cursor = {
-          xcursor-size = 24;
-          hide-when-typing = _: {};
-        };
+            border = {
+              off = _: { };
+              width = 0;
+            };
 
-        overview.zoom = 0.25;
+            shadow = {
+              on = _: { };
+              draw-behind-window = true;
+              softness = 50;
+              spread = 5;
+              offset = _: {
+                props = {
+                  x = 0;
+                  y = 5;
+                };
+              };
+              color = "#00000070";
+            };
 
-        hotkey-overlay = {
-          skip-at-startup = _: {};
-          hide-not-bound = _: {};
-        };
+            tab-indicator.off = _: { };
+          };
 
-        screenshot-path = "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png";
+          # ── Global settings ────────────────────────────────────────────
+          prefer-no-csd = _: { };
+          clipboard.disable-primary = _: { };
 
-        environment = {
-          QT_QPA_PLATFORM = "wayland";
-          SDL_VIDEODRIVER = "wayland";
-          CLUTTER_BACKEND = "wayland";
-          XDG_SESSION_TYPE = "wayland";
-          MOZ_ENABLE_WAYLAND = "1";
-          XCURSOR_SIZE = "24";
-        };
+          cursor = {
+            xcursor-size = 24;
+            hide-when-typing = _: { };
+          };
 
-        xwayland-satellite.path = lib.getExe pkgs.xwayland-satellite;
+          overview.zoom = 0.25;
 
-        # ── Spawn at startup ───────────────────────────────────────────
-        spawn-at-startup =
-          [
+          hotkey-overlay = {
+            skip-at-startup = _: { };
+            hide-not-bound = _: { };
+          };
+
+          screenshot-path = "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png";
+
+          environment = {
+            QT_QPA_PLATFORM = "wayland";
+            SDL_VIDEODRIVER = "wayland";
+            CLUTTER_BACKEND = "wayland";
+            XDG_SESSION_TYPE = "wayland";
+            MOZ_ENABLE_WAYLAND = "1";
+            XCURSOR_SIZE = "24";
+          };
+
+          xwayland-satellite.path = lib.getExe pkgs.xwayland-satellite;
+
+          # ── Spawn at startup ───────────────────────────────────────────
+          spawn-at-startup = [
             (lib.getExe start-wallpaper)
             config.browser
             "gmail"
           ]
           ++ lib.optionals isWorkstation [
-            [config.terminal "--title" "startup-work-terminal"]
+            [
+              config.terminal
+              "--title"
+              "startup-work-terminal"
+            ]
           ];
 
-        # ── Binds ──────────────────────────────────────────────────────
-        binds =
-          {
+          # ── Binds ──────────────────────────────────────────────────────
+          binds = {
             # App launchers
             "Mod+Return" = _: {
               props.repeat = false;
@@ -284,25 +309,43 @@ in {
             };
             "Mod+Shift+Q" = _: {
               props.repeat = false;
-              content.close-window = _: {};
+              content.close-window = _: { };
             };
             "Mod+F" = _: {
               props.repeat = false;
-              content.fullscreen-window = _: {};
+              content.fullscreen-window = _: { };
             };
             "Mod+D" = _: {
               props.repeat = false;
               content.spawn =
-                if config.noctaliaVersion == "v5"
-                then ["noctalia" "msg" "panel-toggle" "launcher"]
-                else ["noctalia-shell" "ipc" "call" "launcher" "toggle"];
+                if config.noctaliaVersion == "v5" then
+                  [
+                    "noctalia"
+                    "msg"
+                    "panel-toggle"
+                    "launcher"
+                  ]
+                else
+                  [
+                    "noctalia-shell"
+                    "ipc"
+                    "call"
+                    "launcher"
+                    "toggle"
+                  ];
             };
             "Mod+O" = _: {
               props.repeat = false;
               content.spawn =
-                if config.noctaliaVersion == "v5"
-                then ["noctalia" "msg" "panel-toggle" "clipboard"]
-                else "clipboard-history";
+                if config.noctaliaVersion == "v5" then
+                  [
+                    "noctalia"
+                    "msg"
+                    "panel-toggle"
+                    "clipboard"
+                  ]
+                else
+                  "clipboard-history";
             };
             "Mod+Shift+O" = _: {
               props.repeat = false;
@@ -311,21 +354,22 @@ in {
             "Mod+W" = _: {
               props.repeat = false;
               content.spawn-sh =
-                if config.noctaliaVersion == "v5"
-                then "noctalia msg panel-toggle wallpaper"
-                else "$HOME/.config/rofi/scripts/wallpaper-picker.sh";
+                if config.noctaliaVersion == "v5" then
+                  "noctalia msg panel-toggle wallpaper"
+                else
+                  "$HOME/.config/rofi/scripts/wallpaper-picker.sh";
             };
             "Mod+X" = _: {
               props.repeat = false;
-              content.toggle-column-tabbed-display = _: {};
+              content.toggle-column-tabbed-display = _: { };
             };
             "Mod+V" = _: {
               props.repeat = false;
-              content.toggle-window-floating = _: {};
+              content.toggle-window-floating = _: { };
             };
             "Mod+Shift+V" = _: {
               props.repeat = false;
-              content.switch-focus-between-floating-and-tiling = _: {};
+              content.switch-focus-between-floating-and-tiling = _: { };
             };
             "Mod+E" = _: {
               props.repeat = false;
@@ -348,7 +392,10 @@ in {
                 allow-when-locked = true;
                 repeat = false;
               };
-              content.spawn = ["swaylock" "-f"];
+              content.spawn = [
+                "swaylock"
+                "-f"
+              ];
             };
             "Mod+G" = _: {
               props.repeat = false;
@@ -359,33 +406,52 @@ in {
             "Print" = _: {
               props.repeat = false;
               content.spawn =
-                if config.noctaliaVersion == "v5"
-                then ["noctalia" "msg" "screenshot-region"]
-                else ["screenshot" "--copy"];
+                if config.noctaliaVersion == "v5" then
+                  [
+                    "noctalia"
+                    "msg"
+                    "screenshot-region"
+                  ]
+                else
+                  [
+                    "screenshot"
+                    "--copy"
+                  ];
             };
             "Mod+Print" = _: {
               props.repeat = false;
               content.spawn =
-                if config.noctaliaVersion == "v5"
-                then ["noctalia" "msg" "screenshot-fullscreen"]
-                else ["screenshot" "--save"];
+                if config.noctaliaVersion == "v5" then
+                  [
+                    "noctalia"
+                    "msg"
+                    "screenshot-fullscreen"
+                  ]
+                else
+                  [
+                    "screenshot"
+                    "--save"
+                  ];
             };
             "Mod+Shift+Print" = _: {
               props.repeat = false;
-              content.spawn = ["screenshot" "--swappy"];
+              content.spawn = [
+                "screenshot"
+                "--swappy"
+              ];
             };
 
             # Focus navigation (hjkl + arrows)
-            "Mod+H".focus-column-left = _: {};
-            "Mod+J".focus-window-or-workspace-down = _: {};
-            "Mod+K".focus-window-or-workspace-up = _: {};
-            "Mod+L".focus-column-right = _: {};
-            "Mod+Left".focus-column-left = _: {};
-            "Mod+Right".focus-column-right = _: {};
-            "Mod+Up".focus-window-or-workspace-up = _: {};
-            "Mod+Down".focus-window-or-workspace-down = _: {};
-            "Mod+Comma".focus-column-left = _: {};
-            "Mod+Period".focus-column-right = _: {};
+            "Mod+H".focus-column-left = _: { };
+            "Mod+J".focus-window-or-workspace-down = _: { };
+            "Mod+K".focus-window-or-workspace-up = _: { };
+            "Mod+L".focus-column-right = _: { };
+            "Mod+Left".focus-column-left = _: { };
+            "Mod+Right".focus-column-right = _: { };
+            "Mod+Up".focus-window-or-workspace-up = _: { };
+            "Mod+Down".focus-window-or-workspace-down = _: { };
+            "Mod+Comma".focus-column-left = _: { };
+            "Mod+Period".focus-column-right = _: { };
 
             # Workspace focus
             "Mod+1".focus-workspace = "1";
@@ -412,15 +478,21 @@ in {
             "Mod+Shift+0".move-window-to-workspace = "10";
 
             # Move columns/windows (hjkl + arrows)
-            "Mod+Shift+H".move-column-left = _: {};
-            "Mod+Shift+J".move-window-down = _: {};
-            "Mod+Shift+K".move-window-up = _: {};
-            "Mod+Shift+Left".move-column-left = _: {};
-            "Mod+Shift+Right".move-column-right = _: {};
-            "Mod+Shift+Up".move-window-up = _: {};
-            "Mod+Shift+Down".move-window-down = _: {};
-            "Mod+Shift+Comma".move-column-left = _: {};
-            "Mod+Shift+Period".move-column-right = _: {};
+            "Mod+Shift+H".move-column-left = _: { };
+            "Mod+Shift+J".move-window-down = _: { };
+            "Mod+Shift+K".move-window-up = _: { };
+            "Mod+Shift+Left".move-column-left = _: { };
+            "Mod+Shift+Right".move-column-right = _: { };
+            "Mod+Shift+Up".move-window-up = _: { };
+            "Mod+Shift+Down".move-window-down = _: { };
+            "Mod+Shift+Comma".move-column-left = _: { };
+            "Mod+Shift+Period".move-column-right = _: { };
+
+            # Column layout
+            "Mod+R".switch-preset-column-width = _: { };
+            "Mod+Shift+F".maximize-column = _: { };
+            "Mod+BracketLeft".consume-or-expel-window-left = _: { };
+            "Mod+BracketRight".consume-or-expel-window-right = _: { };
 
             # Resize (Mod+Ctrl)
             "Mod+Ctrl+H".set-column-width = "-5%";
@@ -461,21 +533,29 @@ in {
             # Laptop brightness (overridden on workstation)
             "XF86MonBrightnessUp" = _: {
               props.allow-when-locked = true;
-              content.spawn = ["${lib.getExe pkgs.brightnessctl}" "s" "+10%"];
+              content.spawn = [
+                "${lib.getExe pkgs.brightnessctl}"
+                "s"
+                "+10%"
+              ];
             };
             "XF86MonBrightnessDown" = _: {
               props.allow-when-locked = true;
-              content.spawn = ["${lib.getExe pkgs.brightnessctl}" "s" "10%-"];
+              content.spawn = [
+                "${lib.getExe pkgs.brightnessctl}"
+                "s"
+                "10%-"
+              ];
             };
 
             # Mouse wheel workspace navigation
             "Mod+WheelScrollDown" = _: {
               props.cooldown-ms = 150;
-              content.focus-workspace-down = _: {};
+              content.focus-workspace-down = _: { };
             };
             "Mod+WheelScrollUp" = _: {
               props.cooldown-ms = 150;
-              content.focus-workspace-up = _: {};
+              content.focus-workspace-up = _: { };
             };
           }
           # Workstation-only binds
@@ -501,9 +581,8 @@ in {
             };
           };
 
-        # ── Window Rules ───────────────────────────────────────────────
-        window-rules =
-          [
+          # ── Window Rules ───────────────────────────────────────────────
+          window-rules = [
             # Global: rounded corners
             {
               geometry-corner-radius = 25;
@@ -512,12 +591,12 @@ in {
 
             # Browsers open maximised on workspace 1
             {
-              matches = [{app-id = "vivaldi";}];
+              matches = [ { app-id = "vivaldi"; } ];
               open-on-workspace = "1";
               open-maximized = true;
             }
             {
-              matches = [{app-id = ''^zen$'';}];
+              matches = [ { app-id = "^zen(-beta)?$"; } ];
               open-on-workspace = "1";
               open-maximized = true;
             }
@@ -527,7 +606,7 @@ in {
               matches = [
                 {
                   at-startup = true;
-                  app-id = ''^(thunderbird|thunderbird-bin)$'';
+                  app-id = "^(thunderbird|thunderbird-bin)$";
                 }
               ];
               open-on-workspace = "mail";
@@ -535,19 +614,27 @@ in {
             }
             # Thunderbird — subsequent instances float on mail workspace
             {
-              matches = [{app-id = ''^(thunderbird|thunderbird-bin)$'';}];
+              matches = [ { app-id = "^(thunderbird|thunderbird-bin)$"; } ];
               open-on-workspace = "mail";
               open-floating = true;
-              default-column-width = {fixed = 1111;};
-              default-window-height = {fixed = 650;};
+              default-column-width = {
+                fixed = 1111;
+              };
+              default-window-height = {
+                fixed = 650;
+              };
             }
 
             # Picture-in-Picture
             {
-              matches = [{title = "^Picture-in-Picture$";}];
+              matches = [ { title = "^Picture-in-Picture$"; } ];
               open-floating = true;
-              default-column-width = {fixed = 480;};
-              default-window-height = {fixed = 270;};
+              default-column-width = {
+                fixed = 480;
+              };
+              default-window-height = {
+                fixed = 270;
+              };
               default-floating-position = _: {
                 props = {
                   x = 100;
@@ -558,20 +645,20 @@ in {
             }
 
             # Floating popups (terminal TUIs, etc.)
-            (mkFloatingPopup {title = "yazi-float";})
-            (mkFloatingPopup {title = "btop-float";})
-            (mkFloatingPopup {title = "bluetui-float";})
-            (mkFloatingPopup {title = "opencode-ai";})
-            (mkFloatingPopup {title = "nmtui-popup";})
-            (mkFloatingPopup {title = "wiremix-popup";})
-            (mkFloatingPopup {title = "bluetui-popup";})
+            (mkFloatingPopup { title = "yazi-float"; })
+            (mkFloatingPopup { title = "btop-float"; })
+            (mkFloatingPopup { title = "bluetui-float"; })
+            (mkFloatingPopup { title = "opencode-ai"; })
+            (mkFloatingPopup { title = "nmtui-popup"; })
+            (mkFloatingPopup { title = "wiremix-popup"; })
+            (mkFloatingPopup { title = "bluetui-popup"; })
 
             # FreeCAD dialogs. Parented dialogs normally auto-float in Niri;
             # this also covers Sketcher dimension dialogs explicitly.
             {
               matches = [
                 {
-                  app-id = ''^(FreeCAD|freecad)$'';
+                  app-id = "^(FreeCAD|freecad)$";
                   title = "^(Preferences|Addon [Mm]anager|Insert (Angle|Datum|Diameter|Knot|Length|Radius|Weight)|Change Value)$";
                 }
               ];
@@ -580,72 +667,84 @@ in {
 
             # GNOME utilities float
             {
-              matches = [{app-id = ''^org\.gnome\.Calculator$'';}];
+              matches = [ { app-id = ''^org\.gnome\.Calculator$''; } ];
               open-floating = true;
             }
             {
-              matches = [{app-id = ''^org\.gnome\.FileRoller$'';}];
+              matches = [ { app-id = ''^org\.gnome\.FileRoller$''; } ];
               open-floating = true;
             }
 
             # Pavucontrol
             {
-              matches = [{app-id = ''^pavucontrol$'';}];
+              matches = [ { app-id = "^pavucontrol$"; } ];
               open-floating = true;
-              default-column-width = {fixed = 700;};
-              default-window-height = {fixed = 450;};
+              default-column-width = {
+                fixed = 700;
+              };
+              default-window-height = {
+                fixed = 450;
+              };
             }
 
             # Misc floating
             {
-              matches = [{app-id = ''^SoundWireServer$'';}];
+              matches = [ { app-id = "^SoundWireServer$"; } ];
               open-floating = true;
             }
             {
-              matches = [{app-id = ''^emulator64-crash-service$'';}];
+              matches = [ { app-id = "^emulator64-crash-service$"; } ];
               open-floating = true;
             }
             {
-              matches = [{app-id = ''^qemu-system-x86_64$'';}];
+              matches = [ { app-id = "^qemu-system-x86_64$"; } ];
               open-floating = true;
-              default-column-width = {fixed = 400;};
-              default-window-height = {fixed = 800;};
+              default-column-width = {
+                fixed = 400;
+              };
+              default-window-height = {
+                fixed = 800;
+              };
             }
             {
-              matches = [{app-id = ''^Emulator$'';}];
-              open-floating = true;
-            }
-            {
-              matches = [{title = "^Android Emulator$";}];
-              open-floating = true;
-            }
-            {
-              matches = [{title = "^Emulator$";}];
+              matches = [ { app-id = "^Emulator$"; } ];
               open-floating = true;
             }
             {
-              matches = [{title = "^Extended controls$";}];
+              matches = [ { title = "^Android Emulator$"; } ];
+              open-floating = true;
+            }
+            {
+              matches = [ { title = "^Emulator$"; } ];
+              open-floating = true;
+            }
+            {
+              matches = [ { title = "^Extended controls$"; } ];
               open-floating = true;
             }
 
             # Hide xwaylandvideobridge
             {
-              matches = [{app-id = ''^xwaylandvideobridge$'';}];
+              matches = [ { app-id = "^xwaylandvideobridge$"; } ];
               opacity = 0.0;
               min-width = 1;
               max-width = 1;
               min-height = 1;
               max-height = 1;
-              focus-ring.off = _: {};
-              shadow.off = _: {};
+              focus-ring.off = _: { };
+              shadow.off = _: { };
             }
           ]
           ++ lib.optionals (config.noctaliaVersion == "v5") [
             {
-              matches = [{app-id = ''^dev\.noctalia\.Noctalia$'';}];
+              matches = [ { app-id = ''^dev\.noctalia\.Noctalia$''; } ];
               open-floating = true;
-              default-column-width = {fixed = 1080;};
-              default-window-height = {fixed = 920;};
+              default-column-width = {
+                fixed = 1080;
+              };
+              default-window-height = {
+                fixed = 920;
+              };
             }
           ]
           # Workstation: startup terminal goes to workspace 2
@@ -662,114 +761,135 @@ in {
             }
           ];
 
-        # ── Workspaces ─────────────────────────────────────────────────
-        workspaces =
-          if isWorkstation
-          then {
-            # Workstation: assign workspaces to outputs
-            "1" = {open-on-output = "HDMI-A-1";};
-            "2" = {open-on-output = "DP-1";};
-            "3" = {open-on-output = "HDMI-A-1";};
-            "4" = {open-on-output = "DP-1";};
-            "5" = {open-on-output = "DP-1";};
-            "6" = {open-on-output = "DP-1";};
-            "7" = _: {};
-            "8" = _: {};
-            "9" = _: {};
-            "10" = {open-on-output = "HEADLESS-1";};
-            "mail" = {open-on-output = "DP-1";};
-          }
-          else {
-            # Laptop: plain workspaces
-            "1" = _: {};
-            "2" = _: {};
-            "3" = _: {};
-            "4" = _: {};
-            "5" = _: {};
-            "6" = _: {};
-            "7" = _: {};
-            "8" = _: {};
-            "9" = _: {};
-            "10" = _: {};
-            "mail" = _: {};
-          };
+          # ── Workspaces ─────────────────────────────────────────────────
+          workspaces =
+            if isWorkstation then
+              {
+                # Workstation: assign workspaces to outputs
+                "1" = {
+                  open-on-output = "HDMI-A-1";
+                };
+                "2" = {
+                  open-on-output = "DP-1";
+                };
+                "3" = {
+                  open-on-output = "HDMI-A-1";
+                };
+                "4" = {
+                  open-on-output = "DP-1";
+                };
+                "5" = {
+                  open-on-output = "DP-1";
+                };
+                "6" = {
+                  open-on-output = "DP-1";
+                };
+                "7" = _: { };
+                "8" = _: { };
+                "9" = _: { };
+                "10" = {
+                  open-on-output = "HEADLESS-1";
+                };
+                "mail" = {
+                  open-on-output = "DP-1";
+                };
+              }
+            else
+              {
+                # Laptop: plain workspaces
+                "1" = _: { };
+                "2" = _: { };
+                "3" = _: { };
+                "4" = _: { };
+                "5" = _: { };
+                "6" = _: { };
+                "7" = _: { };
+                "8" = _: { };
+                "9" = _: { };
+                "10" = _: { };
+                "mail" = _: { };
+              };
 
-        # ── Outputs (workstation only) ─────────────────────────────────
-        outputs = lib.optionalAttrs isWorkstation {
-          "HDMI-A-1" = {
-            mode = "1920x1080";
-            scale = 1;
-            transform = "90";
-            position = _: {
-              props = {
-                x = 0;
-                y = 0;
+          # ── Outputs (workstation only) ─────────────────────────────────
+          outputs = lib.optionalAttrs isWorkstation {
+            "HDMI-A-1" = {
+              mode = "1920x1080";
+              scale = 1;
+              transform = "90";
+              position = _: {
+                props = {
+                  x = 0;
+                  y = 0;
+                };
               };
             };
-          };
-          "DP-1" = {
-            mode = "2560x1440";
-            scale = 1;
-            position = _: {
-              props = {
-                x = 1080;
-                y = 0;
+            "DP-1" = {
+              mode = "2560x1440";
+              scale = 1;
+              position = _: {
+                props = {
+                  x = 1080;
+                  y = 0;
+                };
               };
+              focus-at-startup = _: { };
             };
-            focus-at-startup = _: {};
           };
         };
       };
     };
-  };
 
   # ── NixOS Module ─────────────────────────────────────────────────────
   # Enables niri as a session and selects the correct wrapped package.
-  flake.nixosModules.niri = {
-    pkgs,
-    config,
-    ...
-  }: let
-    hostname = config.networking.hostName;
-    niriPkg = mkNiriPackage {
-      inherit pkgs;
-      hostVariant =
-        if hostname == "workstation"
-        then "workstation"
-        else "laptop";
-      noctaliaVersion = config.my.noctalia.version or "v4";
-      wallpaper = ../../../../assets/wallpapers/${config.my.theme.wallpaper};
-    };
-  in {
-    programs.niri = {
-      enable = true;
-      package = niriPkg;
-    };
+  flake.nixosModules.niri =
+    {
+      pkgs,
+      config,
+      ...
+    }:
+    let
+      hostname = config.networking.hostName;
+      niriPkg = mkNiriPackage {
+        inherit pkgs;
+        hostVariant = if hostname == "workstation" then "workstation" else "laptop";
+        noctaliaVersion = config.my.noctalia.version or "v4";
+        wallpaper = ../../../../assets/wallpapers/${config.my.theme.wallpaper};
+      };
+    in
+    {
+      programs.niri = {
+        enable = true;
+        package = niriPkg;
+      };
 
-    security.pam.services.swaylock = {};
-    security.polkit.enable = true;
-    programs.light.enable = true;
+      security.pam.services.swaylock = { };
+      security.polkit.enable = true;
+      programs.light.enable = true;
 
-    home-manager.sharedModules = [self.homeModules.niri];
-  };
+      home-manager.sharedModules = [ self.homeModules.niri ];
+    };
 
   # ── Home Manager Module ──────────────────────────────────────────────
   # Auxiliary packages needed at runtime alongside niri.
   # (brightnessctl, pamixer, playerctl are already in desktopCommon)
-  flake.homeModules.niri = {pkgs, ...}: {
-    home.packages = with pkgs; [
-      ddcutil
-      bluez
-      blueberry
-    ];
-  };
+  flake.homeModules.niri =
+    { pkgs, ... }:
+    {
+      home.packages = with pkgs; [
+        ddcutil
+        bluez
+        blueberry
+      ];
+    };
 
   # ── Wrapped Packages ─────────────────────────────────────────────────
-  perSystem = {pkgs, ...}: {
-    packages.wrappedNiri = mkNiriPackage {inherit pkgs;};
-    packages.wrappedNiri-workstation = mkNiriPackage {
-      inherit pkgs;
-      hostVariant = "workstation";
+  perSystem =
+    { pkgs, ... }:
+    {
+      packages.wrappedNiri = mkNiriPackage { inherit pkgs; };
+      packages.wrappedNiri-workstation = mkNiriPackage {
+        inherit pkgs;
+        hostVariant = "workstation";
+      };
     };
-  };
 }
