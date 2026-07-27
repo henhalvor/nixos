@@ -59,7 +59,7 @@
         self.nixosModules.noctalia
         # self.nixosModules.waybar
         self.nixosModules.hyprlock
-        self.nixosModules.mako
+        # self.nixosModules.mako
         self.nixosModules.rofi
         self.nixosModules.clipman
         self.nixosModules.grimblast

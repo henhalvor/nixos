@@ -54,7 +54,7 @@
         # self.nixosModules.gnome
 
         # Desktop components (Phase 7)
-        self.nixosModules.mako
+        # self.nixosModules.mako
         self.nixosModules.noctalia
         self.nixosModules.swaylock
         self.nixosModules.swayidle

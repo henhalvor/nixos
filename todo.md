@@ -6,7 +6,9 @@
 <!-- - Better screenshot tool (able to select screen area.) -->
 
 - Better image organization in nautilus or other files manager alternative
-- Printer setup
+<!-- - Printer setup -->
+
+- Notification setup??? What is currently being used, Why isnt noctalia notifications working?
 
 <!-- - Remove current screenshot tool, use noctalia built in -->
 <!-- - Remove current clipboard and launcher keybinds use noctalia built in -->
