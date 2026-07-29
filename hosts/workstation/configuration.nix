@@ -171,7 +171,7 @@
       ];
 
       # Default session
-      services.displayManager.defaultSession = "hyprland";
+      services.displayManager.defaultSession = "niri";
 
       # Workstation-specific hardware
       hardware.logitech.wireless.enable = true;
