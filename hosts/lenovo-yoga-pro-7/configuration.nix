@@ -93,6 +93,7 @@
         self.nixosModules.amazonQ
         self.nixosModules.opencode
         self.nixosModules.kdeconnect
+        self.nixosModules.ohMyPi
 
         # Settings & Environment (Phase 9)
         self.nixosModules.git

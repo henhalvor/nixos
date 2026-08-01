@@ -95,6 +95,7 @@
         self.nixosModules.opencode
         self.nixosModules.kdeconnect
         self.nixosModules.codecrafters-cli
+        self.nixosModules.ohMyPi
 
         # Settings & Environment (Phase 9)
         self.nixosModules.git
