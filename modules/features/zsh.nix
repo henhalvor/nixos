@@ -1,14 +1,18 @@
 # Zsh — shell with oh-my-zsh, powerlevel10k, zoxide
 # Source: home/modules/applications/zsh.nix + search-with-zoxide.nix
 # Template D: HM feature + standalone package
-{ self, ... }: {
-  flake.nixosModules.zsh = { ... }: {
+{self, ...}: {
+  flake.nixosModules.zsh = {...}: {
     # Enable zsh at system level so it can be used as login shell
     programs.zsh.enable = true;
-    home-manager.sharedModules = [ self.homeModules.zsh ];
+    home-manager.sharedModules = [self.homeModules.zsh];
   };
 
-  flake.homeModules.zsh = { config, pkgs, ... }: let
+  flake.homeModules.zsh = {
+    config,
+    pkgs,
+    ...
+  }: let
     search-with-zoxide = pkgs.writeShellScriptBin "search-with-zoxide" ''
       #!/bin/bash
       search_with_zoxide() {
@@ -37,13 +41,13 @@
       search_with_zoxide "$@"
     '';
   in {
-    home.packages = [ search-with-zoxide ];
+    home.packages = [search-with-zoxide];
 
     programs.zsh = {
       enable = true;
       oh-my-zsh = {
         enable = true;
-        plugins = [ "git" ];
+        plugins = ["git"];
       };
       shellAliases = {
         v = "nvim";
@@ -86,20 +90,11 @@
         source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme
         [[ -f ~/.p10k.zsh ]] && source ~/.p10k.zsh
 
-        # Secrets loader (reads sops-nix decrypted secrets from /run/secrets/)
+        # Secrets loader (sources only the explicit interactive AI profile).
         load_secrets() {
-          local secret_dir="/run/secrets"
-          [[ -d "$secret_dir" ]] || return 0
-          local files=("$secret_dir"/*(N))
-          (( ''${#files[@]} )) || return 0
-          for f in "''${files[@]}"; do
-            [ -f "$f" ] || continue
-            local name="$(basename "$f")"
-            # Service secrets are not necessarily valid environment variable names.
-            [[ "$name" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || continue
-            local value="$(cat "$f" 2>/dev/null)" || continue
-            export "$name=$value"
-          done
+          local loader="$HOME/.local/secrets/load-secrets.sh"
+          [[ -r "$loader" ]] || return 0
+          source "$loader"
         }
         alias reload_secrets='load_secrets'
 

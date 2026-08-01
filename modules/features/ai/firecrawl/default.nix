@@ -6,8 +6,12 @@
     ...
   }: let
     cfg = config.my.firecrawl;
-    ownerHome = lib.attrByPath ["users" "users" cfg.ownerUser "home"] "/home/${cfg.ownerUser}" config;
-    ownerGroup = lib.attrByPath ["users" "users" cfg.ownerUser "group"] "users" config;
+    ownerHome =
+      lib.attrByPath ["users" "users" cfg.ownerUser "home"]
+      "/home/${cfg.ownerUser}"
+      config;
+    ownerGroup =
+      lib.attrByPath ["users" "users" cfg.ownerUser "group"] "users" config;
   in {
     options.my.firecrawl = {
       ownerUser = lib.mkOption {
@@ -29,15 +33,20 @@
     };
 
     config = {
-      # Expose OPENAI_API_KEY as a readable env file so the firecrawl
-      # docker-compose service (running as root) can source it.
+      sops.secrets.FIRECRAWL_OPENAI_API_KEY = {
+        sopsFile = ../../../../secrets/hp-agent.yaml;
+        owner = "root";
+        mode = "0400";
+      };
+
+      # Root-only service environment; never sourced by an interactive shell.
       sops.templates."firecrawl-env" = {
         owner = "root";
         group = "root";
-        mode = "0644";
+        mode = "0400";
         path = "/etc/firecrawl.env";
         content = ''
-          OPENAI_API_KEY=${config.sops.placeholder.OPENAI_API_KEY}
+          OPENAI_API_KEY=${config.sops.placeholder.FIRECRAWL_OPENAI_API_KEY}
         '';
       };
 

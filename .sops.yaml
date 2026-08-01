@@ -9,6 +9,46 @@ keys:
   - &hp-server age1w05f4s0uqatmctt2vpz786722ux4y30fe89lsw3rzz7xtkuxa9tqefmyzw
 
 creation_rules:
+  - path_regex: secrets/shared-interactive\.yaml$
+    key_groups:
+      - age:
+        - *henhal-lenovo
+        - *henhal-workstation
+        - *lenovo
+        - *workstation
+        - *hp-server
+  - path_regex: secrets/auth\.yaml$
+    key_groups:
+      - age:
+        - *henhal-lenovo
+        - *henhal-workstation
+        - *lenovo
+        - *workstation
+        - *hp-server
+  - path_regex: secrets/hp-agent\.yaml$
+    key_groups:
+      - age:
+        - *henhal-lenovo
+        - *henhal-workstation
+        - *hp-server
+  - path_regex: secrets/nextcloud\.yaml$
+    key_groups:
+      - age:
+        - *henhal-lenovo
+        - *henhal-workstation
+        - *hp-server
+  - path_regex: secrets/hp-backup\.yaml$
+    key_groups:
+      - age:
+        - *henhal-lenovo
+        - *henhal-workstation
+        - *hp-server
+  - path_regex: secrets/workstation-services\.yaml$
+    key_groups:
+      - age:
+        - *henhal-lenovo
+        - *henhal-workstation
+        - *workstation
   - path_regex: secrets/syncthing/workstation\.yaml$
     key_groups:
       - age:
@@ -26,12 +66,4 @@ creation_rules:
       - age:
         - *henhal-lenovo
         - *henhal-workstation
-        - *hp-server
-  - path_regex: secrets/[^/]+\.(yaml|json|env)$
-    key_groups:
-      - age:
-        - *henhal-lenovo
-        - *henhal-workstation
-        - *lenovo
-        - *workstation
         - *hp-server

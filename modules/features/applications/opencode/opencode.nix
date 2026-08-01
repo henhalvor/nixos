@@ -11,11 +11,13 @@
 
     sops.secrets = lib.mkIf (config.networking.hostName == "workstation") {
       opencode-server-username = {
+        sopsFile = ../../../../secrets/workstation-services.yaml;
         key = "OPENCODE_SERVER_USERNAME";
         owner = "henhal";
         mode = "0400";
       };
       opencode-server-password = {
+        sopsFile = ../../../../secrets/workstation-services.yaml;
         key = "OPENCODE_SERVER_PASSWORD";
         owner = "henhal";
         mode = "0400";
@@ -55,10 +57,11 @@
     want = lib.filter (n: !(skip n)) repoNames;
     namesStr = lib.concatStringsSep " " want;
 
-    opencodeWebScript = port: pkgs.writeShellScript "opencode-web-${toString port}" ''
-      export PATH=$HOME/.npm-global/bin:$PATH
-      exec opencode web --hostname 0.0.0.0 --port ${toString port}
-    '';
+    opencodeWebScript = port:
+      pkgs.writeShellScript "opencode-web-${toString port}" ''
+        export PATH=$HOME/.npm-global/bin:$PATH
+        exec opencode web --hostname 0.0.0.0 --port ${toString port}
+      '';
 
     opencodeUpdateScript = pkgs.writeShellScript "opencode-update" ''
       export PATH=$HOME/.npm-global/bin:$PATH
@@ -112,28 +115,29 @@
       done < <(find "$src" -type f -print0)
     '';
 
-    systemd.user.services = {
-      opencode-update = {
-        Unit.Description = "Update opencode (npm)";
-        Service = {
-          Type = "oneshot";
-          ExecStart = opencodeUpdateScript;
+    systemd.user.services =
+      {
+        opencode-update = {
+          Unit.Description = "Update opencode (npm)";
+          Service = {
+            Type = "oneshot";
+            ExecStart = opencodeUpdateScript;
+          };
+          Install.WantedBy = ["default.target"];
         };
-        Install.WantedBy = ["default.target"];
-      };
-    }
-    // lib.optionalAttrs isWorkstation {
-      opencode-web = mkWebService {
-        description = "OpenCode Web UI";
-        port = 4096;
-        workingDirectory = "%h";
-      };
+      }
+      // lib.optionalAttrs isWorkstation {
+        opencode-web = mkWebService {
+          description = "OpenCode Web UI";
+          port = 4096;
+          workingDirectory = "%h";
+        };
 
-      opencode-vault-web = mkWebService {
-        description = "OpenCode Vault Web UI";
-        port = 4097;
-        workingDirectory = "%h/vault";
+        opencode-vault-web = mkWebService {
+          description = "OpenCode Vault Web UI";
+          port = 4097;
+          workingDirectory = "%h/vault";
+        };
       };
-    };
   };
 }
