@@ -6,82 +6,92 @@
   self,
   inputs,
   ...
-}: {
-  flake.nixosModules.secrets = {config, ...}: {
-    imports = [inputs.sops-nix.nixosModules.sops];
+}:
+{
+  flake.nixosModules.secrets =
+    { config, ... }:
+    {
+      imports = [ inputs.sops-nix.nixosModules.sops ];
 
-    sops = {
-      defaultSopsFile = ../../secrets/secrets.yaml;
-      age.sshKeyPaths = ["/etc/ssh/ssh_host_ed25519_key"];
+      sops = {
+        defaultSopsFile = ../../secrets/secrets.yaml;
+        age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
 
-      secrets = {
-        ANTHROPIC_API_KEY = {
-          group = "keys";
-          mode = "0440";
-        };
-        GEMINI_API_KEY = {
-          group = "keys";
-          mode = "0440";
-        };
-        OPENAI_API_KEY = {
-          group = "keys";
-          mode = "0440";
-        };
-        VERTEXAI_PROJECT = {
-          group = "keys";
-          mode = "0440";
-        };
-        VERTEXAI_LOCATION = {
-          group = "keys";
-          mode = "0440";
-        };
-        COPILOT_GITHUB_TOKEN = {
-          group = "keys";
-          mode = "0440";
-        };
-        TELEGRAM_BOT_TOKEN = {
-          group = "keys";
-          mode = "0440";
-        };
-        TELEGRAM_ALLOWED_USERS = {
-          group = "keys";
-          mode = "0440";
-        };
+        secrets = {
+          ANTHROPIC_API_KEY = {
+            group = "keys";
+            mode = "0440";
+          };
+          GEMINI_API_KEY = {
+            group = "keys";
+            mode = "0440";
+          };
+          OPENAI_API_KEY = {
+            group = "keys";
+            mode = "0440";
+          };
+          VERTEXAI_PROJECT = {
+            group = "keys";
+            mode = "0440";
+          };
+          VERTEXAI_LOCATION = {
+            group = "keys";
+            mode = "0440";
+          };
+          COPILOT_GITHUB_TOKEN = {
+            group = "keys";
+            mode = "0440";
+          };
+          TELEGRAM_BOT_TOKEN = {
+            group = "keys";
+            mode = "0440";
+          };
+          TELEGRAM_ALLOWED_USERS = {
+            group = "keys";
+            mode = "0440";
+          };
 
-        OLLAMA_API_KEY = {
-          group = "keys";
-          mode = "0440";
-        };
+          OLLAMA_API_KEY = {
+            group = "keys";
+            mode = "0440";
+          };
 
-        HERMES_WORKSPACE_PASSWORD = {
-          group = "keys";
-          mode = "0440";
+          HERMES_WORKSPACE_PASSWORD = {
+            group = "keys";
+            mode = "0440";
+          };
+
+          HENHAL_PASSWORD_HASH = {
+            neededForUsers = true;
+            mode = "0400";
+          };
         };
       };
+
+      # Inject HM module that sources decrypted secrets into shell env
+      home-manager.sharedModules = [ self.homeModules.secrets ];
     };
 
-    # Inject HM module that sources decrypted secrets into shell env
-    home-manager.sharedModules = [self.homeModules.secrets];
-  };
-
-  flake.homeModules.secrets = {...}: {
-    # Source all sops secrets as env vars in the shell
-    home.file.".local/secrets/load-secrets.sh" = {
-      executable = true;
-      text = ''
-        #!/usr/bin/env bash
-        # Auto-generated: sources sops-nix decrypted secrets from /run/secrets/
-        secret_dir="/run/secrets"
-        [ -d "$secret_dir" ] || exit 0
-        for f in "$secret_dir"/*; do
-          [ -f "$f" ] || continue
-          name="$(basename "$f")"
-          # Service secrets are not necessarily valid environment variable names.
-          [[ "$name" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || continue
-          value="$(cat "$f" 2>/dev/null)" || continue
-          export "$name=$value"
-        done
-      '';
+  flake.homeModules.secrets =
+    { ... }:
+    {
+      # Source all sops secrets as env vars in the shell
+      home.file.".local/secrets/load-secrets.sh" = {
+        executable = true;
+        text = ''
+          #!/usr/bin/env bash
+          # Auto-generated: sources sops-nix decrypted secrets from /run/secrets/
+          secret_dir="/run/secrets"
+          [ -d "$secret_dir" ] || exit 0
+          for f in "$secret_dir"/*; do
+            [ -f "$f" ] || continue
+            name="$(basename "$f")"
+            # Service secrets are not necessarily valid environment variable names.
+            [[ "$name" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || continue
+            value="$(cat "$f" 2>/dev/null)" || continue
+            export "$name=$value"
+          done
+        '';
+      };
     };
-  };
 }

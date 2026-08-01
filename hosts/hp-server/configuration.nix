@@ -23,9 +23,9 @@
       self.nixosModules.pipewire
       self.nixosModules.bluetooth
       self.nixosModules.externalIo
-      self.nixosModules.printer
       self.nixosModules.systemdLogind
       self.nixosModules.virtualization
+      self.nixosModules.docker
       self.nixosModules.syncthing
       self.nixosModules.laptopServer
 
@@ -59,7 +59,6 @@
       self.nixosModules.kitty
       # self.nixosModules.thunderbird
       self.nixosModules.nvim
-      # self.nixosModules.hermesAgent
       self.nixosModules.zsh
       self.nixosModules.tmux
       self.nixosModules.yazi
@@ -119,13 +118,6 @@
       deviceName = "hp-server";
       identitySopsFile = ../../secrets/syncthing/hp-server.yaml;
     };
-
-    # my.hermesAgent = {
-    #   ownerUser = "henhal";
-    #   repoRoot = "/home/henhal/.dotfiles";
-    #   provider = "ollama-cloud";
-    #   model = "minimax-m2.7:cloud";
-    # };
 
     # Hermes Dashboard (exposed via Tailscale Serve on tailnet)
     my.hermesDashboard.enable = true;

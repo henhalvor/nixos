@@ -9,20 +9,11 @@
       enable = true;
       settings = {
         PasswordAuthentication = false;
+        KbdInteractiveAuthentication = false;
         PermitRootLogin = "no";
         PubKeyAuthentication = true;
-        UsePAM = false;
+        UsePAM = true;
         LogLevel = "VERBOSE";
-        Ciphers = [
-          "chacha20-poly1305@openssh.com"
-          "aes128-ctr"
-          "aes192-ctr"
-          "aes256-ctr"
-        ];
-        KexAlgorithms = [
-          "curve25519-sha256@libssh.org"
-          "diffie-hellman-group-exchange-sha256"
-        ];
       };
       extraConfig = ''
         IPQoS lowdelay throughput
@@ -36,7 +27,7 @@
 
     services.fail2ban = {
       enable = true;
-      maxretry = 100;
+      maxretry = 5;
       bantime = "24h";
     };
   };

@@ -19,6 +19,10 @@
 
     programs.dconf.enable = true;
 
+    # Desktop integration for removable media and graphical disk inspection.
+    services.gvfs.enable = true;
+    programs.gnome-disks.enable = true;
+
     fonts.packages = with pkgs; [noto-fonts noto-fonts-color-emoji];
 
     # Common Wayland session variables (compositor sets XDG_CURRENT_DESKTOP)

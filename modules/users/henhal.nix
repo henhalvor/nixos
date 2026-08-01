@@ -1,12 +1,12 @@
 # User: henhal — identity + option values only
 # Features are imported at the host level, not here.
 {...}: {
-  flake.nixosModules.userHenhal = {pkgs, ...}: {
+  flake.nixosModules.userHenhal = {config, pkgs, ...}: {
     users.users.henhal = {
       isNormalUser = true;
       description = "Henrik";
-      initialPassword = "password";
-      extraGroups = ["wheel" "networkmanager" "docker" "video" "input" "i2c" "libvirtd" "keys" "bluetooth"];
+      hashedPasswordFile = config.sops.secrets.HENHAL_PASSWORD_HASH.path;
+      extraGroups = ["wheel" "networkmanager" "video" "input" "libvirtd" "keys" "bluetooth"];
       shell = pkgs.zsh;
       home = "/home/henhal";
 

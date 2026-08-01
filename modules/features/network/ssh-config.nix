@@ -107,15 +107,10 @@
             RequestTTY = "yes";
             RemoteCommand = "tmux new-session -A -s main";
             ExitOnForwardFailure = "yes";
-            Compression = "yes";
             ControlMaster = "auto";
             ControlPath = "~/.ssh/control:%h:%p:%r";
             ControlPersist = "10m";
             IPQoS = "lowdelay throughput";
-            TCPKeepAlive = "yes";
-            Ciphers = "chacha20-poly1305@openssh.com,aes128-ctr,aes192-ctr,aes256-ctr";
-            KexAlgorithms = "curve25519-sha256@libssh.org,diffie-hellman-group-exchange-sha256";
-            MACs = "hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com";
           };
           compression = true;
           serverAliveInterval = 15;

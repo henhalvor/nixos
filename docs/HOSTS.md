@@ -270,12 +270,6 @@ my.desktop.browser = "vivaldi";
 </details>
 
 <details>
-<summary>Remote Development (1)</summary>
-
-- `vscode-server` — VS Code remote server (via `inputs.vscode-server`)
-</details>
-
-<details>
 <summary>Shell & Tools (4)</summary>
 
 - `zsh` — shell
@@ -297,7 +291,6 @@ my.desktop.browser = "vivaldi";
 ```nix
 networking.hostName = "hp-server";
 programs.dconf.enable = true;
-services.vscode-server.enable = true;
 
 # No desktop environment
 # No my.desktop.* settings
