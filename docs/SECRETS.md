@@ -42,16 +42,18 @@ Interactive shells source only the explicit allowlist rendered as
 This loader never scans `/run/secrets/*`. Service credentials therefore do
 not leak into every terminal or child process.
 
-On the HP server, start an interactive Hermes session that needs Telegram with:
+On the HP server, open a maintenance shell as the dedicated Hermes service
+account with:
 
 ```bash
-hermes-secure
+sudo hermes-agent-maintenance
 ```
 
-That wrapper loads only `hermes-agent-env` immediately before executing
-Hermes. Firecrawl and Hermes Workspace receive separate environment files
-with restrictive ownership and mode. Backup and Nextcloud credentials should
-follow the same service-only pattern; do not add them to the shell loader.
+That command loads only `hermes-agent-env`. The supervised gateway receives
+the same file directly from systemd. Firecrawl and Hermes Workspace receive
+separate environment files with restrictive ownership and mode. Backup and
+Nextcloud credentials should follow the same service-only pattern; do not add
+them to the shell loader.
 
 Environment variables are inherited by child processes and may be visible to
 same-user debugging tools. For work that does not need interactive AI keys,

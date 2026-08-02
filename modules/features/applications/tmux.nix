@@ -1,13 +1,19 @@
 # Tmux — terminal multiplexer
 # Source: home/modules/applications/tmux.nix
 # Template B2: HM-only
-{ self, ... }: {
-  flake.nixosModules.tmux = { ... }: {
-    home-manager.sharedModules = [ self.homeModules.tmux ];
+{self, ...}: {
+  flake.nixosModules.tmux = {...}: {
+    home-manager.sharedModules = [self.homeModules.tmux];
   };
 
-  flake.homeModules.tmux = { config, lib, pkgs, ... }: let
-    terminal = config.my.desktop.terminal;
+  flake.homeModules.tmux = {
+    config,
+    lib,
+    pkgs,
+    ...
+  }: let
+    # Headless hosts intentionally do not import desktopCommon.
+    terminal = lib.attrByPath ["my" "desktop" "terminal"] "kitty" config;
     launchTerminal = pkgs.writeShellScriptBin "launch-terminal" ''
       # Auto-attach tmux for local shells (not in SSH)
       if [ -z "$TMUX" ] && [ -z "$SSH_CONNECTION" ]; then
@@ -136,6 +142,6 @@
       '';
     };
 
-    home.packages = [ launchTerminal launchTerminalPlain ];
+    home.packages = [launchTerminal launchTerminalPlain];
   };
 }

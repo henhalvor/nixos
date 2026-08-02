@@ -90,9 +90,10 @@
         after = [
           "network-online.target"
           "tailscaled.service"
+          "hermes-agent.service"
           "hermes-dashboard.service"
         ];
-        wants = ["network-online.target"];
+        wants = ["network-online.target" "hermes-agent.service"];
         wantedBy = ["multi-user.target"];
 
         # Runs as root because tailscale serve needs root to talk to tailscaled.

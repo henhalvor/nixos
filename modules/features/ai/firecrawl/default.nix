@@ -6,96 +6,156 @@
     ...
   }: let
     cfg = config.my.firecrawl;
-    ownerHome =
-      lib.attrByPath ["users" "users" cfg.ownerUser "home"]
-      "/home/${cfg.ownerUser}"
-      config;
-    ownerGroup =
-      lib.attrByPath ["users" "users" cfg.ownerUser "group"] "users" config;
+    composeArgs = [
+      "--env-file"
+      config.sops.templates."firecrawl-env".path
+      "-f"
+      "${cfg.sourceDir}/docker-compose.yaml"
+      "-f"
+      "${cfg.overrideFile}"
+    ];
+    composeArgsShell = lib.escapeShellArgs composeArgs;
   in {
     options.my.firecrawl = {
-      ownerUser = lib.mkOption {
+      sourceDir = lib.mkOption {
         type = lib.types.str;
-        default = "henhal";
-        description = "Interactive workstation user who owns the firecrawl integration.";
-      };
-      repoRoot = lib.mkOption {
-        type = lib.types.str;
-        default = "${ownerHome}/.dotfiles";
-        description = "Absolute path to the dotfiles repository on the host.";
+        default = "/var/lib/firecrawl/source";
+        readOnly = true;
+        description = "Root-owned mutable checkout outside the dotfiles repository.";
       };
 
-      firecrawlComposeFile = lib.mkOption {
-        type = lib.types.path;
-        default = "${cfg.repoRoot}/modules/features/ai/firecrawl/firecrawl-compose.yml";
-        description = "Path to the firecrawl docker-compose.yml file.";
+      overrideFile = lib.mkOption {
+        type = lib.types.str;
+        default = "/var/lib/firecrawl/firecrawl-override.yml";
+        readOnly = true;
+        description = "Installed Compose hardening override.";
+      };
+
+      repository = lib.mkOption {
+        type = lib.types.str;
+        default = "https://github.com/mendableai/firecrawl.git";
+        description = "Firecrawl upstream Git repository.";
+      };
+
+      revision = lib.mkOption {
+        type = lib.types.strMatching "[0-9a-f]{40}";
+        default = "2eab3009253a56360790316fc15d1b95c0c431d2";
+        description = "Auditable upstream Firecrawl revision.";
       };
     };
 
     config = {
+      assertions = [
+        {
+          assertion = config.networking.hostName == "hp-server";
+          message = "Firecrawl may only be enabled on hp-server.";
+        }
+      ];
+
       sops.secrets.FIRECRAWL_OPENAI_API_KEY = {
         sopsFile = ../../../../secrets/hp-agent.yaml;
         owner = "root";
         mode = "0400";
       };
 
-      # Root-only service environment; never sourced by an interactive shell.
       sops.templates."firecrawl-env" = {
         owner = "root";
         group = "root";
         mode = "0400";
-        path = "/etc/firecrawl.env";
         content = ''
           OPENAI_API_KEY=${config.sops.placeholder.FIRECRAWL_OPENAI_API_KEY}
         '';
       };
 
-      # ─── Self-hosted Firecrawl (docker-compose) ───────────────────────────
-      # Clone firecrawl repo during activation so docker build can access sibling
-      # files (compose build contexts are resolved relative to the compose file).
-      # Runs once; subsequent activations skip if already cloned.
-      systemd.services.firecrawl-bootstrap = {
-        description = "Bootstrap Firecrawl repository";
+      systemd.tmpfiles.rules = [
+        "d /var/lib/firecrawl 0700 root root -"
+      ];
 
-        wantedBy = ["multi-user.target"];
+      systemd.services.firecrawl-bootstrap = {
+        description = "Prepare pinned Firecrawl source";
+        before = ["firecrawl.service"];
         after = ["network-online.target"];
         wants = ["network-online.target"];
 
         serviceConfig = {
           Type = "oneshot";
-          RemainAfterExit = true;
           User = "root";
+          Group = "root";
+          UMask = "0077";
         };
 
+        path = [pkgs.coreutils pkgs.git];
         script = ''
-          firecrawl_src='${cfg.repoRoot}/.firecrawl-src'
+          set -euo pipefail
 
-          if [ ! -d "$firecrawl_src/.git" ]; then
-            ${pkgs.git}/bin/git clone --depth 1 https://github.com/mendableai/firecrawl.git "$firecrawl_src"
+          source_dir=${lib.escapeShellArg cfg.sourceDir}
+          install -d -m 0700 -o root -g root /var/lib/firecrawl "$source_dir"
+
+          if [[ ! -d "$source_dir/.git" ]]; then
+            if [[ -n "$(find "$source_dir" -mindepth 1 -maxdepth 1 -print -quit)" ]]; then
+              echo "Refusing to initialize non-empty Firecrawl source directory: $source_dir" >&2
+              exit 1
+            fi
+            git -C "$source_dir" init
+            git -C "$source_dir" remote add origin ${lib.escapeShellArg cfg.repository}
           fi
 
-          cp ${cfg.firecrawlComposeFile} "$firecrawl_src/firecrawl-override.yml"
+          if ! git -C "$source_dir" diff --quiet --ignore-submodules -- ||
+             ! git -C "$source_dir" diff --cached --quiet --ignore-submodules --; then
+            echo "Refusing to replace a locally modified Firecrawl checkout." >&2
+            exit 1
+          fi
+
+          git -C "$source_dir" fetch --depth 1 origin ${lib.escapeShellArg cfg.revision}
+          git -C "$source_dir" checkout --detach ${lib.escapeShellArg cfg.revision}
+          install -m 0400 -o root -g root \
+            ${./firecrawl-compose.yml} ${lib.escapeShellArg cfg.overrideFile}
+
+          deployed_revision=$(git -C "$source_dir" rev-parse HEAD)
+          if [[ "$deployed_revision" != ${lib.escapeShellArg cfg.revision} ]]; then
+            echo "Firecrawl revision mismatch: expected ${cfg.revision}, got $deployed_revision" >&2
+            exit 1
+          fi
+          echo "Prepared Firecrawl revision $deployed_revision"
         '';
       };
+
       systemd.services.firecrawl = {
-        description = "Self-hosted Firecrawl web scraping API";
+        description = "Pinned self-hosted Firecrawl API";
         wantedBy = ["multi-user.target"];
-        after = ["docker.service"];
-        requires = ["docker.service"];
-        serviceConfig.Type = "oneshot";
-        serviceConfig.RemainAfterExit = true;
-        serviceConfig.TimeoutStopSec = 300;
-        serviceConfig.User = "root";
-        serviceConfig.ExecStart =
-          "${pkgs.docker}/bin/docker compose "
-          + "--env-file /etc/firecrawl.env "
-          + "-f '${cfg.repoRoot}/.firecrawl-src/docker-compose.yaml' "
-          + "-f '${cfg.repoRoot}/.firecrawl-src/firecrawl-override.yml' "
-          + "up -d";
-        serviceConfig.ExecStop =
-          "${pkgs.docker}/bin/docker compose "
-          + "-f '${cfg.repoRoot}/.firecrawl-src/docker-compose.yaml' "
-          + "down";
+        requires = ["docker.service" "firecrawl-bootstrap.service"];
+        after = ["docker.service" "firecrawl-bootstrap.service"];
+
+        serviceConfig = {
+          Type = "oneshot";
+          RemainAfterExit = true;
+          User = "root";
+          Group = "root";
+          TimeoutStartSec = 1800;
+          TimeoutStopSec = 300;
+        };
+
+        path = [pkgs.coreutils pkgs.docker pkgs.git pkgs.gnugrep];
+        preStart = ''
+          set -euo pipefail
+
+          if grep -RqsE '/var/run/docker\.sock|/run/docker\.sock' \
+            ${lib.escapeShellArg cfg.sourceDir}/docker-compose.yaml \
+            ${lib.escapeShellArg cfg.overrideFile}; then
+            echo "Refusing to start Firecrawl with the Docker socket mounted." >&2
+            exit 1
+          fi
+
+          docker compose ${composeArgsShell} config --quiet
+        '';
+        script = ''
+          revision=$(git -C ${lib.escapeShellArg cfg.sourceDir} rev-parse HEAD)
+          echo "Starting Firecrawl revision $revision"
+          docker compose ${composeArgsShell} up -d --remove-orphans
+        '';
+        preStop = ''
+          docker compose ${composeArgsShell} down
+        '';
       };
     };
   };

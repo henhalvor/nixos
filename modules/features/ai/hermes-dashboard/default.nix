@@ -15,7 +15,7 @@
 
       ownerUser = lib.mkOption {
         type = lib.types.str;
-        default = "henhal";
+        default = "hermes-agent";
         description = "User whose hermes dashboard to run.";
       };
 
@@ -57,8 +57,8 @@
       systemd.services.hermes-dashboard = {
         description = "Hermes Agent Web Dashboard + Tailscale Serve";
         documentation = ["https://hermes-agent.nousresearch.com/docs/"];
-        after = ["network-online.target" "tailscaled.service" "nginx.service"];
-        wants = ["network-online.target" "nginx.service"];
+        after = ["network-online.target" "tailscaled.service" "nginx.service" "hermes-agent.service"];
+        wants = ["network-online.target" "nginx.service" "hermes-agent.service"];
         wantedBy = ["multi-user.target"];
 
         # Runs as root because tailscale serve needs root to talk to tailscaled.

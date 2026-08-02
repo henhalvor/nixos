@@ -1,21 +1,78 @@
-# Firecrawl compose override — merges with upstream docker-compose.yaml from the
-# cloned repo. This file adds env_file (for secrets) and environment overrides.
-#
-# The systemd service does:
-#   git clone … ~/.dotfiles/.firecrawl-src
-#   docker compose -f .firecrawl-src/docker-compose.yaml -f firecrawl-compose.yml up -d
-#
-# So service definitions come from upstream; this file only overrides env/settings.
+# Security and resource override for the pinned upstream Firecrawl Compose file.
+# No service receives the Docker socket. Only the API is published, on loopback.
+
+x-security: &security
+  cap_drop: !override
+    - ALL
+  security_opt: !override
+    - no-new-privileges:true
+  restart: unless-stopped
+
+x-logging: &bounded-logging
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: "3"
+    compress: "true"
 
 services:
   api:
+    <<: *security
     env_file:
-      - /etc/firecrawl.env
+      - /run/secrets-rendered/firecrawl-env
     environment:
       OPENAI_API_KEY: "${OPENAI_API_KEY}"
-    ports:
-      - "3002:3002"
+    ports: !override
+      - "127.0.0.1:3002:3002"
+    cpus: 1.5
+    mem_limit: 1536m
+    memswap_limit: 1536m
+    pids_limit: 256
+    logging: *bounded-logging
 
   playwright-service:
-    ports:
-      - "3003:3000"
+    <<: *security
+    ports: !override []
+    cpus: 1.0
+    mem_limit: 1280m
+    memswap_limit: 1280m
+    pids_limit: 256
+    logging: *bounded-logging
+
+  redis:
+    <<: *security
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+    cpus: 0.25
+    mem_limit: 256m
+    memswap_limit: 256m
+    pids_limit: 96
+    logging: *bounded-logging
+
+  rabbitmq:
+    <<: *security
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - SETGID
+      - SETUID
+    cpus: 0.5
+    mem_limit: 512m
+    memswap_limit: 512m
+    pids_limit: 160
+    logging: *bounded-logging
+
+  nuq-postgres:
+    <<: *security
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - SETGID
+      - SETUID
+    cpus: 0.5
+    mem_limit: 768m
+    memswap_limit: 768m
+    pids_limit: 160
+    logging: *bounded-logging

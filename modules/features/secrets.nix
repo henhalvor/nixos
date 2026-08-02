@@ -45,17 +45,20 @@
         // lib.optionalAttrs isHpServer {
           TELEGRAM_BOT_TOKEN = {
             sopsFile = hpAgentFile;
-            owner = "henhal";
+            owner = "hermes-agent";
+            group = "hermes-agent";
             mode = "0400";
           };
           TELEGRAM_ALLOWED_USERS = {
             sopsFile = hpAgentFile;
-            owner = "henhal";
+            owner = "hermes-agent";
+            group = "hermes-agent";
             mode = "0400";
           };
           HERMES_OLLAMA_API_KEY = {
             sopsFile = hpAgentFile;
-            owner = "henhal";
+            owner = "hermes-agent";
+            group = "hermes-agent";
             mode = "0400";
           };
         };
@@ -79,7 +82,8 @@
         }
         // lib.optionalAttrs isHpServer {
           hermes-agent-env = {
-            owner = "henhal";
+            owner = "hermes-agent";
+            group = "hermes-agent";
             mode = "0400";
             content = ''
               OLLAMA_API_KEY=${config.sops.placeholder.HERMES_OLLAMA_API_KEY}
@@ -90,16 +94,12 @@
         };
     };
 
-    # Inject the allowlisted interactive loader and HP-only Hermes launcher.
+    # Inject only the allowlisted interactive loader. Hermes uses its dedicated
+    # system service and maintenance command on HP.
     home-manager.sharedModules = [self.homeModules.secrets];
   };
 
-  flake.homeModules.secrets = {
-    lib,
-    osConfig,
-    ...
-  }: let
-    isHpServer = osConfig.networking.hostName == "hp-server";
+  flake.homeModules.secrets = {osConfig, ...}: let
     interactiveEnv = osConfig.sops.templates.interactive-ai-env.path;
   in {
     home.file.".local/secrets/load-secrets.sh" = {
@@ -113,18 +113,6 @@
         set -a
         source ${interactiveEnv}
         set +a
-      '';
-    };
-
-    home.file.".local/bin/hermes-secure" = lib.mkIf isHpServer {
-      executable = true;
-      text = ''
-        #!/usr/bin/env bash
-        set -euo pipefail
-        set -a
-        source ${osConfig.sops.templates.hermes-agent-env.path}
-        set +a
-        exec hermes "$@"
       '';
     };
   };
