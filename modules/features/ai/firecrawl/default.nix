@@ -135,7 +135,7 @@
           TimeoutStopSec = 300;
         };
 
-        path = [pkgs.coreutils pkgs.docker pkgs.git pkgs.gnugrep];
+        path = [pkgs.coreutils pkgs.curl pkgs.docker pkgs.git pkgs.gnugrep];
         preStart = ''
           set -euo pipefail
 
@@ -152,6 +152,20 @@
           revision=$(git -C ${lib.escapeShellArg cfg.sourceDir} rev-parse HEAD)
           echo "Starting Firecrawl revision $revision"
           docker compose ${composeArgsShell} up -d --remove-orphans
+
+          for attempt in $(seq 1 90); do
+            if curl --silent --show-error --output /dev/null \
+              http://127.0.0.1:3002/; then
+              echo "Firecrawl API is accepting HTTP requests"
+              exit 0
+            fi
+            sleep 2
+          done
+
+          echo "Firecrawl API did not become ready within 180 seconds." >&2
+          docker compose ${composeArgsShell} ps >&2
+          docker compose ${composeArgsShell} logs --tail=100 api >&2
+          exit 1
         '';
         preStop = ''
           docker compose ${composeArgsShell} down

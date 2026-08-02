@@ -26,7 +26,7 @@ Maintenance commands:
 systemctl status firecrawl-bootstrap.service firecrawl.service
 journalctl -u firecrawl-bootstrap.service -u firecrawl.service --since today
 sudo docker compose \
-  --env-file /run/secrets-rendered/firecrawl-env \
+  --env-file /run/secrets/rendered/firecrawl-env \
   -f /var/lib/firecrawl/source/docker-compose.yaml \
   -f /var/lib/firecrawl/firecrawl-override.yml \
   ps
