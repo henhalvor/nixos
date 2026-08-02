@@ -45,6 +45,14 @@
     system.stateVersion = "25.05";
     systemd.defaultUnit = "multi-user.target";
 
+    # Permit the administrative SSH user to import locally-built closures when
+    # deploying this host remotely.  henhal is already a wheel user.
+    nix.settings.trusted-users = ["henhal"];
+
+    # Accept Kitty's TERM value in interactive SSH sessions without installing
+    # the graphical terminal emulator on this headless host.
+    environment.systemPackages = [pkgs.kitty.terminfo];
+
     my.syncthing = {
       user = "henhal";
       deviceName = "hp-server";
