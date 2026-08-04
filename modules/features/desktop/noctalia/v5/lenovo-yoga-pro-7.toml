@@ -6,7 +6,7 @@
 setup_wizard_enabled = false
 launch_apps_as_systemd_services = true
 telemetry_enabled = false
-polkit_agent = false
+polkit_agent = true
 niri_overview_type_to_launch_enabled = false
 
 [theme]
