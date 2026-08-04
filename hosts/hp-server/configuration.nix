@@ -78,9 +78,16 @@
         authHost = "auth.henhal.net";
       };
 
-      # my.opencloudConsistentSource.enable = true;
-      # my.githubMirror.enable = true;
-      # my.hpBackup.enable = true;
+      my.opencloudConsistentSource.enable = true;
+      my.githubMirror.enable = true;
+      my.hpBackup = {
+        enable = true;
+        extraPaths = [
+          "/home/henhal/Documents"
+          # "/home/henhal/Pictures"
+          # "/home/henhal/Music"
+        ];
+      };
 
       my.opencloudTunnel.tunnelId = "d5383138-72c4-4879-924a-319edc4c20c6";
 
