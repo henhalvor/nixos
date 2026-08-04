@@ -74,12 +74,13 @@
         set -o pipefail
         stage=/run/opencloud-backup/current
         marker=/run/opencloud-backup/stopped-by-backup
+        restart_opencloud=0
+        [[ -e "$marker" ]] && restart_opencloud=1
         if mountpoint -q "$stage/state"; then
           umount "$stage/state" || true
         fi
         rm -rf /run/opencloud-backup
-        if [[ -e "$marker" ]]; then
-          rm -f "$marker"
+        if (( restart_opencloud )); then
           systemctl start opencloud.service || true
         fi
       '';
