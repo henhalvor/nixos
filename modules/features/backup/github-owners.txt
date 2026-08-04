@@ -1,0 +1,5 @@
+# One GitHub login or organisation owner per line.
+#
+# Add only owners whose repositories the dedicated read-only mirror token can
+# list.  The mirror service refuses to start with an empty allowlist.
+henhalvor

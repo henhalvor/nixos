@@ -1,5 +1,39 @@
 # Secrets management
 
+## Troubleshooting
+
+### Editing an HP-only profile on HP
+
+Personal age identities normally live on workstation or Lenovo in
+`~/.config/sops/age/keys.txt`. HP-only profiles also include an age recipient
+derived from HP's SSH host key, so `sops-nix` can decrypt them at activation.
+The recipient is native age format (`age1...`), not an SSH recipient
+(`ssh-ed25519 ...`), so pointing `SOPS_AGE_SSH_PRIVATE_KEY_FILE` directly at
+`/etc/ssh/ssh_host_ed25519_key` does not work for these files.
+
+To edit such a profile directly on HP, derive the native age identity in
+memory and pass it to SOPS. The SSH host private key is root-only, so use:
+
+```bash
+nix-shell -p sops ssh-to-age
+
+SOPS_BIN="$(command -v sops)"
+SSH_TO_AGE_BIN="$(command -v ssh-to-age)"
+
+sudo env \
+  SOPS_AGE_KEY_CMD="$SSH_TO_AGE_BIN -private-key -i /etc/ssh/ssh_host_ed25519_key" \
+  "$SOPS_BIN" secrets/opencloud.yaml
+```
+
+`ssh-to-age` writes the derived private age identity only to SOPS through a
+pipe: it is neither displayed nor saved to disk. Do not generate a new age key
+to recover an existing file; it cannot decrypt the file's current recipients.
+After editing as root, verify that Git-tracked files remain user-owned:
+
+```bash
+stat -c '%U:%G %a %n' secrets/opencloud.yaml
+```
+
 This repository uses `sops-nix` and age. Encrypted secret files are safe to
 commit, but access is deliberately split by purpose and host. A machine can
 only decrypt profiles whose age recipient list includes that machine's SSH
@@ -14,7 +48,7 @@ host key.
 | `secrets/hp-agent.yaml` | HP server only | Hermes Telegram, agent-only provider, Firecrawl, and Workspace credentials |
 | `secrets/workstation-services.yaml` | workstation only | OpenCode server credentials |
 | `secrets/syncthing/<host>.yaml` | matching host only | Host-specific Syncthing identity |
-| `secrets/nextcloud.yaml` | HP server only, when added | Nextcloud service credentials |
+| `secrets/opencloud.yaml` | HP server only, when added | OpenCloud, Keycloak, and Cloudflare Tunnel credentials |
 | `secrets/hp-backup.yaml` | HP server root services only, when added | Restic/S3 backup credentials |
 
 The last two paths already have recipient rules in `.sops.yaml`; create them
@@ -52,7 +86,7 @@ sudo hermes-agent-maintenance
 That command loads only `hermes-agent-env`. The supervised gateway receives
 the same file directly from systemd. Firecrawl and Hermes Workspace receive
 separate environment files with restrictive ownership and mode. Backup and
-Nextcloud credentials should follow the same service-only pattern; do not add
+OpenCloud credentials should follow the same service-only pattern; do not add
 them to the shell loader.
 
 Environment variables are inherited by child processes and may be visible to
@@ -77,7 +111,7 @@ To add a new profile, first add an exact `path_regex` and its minimal recipient
 set to `.sops.yaml`, then create it:
 
 ```bash
-sops secrets/nextcloud.yaml
+sops secrets/opencloud.yaml
 ```
 
 Never place plaintext values in Nix expressions, shell scripts, command-line

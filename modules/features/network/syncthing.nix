@@ -77,6 +77,12 @@
             "hp-server"
           ];
           ignorePerms = true;
+          # Per-device pane/window layout is not vault content and creates
+          # avoidable conflict copies when synchronized across devices.
+          ignorePatterns = [
+            ".obsidian/workspace.json"
+            ".obsidian/workspace-mobile.json"
+          ];
         };
         # screenshots = {
         #   path = "Pictures/Screenshots";

@@ -31,7 +31,7 @@ creation_rules:
         - *henhal-lenovo
         - *henhal-workstation
         - *hp-server
-  - path_regex: secrets/nextcloud\.yaml$
+  - path_regex: secrets/opencloud\.yaml$
     key_groups:
       - age:
         - *henhal-lenovo
