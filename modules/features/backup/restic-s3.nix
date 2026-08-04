@@ -90,7 +90,10 @@
             exit 0
           }
           exec 9>${sourceLock}; flock -x 9 || fail "could not acquire source lock"
-          runuser -u postgres -- ${pkgs.postgresql}/bin/pg_dump --format=custom --file="$candidate/keycloak.pg.dump" keycloak \
+          # The root-owned staging directory must remain private.  Have
+          # postgres read the database but let this root shell create the
+          # resulting dump file.
+          runuser -u postgres -- ${pkgs.postgresql}/bin/pg_dump --format=custom keycloak >"$candidate/keycloak.pg.dump" \
             || fail "Keycloak PostgreSQL logical export failed"
           ${pkgs.postgresql}/bin/pg_restore --list "$candidate/keycloak.pg.dump" >/dev/null \
             || fail "Keycloak PostgreSQL export validation failed"
@@ -132,6 +135,7 @@
           coreutils
           curl
           jq
+          libxml2
           rsync
           util-linux
         ];
@@ -154,8 +158,12 @@
             mv -f "$status.tmp" "$status"
             exit 0
           }
-          apiKey="$(sed -n 's:.*<apikey>\\(.*\\)</apikey>.*:\\1:p' "$configFile" | head -n1)"
-          [[ -n "$apiKey" && -d "$source" ]] || fail "Syncthing vault source or API credential is unavailable"
+          [[ -d "$source" ]] || fail "Syncthing Vault directory is missing: $source"
+          [[ -r "$configFile" ]] || fail "Syncthing configuration is unavailable: $configFile"
+          if ! apiKey="$(${pkgs.libxml2}/bin/xmllint --xpath 'string(configuration/gui/apikey)' "$configFile" 2>/dev/null)"; then
+            fail "could not parse the Syncthing API key from $configFile"
+          fi
+          [[ -n "$apiKey" ]] || fail "Syncthing API key is unavailable in $configFile"
           exec 9>${sourceLock}; flock -x 9 || fail "could not acquire source lock"
           # Run the scan/status check twice; the value itself is intentionally
           # unused, so use the conventional underscore variable.

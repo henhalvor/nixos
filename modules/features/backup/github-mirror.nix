@@ -9,7 +9,7 @@
     cfg = config.my.githubMirror;
     mirrorScript = pkgs.writeShellApplication {
       name = "github-mirror-refresh";
-      runtimeInputs = with pkgs; [coreutils findutils git git-lfs gh jq util-linux];
+      runtimeInputs = with pkgs; [coreutils findutils gawk git git-lfs gh jq util-linux];
       text = ''
         set -o pipefail
 
