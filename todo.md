@@ -14,8 +14,9 @@
 
 <!-- - Notification setup??? What is currently being used, Why isnt noctalia notifications working? -->
 
-<!-- - Remove current screenshot tool, use noctalia built in -->
-<!-- - Remove current clipboard and launcher keybinds use noctalia built in -->
+- Only-office instead of libre office
+  <!-- - Remove current screenshot tool, use noctalia built in -->
+  <!-- - Remove current clipboard and launcher keybinds use noctalia built in -->
 
 PHASE 4 in security and backup implementation plan
 
