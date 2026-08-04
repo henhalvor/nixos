@@ -80,6 +80,7 @@
         self.nixosModules.googleChrome
         self.nixosModules.microsoftEdge
         self.nixosModules.obsidian
+        self.nixosModules.opencloudDesktop
         self.nixosModules.spotify
         self.nixosModules.gimp
         self.nixosModules.gthumb
