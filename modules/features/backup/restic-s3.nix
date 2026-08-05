@@ -12,10 +12,17 @@
       cfg = config.my.hpBackup;
       sourceLock = "/var/lib/hp-backup/source.lock";
       statusDir = "/var/lib/restic-status";
+      # Built-in Restic sources. Do not repeat these in `my.hpBackup.extraPaths`:
+      # - /run/opencloud-backup/current: complete stopped-service OpenCloud unit
+      # - /var/lib/opencloud-identity-backup/latest: Keycloak/OpenLDAP export
+      # - /var/lib/{vault,shared}-backup/latest: staged Syncthing directories
+      # - /var/lib/github-mirrors/current and /var/lib/hermes-backup/latest
+      # `extraPaths` is only for ordinary HP-local files that can be read live.
       backupPaths = [
         "/run/opencloud-backup/current"
         "/var/lib/opencloud-identity-backup/latest"
         "/var/lib/vault-backup/latest"
+        "/var/lib/shared-backup/latest"
         "/var/lib/github-mirrors/current"
         "/var/lib/hermes-backup/latest"
       ] ++ cfg.extraPaths;
@@ -31,7 +38,7 @@
           now="$(date +%s)"
           result=healthy
           details='[]'
-          for name in opencloud-source opencloud-identity vault hermes github-mirror; do
+          for name in opencloud-source opencloud-identity vault shared hermes github-mirror; do
             if [[ "$name" == github-mirror ]]; then
               file=/var/lib/github-mirrors/status.json
             else
@@ -129,71 +136,86 @@
           cp "$root/latest/manifest.json" "$status"
         '';
       };
-      vaultStage = pkgs.writeShellApplication {
-        name = "syncthing-vault-backup";
-        runtimeInputs = with pkgs; [
-          coreutils
-          curl
-          jq
-          libxml2
-          rsync
-          util-linux
-        ];
-        text = ''
-          set -o pipefail
-          root=/var/lib/vault-backup
-          status=${statusDir}/vault.json
-          source=/home/henhal/Vault
-          configFile=/home/henhal/.config/syncthing/config.xml
-          syncthing_stopped=0
-          cleanup() {
-            if (( syncthing_stopped )); then
-              systemctl start syncthing.service || true
+      mkSyncthingStage = {
+        name,
+        folderId,
+        source,
+      }:
+        pkgs.writeShellApplication {
+          name = "syncthing-${name}-backup";
+          runtimeInputs = with pkgs; [
+            coreutils
+            curl
+            jq
+            libxml2
+            rsync
+            util-linux
+          ];
+          text = ''
+            set -o pipefail
+            root=/var/lib/${name}-backup
+            status=${statusDir}/${name}.json
+            source=${lib.escapeShellArg source}
+            configFile=/home/henhal/.config/syncthing/config.xml
+            syncthing_stopped=0
+            cleanup() {
+              if (( syncthing_stopped )); then
+                systemctl start syncthing.service || true
+              fi
+            }
+            trap cleanup EXIT
+            fail() {
+              jq -n --arg timestamp "$(date --iso-8601=seconds)" --arg detail "$1" \
+                '{timestamp: $timestamp, result: "degraded", detail: $detail}' >"$status.tmp"
+              mv -f "$status.tmp" "$status"
+              exit 0
+            }
+            [[ -d "$source" ]] || fail "Syncthing ${name} directory is missing: $source"
+            [[ -r "$configFile" ]] || fail "Syncthing configuration is unavailable: $configFile"
+            if ! apiKey="$(${pkgs.libxml2}/bin/xmllint --xpath 'string(configuration/gui/apikey)' "$configFile" 2>/dev/null)"; then
+              fail "could not parse the Syncthing API key from $configFile"
             fi
-          }
-          trap cleanup EXIT
-          fail() {
-            jq -n --arg timestamp "$(date --iso-8601=seconds)" --arg detail "$1" \
-              '{timestamp: $timestamp, result: "degraded", detail: $detail}' >"$status.tmp"
-            mv -f "$status.tmp" "$status"
-            exit 0
-          }
-          [[ -d "$source" ]] || fail "Syncthing Vault directory is missing: $source"
-          [[ -r "$configFile" ]] || fail "Syncthing configuration is unavailable: $configFile"
-          if ! apiKey="$(${pkgs.libxml2}/bin/xmllint --xpath 'string(configuration/gui/apikey)' "$configFile" 2>/dev/null)"; then
-            fail "could not parse the Syncthing API key from $configFile"
-          fi
-          [[ -n "$apiKey" ]] || fail "Syncthing API key is unavailable in $configFile"
-          exec 9>${sourceLock}; flock -x 9 || fail "could not acquire source lock"
-          # Run the scan/status check twice; the value itself is intentionally
-          # unused, so use the conventional underscore variable.
-          for _ in 1 2; do
-            curl --fail --silent --show-error -X POST -H "X-API-Key: $apiKey" \
-              'http://127.0.0.1:8384/rest/db/scan?folder=vault' >/dev/null || fail "could not request Syncthing vault scan"
-            state="$(curl --fail --silent --show-error -H "X-API-Key: $apiKey" \
-              'http://127.0.0.1:8384/rest/db/status?folder=vault')" || fail "could not read Syncthing vault status"
-            jq -e '.state == "idle" and .needTotalItems == 0 and .pullErrors == 0' <<<"$state" >/dev/null \
-              || fail "Syncthing vault is not idle and healthy"
-            sleep 2
-          done
-          candidate="$(mktemp -d "$root/candidate.XXXXXX")"
-          if ! systemctl stop syncthing.service || systemctl is-active --quiet syncthing.service; then
-            rm -rf "$candidate"; fail "could not stop Syncthing for the vault consistency boundary"
-          fi
-          syncthing_stopped=1
-          if ! rsync -aHAX --numeric-ids "$source/" "$candidate/contents/"; then
-            rm -rf "$candidate"; fail "vault copy failed"
-          fi
-          if ! systemctl start syncthing.service; then
-            rm -rf "$candidate"; fail "could not restart Syncthing after vault staging"
-          fi
-          syncthing_stopped=0
-          jq -n --arg timestamp "$(date --iso-8601=seconds)" --arg source "$source" \
-            '{timestamp: $timestamp, result: "healthy", source: $source, method: "stopped-service rsync -aHAX"}' >"$candidate/manifest.json"
-          rm -rf "$root/previous"; [[ ! -d "$root/latest" ]] || mv "$root/latest" "$root/previous"
-          mv "$candidate" "$root/latest"
-          cp "$root/latest/manifest.json" "$status"
-        '';
+            [[ -n "$apiKey" ]] || fail "Syncthing API key is unavailable in $configFile"
+            exec 9>${sourceLock}; flock -x 9 || fail "could not acquire source lock"
+            # Scan and verify twice so a folder that is actively changing is
+            # retained from the previous validated stage instead of copied live.
+            for _ in 1 2; do
+              curl --fail --silent --show-error -X POST -H "X-API-Key: $apiKey" \
+                'http://127.0.0.1:8384/rest/db/scan?folder=${folderId}' >/dev/null || fail "could not request Syncthing ${name} scan"
+              state="$(curl --fail --silent --show-error -H "X-API-Key: $apiKey" \
+                'http://127.0.0.1:8384/rest/db/status?folder=${folderId}')" || fail "could not read Syncthing ${name} status"
+              jq -e '.state == "idle" and .needTotalItems == 0 and .pullErrors == 0' <<<"$state" >/dev/null \
+                || fail "Syncthing ${name} is not idle and healthy"
+              sleep 2
+            done
+            candidate="$(mktemp -d "$root/candidate.XXXXXX")"
+            if ! systemctl stop syncthing.service || systemctl is-active --quiet syncthing.service; then
+              rm -rf "$candidate"; fail "could not stop Syncthing for the ${name} consistency boundary"
+            fi
+            syncthing_stopped=1
+            if ! rsync -aHAX --numeric-ids "$source/" "$candidate/contents/"; then
+              rm -rf "$candidate"; fail "Syncthing ${name} copy failed"
+            fi
+            if ! systemctl start syncthing.service; then
+              rm -rf "$candidate"; fail "could not restart Syncthing after ${name} staging"
+            fi
+            syncthing_stopped=0
+            jq -n --arg timestamp "$(date --iso-8601=seconds)" --arg source "$source" \
+              '{timestamp: $timestamp, result: "healthy", source: $source, method: "stopped-service rsync -aHAX"}' >"$candidate/manifest.json"
+            rm -rf "$root/previous"; [[ ! -d "$root/latest" ]] || mv "$root/latest" "$root/previous"
+            mv "$candidate" "$root/latest"
+            cp "$root/latest/manifest.json" "$status"
+          '';
+        };
+      vaultStage = mkSyncthingStage {
+        name = "vault";
+        folderId = "vault";
+        source = "/home/henhal/Vault";
+      };
+      sharedStage = mkSyncthingStage {
+        name = "shared";
+        folderId = "shared";
+        source = "/home/henhal/Shared";
       };
       hermesExport = pkgs.writeShellApplication {
         name = "hermes-backup-export";
@@ -255,7 +277,7 @@
             "/home/henhal/Documents"
             "/home/henhal/Pictures"
           ];
-          description = "Additional absolute paths for Restic to back up. Use only ordinary files that can be read live; application data needing a consistency boundary has a dedicated staged source.";
+          description = "Additional absolute paths for Restic to back up. Use only ordinary HP-local files that can be read live. Do not add OpenCloud, Vault, Shared, identity, GitHub mirror, or Hermes paths: those are built-in staged/exported sources.";
         };
         hermesExportCommand = lib.mkOption {
           type = lib.types.nullOr lib.types.lines;
@@ -340,6 +362,16 @@
             user = "root";
             group = "root";
           };
+          "/var/lib/shared-backup".d = {
+            mode = "0700";
+            user = "root";
+            group = "root";
+          };
+          "/var/lib/shared-backup/latest".d = {
+            mode = "0700";
+            user = "root";
+            group = "root";
+          };
           "/var/lib/hermes-backup".d = {
             mode = "0700";
             user = "root";
@@ -363,6 +395,12 @@
           after = [ "syncthing.service" ];
           serviceConfig.Type = "oneshot";
           script = "exec ${vaultStage}/bin/syncthing-vault-backup";
+        };
+        systemd.services.syncthing-shared-backup = {
+          description = "Create a consistent staged HP Syncthing Shared source";
+          after = [ "syncthing.service" "syncthing-vault-backup.service" ];
+          serviceConfig.Type = "oneshot";
+          script = "exec ${sharedStage}/bin/syncthing-shared-backup";
         };
         systemd.services.hermes-export = {
           description = "Create a validated Hermes export when configured";
@@ -395,12 +433,14 @@
             "github-mirror.service"
             "opencloud-identity-export.service"
             "syncthing-vault-backup.service"
+            "syncthing-shared-backup.service"
             "hermes-export.service"
           ];
           wants = [
             "github-mirror.service"
             "opencloud-identity-export.service"
             "syncthing-vault-backup.service"
+            "syncthing-shared-backup.service"
             "hermes-export.service"
           ];
           unitConfig = {

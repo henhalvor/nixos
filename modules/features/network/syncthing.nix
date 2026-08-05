@@ -93,16 +93,17 @@
         #   ];
         #   ignorePerms = true;
         # };
-        # shared = {
-        #   path = "Shared";
-        #   participants = [
-        #     "workstation"
-        #     "yoga-pro-7"
-        #     "android-phone"
-        #     "android-tablet"
-        #   ];
-        #   ignorePerms = true;
-        # };
+        shared = {
+          path = "Shared";
+          participants = [
+            "workstation"
+            "yoga-pro-7"
+            "android-phone"
+            "android-tablet"
+            "hp-server"
+          ];
+          ignorePerms = true;
+        };
       };
 
       localFolders = lib.filterAttrs (

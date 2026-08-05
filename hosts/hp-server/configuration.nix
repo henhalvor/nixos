@@ -82,10 +82,18 @@
       my.githubMirror.enable = true;
       my.hpBackup = {
         enable = true;
+        # Built-in staged/exported sources must not be repeated here:
+        # /run/opencloud-backup/current, /var/lib/opencloud-identity-backup,
+        # /var/lib/{vault,shared}-backup, /var/lib/github-mirrors, and
+        # /var/lib/hermes-backup. This list is only ordinary HP-local files
+        # that may be read live by Restic.
         extraPaths = [
           "/home/henhal/Documents"
-          # "/home/henhal/Pictures"
-          # "/home/henhal/Music"
+          "/home/henhal/Pictures"
+          "/home/henhal/Music"
+          "/home/henhal/Downloads"
+          "/home/henhal/Video"
+          "/home/henhal/Desktop"
         ];
       };
 
