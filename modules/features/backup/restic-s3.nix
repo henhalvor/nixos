@@ -380,9 +380,8 @@
           paths = [ "/run/opencloud-backup/current" ];
           pruneOpts = [ ];
           timerConfig = {
-            OnCalendar = "*-*-* 03,15:00:00";
+            OnCalendar = "*-*-* 03:00:00";
             Persistent = true;
-            RandomizedDelaySec = "1h";
           };
           backupPrepareCommand = ''
             ${config.my.opencloudConsistentSource.prepare}/bin/opencloud-backup-prepare
