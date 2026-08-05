@@ -58,13 +58,54 @@
       system.stateVersion = "25.05";
       systemd.defaultUnit = "multi-user.target";
 
-      # Permit the administrative SSH user to import locally-built closures when
-      # deploying this host remotely.  henhal is already a wheel user.
-      nix.settings.trusted-users = [ "henhal" ];
+      # Keep agent-triggered builds from exhausting this 8 GiB host.
+      nix.settings = {
+        # Permit the administrative SSH user to import locally-built closures
+        # when deploying this host remotely. henhal is already a wheel user.
+        trusted-users = [ "henhal" ];
 
-      # Accept Kitty's TERM value in interactive SSH sessions without installing
-      # the graphical terminal emulator on this headless host.
-      environment.systemPackages = [ pkgs.kitty.terminfo ];
+        # Avoid multiple large builds competing for the host's limited memory.
+        "max-jobs" = 1;
+        cores = 1;
+      };
+
+      # Compressed in-memory swap gives the kernel room to recover from short
+      # memory spikes without touching disk or requiring a disk swap device.
+      zramSwap = {
+        enable = true;
+        memoryPercent = 50;
+        algorithm = "zstd";
+      };
+
+      # Interactive agent/build jobs must be launched with `agent-run` below so
+      # they cannot consume the whole machine. Keep SSH, Tailscale, and system
+      # services outside this slice.
+      systemd.user.slices.agent-build = {
+        sliceConfig = {
+          MemoryHigh = "2G";
+          MemoryMax = "3G";
+          MemorySwapMax = "2G";
+          ManagedOOMMemoryPressure = "kill";
+          ManagedOOMMemoryPressureLimit = "80%";
+        };
+      };
+
+      environment.systemPackages = [
+        pkgs.kitty.terminfo
+        (pkgs.writeShellApplication {
+          name = "agent-run";
+          runtimeInputs = [ pkgs.systemd ];
+          text = ''
+            exec systemd-run --user --scope \
+              --slice=agent-build.slice \
+              "$@"
+          '';
+        })
+      ];
+
+      # The gateway already has a 2G hard limit in hermes-runtime.nix; reduce
+      # it here for this 8 GiB host while leaving room for core services.
+      my.hermesRuntime.memoryMax = "1536M";
 
       my.syncthing = {
         user = "henhal";
