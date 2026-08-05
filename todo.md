@@ -17,8 +17,16 @@
 - Only-office instead of libre office
   <!-- - Remove current screenshot tool, use noctalia built in -->
   <!-- - Remove current clipboard and launcher keybinds use noctalia built in -->
+  - hermes agent backup export && hermes agent update
 
-PHASE 4 in security and backup implementation plan
+<!-- PHASE 4 in security and backup implementation plan -->
+
+<!-- PHASE 6 in implementation plan -->
+
+confirm github repo backup is working
+
+- Sops breakglass key externaly stored
+- Bitwarden password manager
 
 <!-- - Floating email window -->
 
