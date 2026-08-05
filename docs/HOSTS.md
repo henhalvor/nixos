@@ -260,12 +260,13 @@ my.desktop.browser = "vivaldi";
 </details>
 
 <details>
-<summary>Server Features (5)</summary>
+<summary>Server Features (6)</summary>
 
 - `serverBase` — fail2ban, auto-upgrades, GC
 - `sshServer` — OpenSSH
 - `tailscale` — VPN
-- `serverMonitoring` — Prometheus + Grafana
+- `monitoringExporter` — host metrics and selected journal forwarding
+- `monitoringHub` — Prometheus, Alertmanager, Grafana, Loki, probes, and dashboards
 - `laptopServer` — lid-close ignore, wake-on-LAN
 </details>
 

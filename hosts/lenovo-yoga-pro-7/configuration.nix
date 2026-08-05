@@ -42,6 +42,7 @@
         # Server/connectivity (Phase 4)
         self.nixosModules.sshServer
         self.nixosModules.tailscale
+        self.nixosModules.monitoringExporter
 
         # Desktop foundation (Phase 5)
         self.nixosModules.desktopCommon
@@ -127,6 +128,16 @@
         user = "henhal";
         deviceName = "yoga-pro-7";
         identitySopsFile = ../../secrets/syncthing/lenovo-yoga-pro-7.yaml;
+      };
+
+      my.monitoring.exporter = {
+        enable = true;
+        hubHost = "hp-server-1.tail37a5eb.ts.net";
+        enableBattery = true;
+        enableSyncthingMetrics = true;
+        extraUnits = [
+          "syncthing.service"
+        ];
       };
 
       # Default session

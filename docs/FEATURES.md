@@ -48,7 +48,8 @@ These are imported by every host.
 | `sshServer` | `ssh-server.nix` | NixOS-only | OpenSSH server (hardened) |
 | `tailscale` | `tailscale.nix` | NixOS-only | Tailscale VPN |
 | `cockpit` | `cockpit.nix` | NixOS-only | Cockpit web management |
-| `serverMonitoring` | `server-monitoring.nix` | NixOS-only | Prometheus + Grafana + node-exporter |
+| `monitoringExporter` | `monitoring/exporter.nix` | NixOS-only | Tailscale-only Node Exporter, bounded journal shipping, and custom health metrics |
+| `monitoringHub` | `monitoring/hub.nix` | NixOS-only | HP Prometheus, Alertmanager, Grafana, Loki, Blackbox probes, dashboards, and optional dead-man heartbeats |
 | `laptopServer` | `laptop-server.nix` | NixOS-only | Lid-close ignore, wake-on-LAN |
 | `sunshine` | `sunshine.nix` | NixOS-only | Sunshine game streaming with `options.my.sunshine.user` |
 

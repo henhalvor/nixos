@@ -1,0 +1,103 @@
+groups:
+  - name: monitoring-availability
+    rules:
+      - alert: HpServerExporterUnavailable
+        expr: up{job="node",host="hp-server"} == 0
+        for: 5m
+        labels:
+          severity: warning
+          component: monitoring
+        annotations:
+          summary: "HP server node exporter is unavailable"
+          description: "Prometheus has been unable to scrape the HP server node exporter for 5 minutes. Check the monitoring hub and the local exporter."
+          runbook_url: "https://github.com/henhalvor/dotfiles/blob/main/docs/runbooks/monitoring-alerts.md#hp-server-or-monitoring-hub-unavailable"
+      - alert: HpServerExporterUnavailableCritical
+        expr: up{job="node",host="hp-server"} == 0
+        for: 15m
+        labels:
+          severity: critical
+          component: monitoring
+        annotations:
+          summary: "HP server monitoring is unavailable"
+          description: "The HP server exporter has been absent for 15 minutes. The monitoring hub or HP itself may be down; verify the independent heartbeat too."
+          runbook_url: "https://github.com/henhalvor/dotfiles/blob/main/docs/runbooks/monitoring-alerts.md#hp-server-or-monitoring-hub-unavailable"
+      - alert: WorkstationOfflineForLongTime
+        expr: up{job="node",host="workstation"} == 0
+        for: 14d
+        labels:
+          severity: warning
+          component: workstation
+        annotations:
+          summary: "Workstation has been offline for 14 days"
+          description: "The workstation being offline briefly is expected, but it has not been scraped for 14 days. Confirm that it is reachable on Tailscale when needed."
+          runbook_url: "https://github.com/henhalvor/dotfiles/blob/main/docs/runbooks/monitoring-alerts.md#remote-host-offline"
+      - alert: LenovoOfflineForLongTime
+        expr: up{job="node",host="lenovo-yoga-pro-7"} == 0
+        for: 30d
+        labels:
+          severity: warning
+          component: lenovo-yoga-pro-7
+        annotations:
+          summary: "Lenovo has been offline for 30 days"
+          description: "The laptop being offline is expected, but it has not been scraped for 30 days. Confirm its Tailscale and exporter configuration when it is next online."
+          runbook_url: "https://github.com/henhalvor/dotfiles/blob/main/docs/runbooks/monitoring-alerts.md#remote-host-offline"
+      - alert: PublicEndpointUnavailable
+        expr: probe_success{job="blackbox-http",instance!="https://cloud.henhal.net"} == 0
+        for: 5m
+        labels:
+          severity: warning
+          component: public-endpoint
+        annotations:
+          summary: "Public endpoint {{ $labels.instance }} is unavailable"
+          description: "The blackbox HTTP probe has failed for 5 minutes. Check Cloudflare Tunnel, the local origin service, and Cloudflare status."
+          runbook_url: "https://github.com/henhalvor/dotfiles/blob/main/docs/runbooks/monitoring-alerts.md#public-endpoint-unavailable"
+      - alert: PublicEndpointUnavailableCritical
+        expr: probe_success{job="blackbox-http",instance!="https://cloud.henhal.net"} == 0
+        for: 15m
+        labels:
+          severity: critical
+          component: public-endpoint
+        annotations:
+          summary: "Public endpoint {{ $labels.instance }} is unavailable"
+          description: "The public endpoint has failed its HTTP probe for 15 minutes. Investigate Cloudflare Tunnel and the origin service immediately."
+          runbook_url: "https://github.com/henhalvor/dotfiles/blob/main/docs/runbooks/monitoring-alerts.md#public-endpoint-unavailable"
+      - alert: OpenCloudPublicEndpointUnavailable
+        expr: probe_success{job="blackbox-http",instance="https://cloud.henhal.net"} == 0 and on() hour() >= 4
+        for: 10m
+        labels:
+          severity: warning
+          component: opencloud
+        annotations:
+          summary: "OpenCloud public endpoint is unavailable outside its backup window"
+          description: "The expected 03:00 Europe/Oslo consistency window is excluded. Check OpenCloud and Cloudflare Tunnel health."
+          runbook_url: "https://github.com/henhalvor/dotfiles/blob/main/docs/runbooks/monitoring-alerts.md#public-cloudauthmonitor-probe-failed"
+      - alert: OpenCloudPublicEndpointUnavailableCritical
+        expr: probe_success{job="blackbox-http",instance="https://cloud.henhal.net"} == 0 and on() hour() >= 4
+        for: 30m
+        labels:
+          severity: critical
+          component: opencloud
+        annotations:
+          summary: "OpenCloud public endpoint has remained unavailable"
+          description: "OpenCloud has been unreachable for 30 minutes outside its expected nightly backup window. Investigate the origin and tunnel."
+          runbook_url: "https://github.com/henhalvor/dotfiles/blob/main/docs/runbooks/monitoring-alerts.md#public-cloudauthmonitor-probe-failed"
+      - alert: PublicCertificateExpiringSoon
+        expr: (probe_ssl_earliest_cert_expiry{job="blackbox-http"} - time()) < 21 * 24 * 60 * 60
+        for: 1h
+        labels:
+          severity: warning
+          component: tls
+        annotations:
+          summary: "TLS certificate for {{ $labels.instance }} expires within 21 days"
+          description: "The public TLS certificate expires in less than 21 days. Check Cloudflare certificate management and DNS configuration."
+          runbook_url: "https://github.com/henhalvor/dotfiles/blob/main/docs/runbooks/monitoring-alerts.md#tls-certificate-expiry"
+      - alert: PublicCertificateExpiringCritical
+        expr: (probe_ssl_earliest_cert_expiry{job="blackbox-http"} - time()) < 7 * 24 * 60 * 60
+        for: 15m
+        labels:
+          severity: critical
+          component: tls
+        annotations:
+          summary: "TLS certificate for {{ $labels.instance }} expires within 7 days"
+          description: "The public TLS certificate expires in less than 7 days. Renew or correct Cloudflare certificate provisioning immediately."
+          runbook_url: "https://github.com/henhalvor/dotfiles/blob/main/docs/runbooks/monitoring-alerts.md#tls-certificate-expiry"

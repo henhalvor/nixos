@@ -255,6 +255,8 @@
         name = "restic-hp-offsite-run";
         runtimeInputs = with pkgs; [
           coreutils
+          curl
+          jq
           restic
           util-linux
         ];
@@ -264,6 +266,49 @@
           mkdir -p ${statusDir}
           date --iso-8601=seconds >${statusDir}/last-success.tmp
           mv -f ${statusDir}/last-success.tmp ${statusDir}/last-success
+
+          ${lib.optionalString cfg.enableSuccessHeartbeat ''
+            heartbeat_status=${statusDir}/last-backup-heartbeat-status.json
+            source_state="$(${pkgs.jq}/bin/jq -r '.result // "degraded"' ${statusDir}/last-source-status 2>/dev/null || printf degraded)"
+            heartbeat_result=skipped
+            heartbeat_detail="source status was not healthy"
+            if [[ "$source_state" == healthy ]]; then
+              heartbeat_url="$(tr -d '\r\n' <${lib.escapeShellArg (if cfg.successHeartbeatUrlFile == null then "/run/secrets/missing-backup-heartbeat" else cfg.successHeartbeatUrlFile)})"
+              if [[ "$heartbeat_url" == https://* && "$heartbeat_url" != *'"'* ]]; then
+                escaped="''${heartbeat_url//\\/\\\\}"
+                escaped="''${escaped//\"/\\\"}"
+                if printf 'url = "%s"\nfail\nsilent\nlocation\nconnect-timeout = 10\nmax-time = 20\noutput = /dev/null\n' "$escaped" \
+                  | curl --config - >/dev/null 2>&1; then
+                  heartbeat_result=healthy
+                  heartbeat_detail="delivery succeeded"
+                  date --iso-8601=seconds >${statusDir}/last-backup-heartbeat-success.tmp
+                  mv -f ${statusDir}/last-backup-heartbeat-success.tmp ${statusDir}/last-backup-heartbeat-success
+                else
+                  heartbeat_result=degraded
+                  heartbeat_detail="delivery failed"
+                fi
+              else
+                heartbeat_result=degraded
+                heartbeat_detail="URL file was invalid"
+              fi
+            fi
+            jq -n --arg timestamp "$(date --iso-8601=seconds)" \
+              --arg result "$heartbeat_result" --arg detail "$heartbeat_detail" \
+              '{timestamp: $timestamp, result: $result, detail: $detail}' >"$heartbeat_status.tmp"
+            mv -f "$heartbeat_status.tmp" "$heartbeat_status"
+          ''}
+        '';
+      };
+      resticCheck = pkgs.writeShellApplication {
+        name = "restic-hp-offsite-check";
+        runtimeInputs = with pkgs; [coreutils restic];
+        text = ''
+          # A sampled content check is observational and bounded. It neither
+          # forgets snapshots nor prunes repository data.
+          restic check --read-data-subset=5%
+          mkdir -p ${statusDir}
+          date --iso-8601=seconds >${statusDir}/last-check-success.tmp
+          mv -f ${statusDir}/last-check-success.tmp ${statusDir}/last-check-success
         '';
       };
     in
@@ -284,6 +329,16 @@
           default = null;
           description = "Reviewed Hermes-native export command; no live state is copied when this is unset.";
         };
+        enableSuccessHeartbeat = lib.mkOption {
+          type = lib.types.bool;
+          default = false;
+          description = "Send an external pulse only after Restic succeeds and every staged source reports healthy.";
+        };
+        successHeartbeatUrlFile = lib.mkOption {
+          type = lib.types.nullOr lib.types.str;
+          default = null;
+          description = "Root-readable runtime file containing the external backup-success heartbeat URL.";
+        };
       };
 
       config = lib.mkIf cfg.enable {
@@ -299,6 +354,10 @@
           {
             assertion = config.my.githubMirror.enable;
             message = "my.hpBackup requires my.githubMirror.enable.";
+          }
+          {
+            assertion = !cfg.enableSuccessHeartbeat || cfg.successHeartbeatUrlFile != null;
+            message = "my.hpBackup.successHeartbeatUrlFile is required when the success heartbeat is enabled.";
           }
         ];
 
@@ -448,6 +507,37 @@
             ConditionPathIsMountPoint = "/srv/opencloud";
           };
           serviceConfig.ExecStart = lib.mkForce [ "${resticRun}/bin/restic-hp-offsite-run" ];
+        };
+
+        systemd.services.restic-hp-offsite-check = {
+          description = "Run a sampled integrity check of the HP Restic repository";
+          after = ["network-online.target"];
+          wants = ["network-online.target"];
+          serviceConfig = {
+            Type = "oneshot";
+            EnvironmentFile = config.sops.templates."restic-s3-env".path;
+            Environment = [
+              "RESTIC_PASSWORD_FILE=${config.sops.secrets.RESTIC_REPOSITORY_PASSWORD.path}"
+              "RESTIC_CACHE_DIR=/var/cache/restic-hp-offsite-check"
+            ];
+            ExecStart = "${resticCheck}/bin/restic-hp-offsite-check";
+            User = "root";
+            CacheDirectory = "restic-hp-offsite-check";
+            NoNewPrivileges = true;
+            PrivateTmp = true;
+            ProtectHome = true;
+            ProtectSystem = "strict";
+            ReadWritePaths = [statusDir];
+          };
+        };
+        systemd.timers.restic-hp-offsite-check = {
+          description = "Monthly sampled Restic repository integrity check";
+          wantedBy = ["timers.target"];
+          timerConfig = {
+            OnCalendar = "*-*-01 04:30:00";
+            Persistent = true;
+            RandomizedDelaySec = "30m";
+          };
         };
       };
     };

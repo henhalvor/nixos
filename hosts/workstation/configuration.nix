@@ -44,6 +44,7 @@
         # Server/connectivity (Phase 4)
         self.nixosModules.sshServer
         self.nixosModules.tailscale
+        self.nixosModules.monitoringExporter
         self.nixosModules.sunshine
 
         # Desktop foundation (Phase 5)
@@ -130,6 +131,15 @@
         user = "henhal";
         deviceName = "workstation";
         identitySopsFile = ../../secrets/syncthing/workstation.yaml;
+      };
+
+      my.monitoring.exporter = {
+        enable = true;
+        hubHost = "hp-server-1.tail37a5eb.ts.net";
+        enableSyncthingMetrics = true;
+        extraUnits = [
+          "syncthing.service"
+        ];
       };
 
       # Sunshine user

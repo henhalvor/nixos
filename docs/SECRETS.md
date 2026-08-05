@@ -50,9 +50,11 @@ host key.
 | `secrets/syncthing/<host>.yaml` | matching host only | Host-specific Syncthing identity |
 | `secrets/opencloud.yaml` | HP server only, when added | OpenCloud, Keycloak, and Cloudflare Tunnel credentials |
 | `secrets/hp-backup.yaml` | HP server root services only, when added | Restic/S3 backup credentials |
+| `secrets/monitoring.yaml` | HP server root services only, when added | Grafana OIDC/break-glass secrets, Alertmanager receiver, and independent heartbeat URLs |
 
-The last two paths already have recipient rules in `.sops.yaml`; create them
-when those services are implemented. Do not add an empty encrypted file.
+These HP-only paths have recipient rules in `.sops.yaml`; create a profile only
+when its real service credentials exist. Do not add an empty encrypted file or
+placeholder plaintext.
 
 Every profile includes the two personal editor keys. Machine recipients are
 the minimum required by that profile. In particular, Lenovo and workstation

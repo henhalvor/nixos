@@ -1,0 +1,24 @@
+{
+  "annotations": {"list": []},
+  "description": "Health and resource use for HP-hosted applications and the monitoring stack.",
+  "editable": false,
+  "links": [{"title": "Logs", "type": "dashboards", "dashboardUID": "henhal-logs", "targetBlank": false}],
+  "panels": [
+    {"type": "text", "title": "Purpose", "gridPos": {"h": 3, "w": 24, "x": 0, "y": 0}, "options": {"mode": "markdown", "content": "# HP services\nUse this page to correlate a failed unit, restarts, local probes, and relevant journal errors. A failed metric is not automatically a reason to restart a service."}, "transparent": true},
+    {"type": "table", "title": "Failed systemd units", "description": "Any failed systemd unit reported by node_exporter. Empty is expected.", "gridPos": {"h": 8, "w": 12, "x": 0, "y": 3}, "datasource": {"type": "prometheus", "uid": "prometheus"}, "targets": [{"expr": "node_systemd_unit_state{host=\"hp-server\",state=\"failed\"} == 1", "format": "table", "instant": true, "refId": "A"}], "fieldConfig": {"defaults": {}, "overrides": []}, "options": {"showHeader": true}},
+    {"type": "table", "title": "Local service probes", "description": "Safe health probes for services configured by the monitoring collector.", "gridPos": {"h": 8, "w": 12, "x": 12, "y": 3}, "datasource": {"type": "prometheus", "uid": "prometheus"}, "targets": [{"expr": "henhal_service_probe_success", "format": "table", "instant": true, "refId": "A"}], "fieldConfig": {"defaults": {}, "overrides": []}, "options": {"showHeader": true}},
+    {"type": "timeseries", "title": "Service restart counts", "description": "Systemd restart count as collected for important HP services.", "gridPos": {"h": 8, "w": 12, "x": 0, "y": 11}, "datasource": {"type": "prometheus", "uid": "prometheus"}, "targets": [{"expr": "henhal_service_restart_count", "legendFormat": "{{service}}", "refId": "A"}], "fieldConfig": {"defaults": {"min": 0}, "overrides": []}, "options": {"legend": {"displayMode": "table", "placement": "bottom"}, "tooltip": {"mode": "multi"}}},
+    {"type": "timeseries", "title": "HP CPU and memory", "description": "Host-level pressure associated with service trouble.", "gridPos": {"h": 8, "w": 12, "x": 12, "y": 11}, "datasource": {"type": "prometheus", "uid": "prometheus"}, "targets": [{"expr": "100 * (1 - avg(rate(node_cpu_seconds_total{host=\"hp-server\",mode=\"idle\"}[5m])))", "legendFormat": "CPU", "refId": "A"}, {"expr": "100 * (1 - node_memory_MemAvailable_bytes{host=\"hp-server\"} / node_memory_MemTotal_bytes{host=\"hp-server\"})", "legendFormat": "Memory", "refId": "B"}], "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 100}, "overrides": []}, "options": {"legend": {"displayMode": "list", "placement": "bottom"}, "tooltip": {"mode": "multi"}}},
+    {"type": "timeseries", "title": "Public endpoint latency", "description": "HTTP probe latency for public Cloud, Auth, and Monitor URLs.", "gridPos": {"h": 8, "w": 12, "x": 0, "y": 19}, "datasource": {"type": "prometheus", "uid": "prometheus"}, "targets": [{"expr": "probe_http_duration_seconds{job=\"blackbox-http\"}", "legendFormat": "{{instance}}", "refId": "A"}], "fieldConfig": {"defaults": {"unit": "s"}, "overrides": []}, "options": {"legend": {"displayMode": "list", "placement": "bottom"}, "tooltip": {"mode": "multi"}}},
+    {"type": "logs", "title": "Recent HP service warnings and errors", "description": "Journal entries from the HP service allowlist and warning/error messages.", "gridPos": {"h": 10, "w": 12, "x": 12, "y": 19}, "datasource": {"type": "loki", "uid": "loki"}, "targets": [{"expr": "{host=\"hp-server\"} |~ \"(?i)(error|warn|fatal|failed)\"", "refId": "A"}], "options": {"dedupStrategy": "none", "enableLogDetails": true, "prettifyJSON": false, "showCommonLabels": false, "showLabels": false, "showTime": true, "sortOrder": "Descending", "wrapLogMessage": true}}
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["henhal", "hp-server", "services"],
+  "templating": {"list": [{"name": "host", "label": "Host", "type": "constant", "query": "hp-server", "hide": 2, "current": {"text": "hp-server", "value": "hp-server"}}]},
+  "time": {"from": "now-6h", "to": "now"},
+  "timezone": "browser",
+  "title": "HP services",
+  "uid": "henhal-hp-services",
+  "version": 1
+}

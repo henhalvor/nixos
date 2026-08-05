@@ -1,0 +1,63 @@
+groups:
+  - name: monitoring-services
+    rules:
+      - alert: ImportantSystemdUnitFailed
+        expr: node_systemd_unit_state{state="failed",name=~"(opencloud|keycloak|postgresql|cloudflared-tunnel-.*|restic-backups-hp-offsite|prometheus|alertmanager|grafana|loki|alloy|blackbox-exporter)\\.service"} == 1
+        for: 10m
+        labels:
+          severity: warning
+          component: systemd
+        annotations:
+          summary: "Important systemd unit {{ $labels.name }} has failed on {{ $labels.host }}"
+          description: "The unit has remained failed for 10 minutes. Inspect its journal and dependencies before restarting it."
+          runbook_url: "https://github.com/henhalvor/dotfiles/blob/main/docs/runbooks/monitoring-alerts.md#systemd-unit-failed"
+      - alert: CriticalSystemdUnitFailed
+        expr: node_systemd_unit_state{state="failed",name=~"(opencloud|keycloak|cloudflared-tunnel-.*|restic-backups-hp-offsite|prometheus|alertmanager|grafana|loki)\\.service"} == 1
+        for: 2m
+        labels:
+          severity: critical
+          component: systemd
+        annotations:
+          summary: "Critical systemd unit {{ $labels.name }} has failed on {{ $labels.host }}"
+          description: "A critical service is failed. Inspect the journal, service dependencies, and recent configuration changes immediately."
+          runbook_url: "https://github.com/henhalvor/dotfiles/blob/main/docs/runbooks/monitoring-alerts.md#systemd-unit-failed"
+      - alert: ServiceProbeFailed
+        expr: henhal_service_probe_success == 0
+        for: 10m
+        labels:
+          severity: warning
+          component: service-probe
+        annotations:
+          summary: "Local health probe for {{ $labels.service }} is failing"
+          description: "The safe local health probe has failed for 10 minutes. Check the service journal and its local listener."
+          runbook_url: "https://github.com/henhalvor/dotfiles/blob/main/docs/runbooks/monitoring-alerts.md#service-health-probe"
+      - alert: LocalHttpProbeFailed
+        expr: probe_success{job="blackbox-local"} == 0
+        for: 10m
+        labels:
+          severity: warning
+          component: service-probe
+        annotations:
+          summary: "Local HTTP probe for {{ $labels.service }} is failing"
+          description: "The HP loopback health endpoint has failed for 10 minutes. Inspect the owning unit and its recent journal before restarting it."
+          runbook_url: "https://github.com/henhalvor/dotfiles/blob/main/docs/runbooks/monitoring-alerts.md#failed-service-or-restart-loop"
+      - alert: ServiceRestartLoop
+        expr: increase(henhal_service_restart_count[30m]) >= 3
+        for: 5m
+        labels:
+          severity: warning
+          component: service
+        annotations:
+          summary: "Service {{ $labels.service }} restarted at least three times in 30 minutes"
+          description: "The service appears to be restart-looping. Inspect its journal before manually restarting it again."
+          runbook_url: "https://github.com/henhalvor/dotfiles/blob/main/docs/runbooks/monitoring-alerts.md#service-restart-loop"
+      - alert: MonitoringConfigurationNotDeployed
+        expr: absent(henhal_monitoring_config_build_info)
+        for: 15m
+        labels:
+          severity: warning
+          component: monitoring
+        annotations:
+          summary: "Monitoring configuration build metric is absent"
+          description: "The monitoring textfile collector may not have completed. Check the exporter textfile directory and collector unit."
+          runbook_url: "https://github.com/henhalvor/dotfiles/blob/main/docs/runbooks/monitoring-alerts.md#monitoring-collector-failed"

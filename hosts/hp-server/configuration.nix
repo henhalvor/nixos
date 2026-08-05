@@ -23,6 +23,8 @@
         self.nixosModules.laptopServer
         self.nixosModules.sshServer
         self.nixosModules.tailscale
+        self.nixosModules.monitoringExporter
+        self.nixosModules.monitoringHub
 
         self.nixosModules.nvim
         self.nixosModules.zsh
@@ -139,6 +141,50 @@
       };
 
       my.opencloudTunnel.tunnelId = "d5383138-72c4-4879-924a-319edc4c20c6";
+
+      # Monitoring is initially private while the dedicated Keycloak client,
+      # SOPS receiver credentials, external heartbeat, and Cloudflare DNS route
+      # are created. The full metrics/log/dashboard stack is already active;
+      # enable OIDC and tunnel ingress only after completing the deployment
+      # gates in docs/MONITORING.md.
+      my.monitoring.exporter = {
+        enable = true;
+        hubHost = "100.71.100.37";
+        enableBackupMetrics = true;
+        enableSyncthingMetrics = true;
+        extraUnits = [
+          "opencloud.service"
+          "keycloak.service"
+          "postgresql.service"
+          "cloudflared-tunnel-d5383138-72c4-4879-924a-319edc4c20c6.service"
+          "restic-backups-hp-offsite.service"
+          "restic-hp-offsite-check.service"
+          "github-mirror.service"
+          "syncthing.service"
+          "firecrawl.service"
+          "hermes-agent.service"
+        ];
+        fullJournalUnits = [
+          "opencloud.service"
+          "keycloak.service"
+          "cloudflared-tunnel-d5383138-72c4-4879-924a-319edc4c20c6.service"
+          "restic-backups-hp-offsite.service"
+          "github-mirror.service"
+          "firecrawl.service"
+          "hermes-agent.service"
+        ];
+      };
+      my.monitoring.hub = {
+        enable = true;
+        enableOidc = false;
+        enableNotifications = false;
+        lokiPushListenAddress = "100.71.100.37";
+        scrapeTargets = {
+          hp-server = "127.0.0.1";
+          workstation = "workstation.tail37a5eb.ts.net";
+          lenovo-yoga-pro-7 = "lenovo-yoga-pro-7.tail37a5eb.ts.net";
+        };
+      };
 
       my.hermesRuntime.enable = true;
       my.hermesDashboard.enable = true;

@@ -1,0 +1,93 @@
+groups:
+  - name: monitoring-backups
+    rules:
+      - alert: ResticSnapshotLate
+        expr: henhal_backup_snapshot_age_seconds{repository="hp-offsite"} > 36 * 60 * 60
+        for: 30m
+        labels:
+          severity: warning
+          component: backup
+        annotations:
+          summary: "HP offsite Restic snapshot is older than 36 hours"
+          description: "No successful offsite snapshot has completed in more than 36 hours. Check the nightly staging services, R2 credentials, and restic timer."
+          runbook_url: "https://github.com/henhalvor/dotfiles/blob/main/docs/BACKUP.md"
+      - alert: ResticSnapshotMissing
+        expr: henhal_backup_snapshot_age_seconds{repository="hp-offsite"} > 72 * 60 * 60
+        for: 15m
+        labels:
+          severity: critical
+          component: backup
+        annotations:
+          summary: "HP offsite Restic snapshot is older than 72 hours"
+          description: "The offsite backup has missed at least two nightly windows. Investigate immediately and avoid assuming R2 contains current data."
+          runbook_url: "https://github.com/henhalvor/dotfiles/blob/main/docs/BACKUP.md"
+      - alert: ResticRepositoryCheckLate
+        expr: time() - henhal_backup_repository_check_last_success_timestamp_seconds > 35 * 24 * 60 * 60
+        for: 1h
+        labels:
+          severity: warning
+          component: backup
+        annotations:
+          summary: "Restic repository check is older than 35 days"
+          description: "Run the configured repository check and resolve any reported integrity errors."
+          runbook_url: "https://github.com/henhalvor/dotfiles/blob/main/docs/BACKUP.md#verify-the-repository"
+      - alert: ResticRepositoryCheckOverdue
+        expr: time() - henhal_backup_repository_check_last_success_timestamp_seconds > 45 * 24 * 60 * 60
+        for: 1h
+        labels:
+          severity: critical
+          component: backup
+        annotations:
+          summary: "Restic repository check is older than 45 days"
+          description: "The integrity check is overdue. Run a repository check before relying on the next recovery."
+          runbook_url: "https://github.com/henhalvor/dotfiles/blob/main/docs/BACKUP.md#verify-the-repository"
+      - alert: BackupSourceDegraded
+        expr: henhal_backup_source_healthy == 0
+        for: 26h
+        labels:
+          severity: warning
+          component: backup-source
+        annotations:
+          summary: "Backup source {{ $labels.source }} is degraded"
+          description: "The staged backup source has been degraded for more than one nightly cycle. Inspect its status JSON and service journal."
+          runbook_url: "https://github.com/henhalvor/dotfiles/blob/main/docs/BACKUP.md#check-backup-health"
+      - alert: BackupSourceStillDegraded
+        expr: henhal_backup_source_healthy == 0
+        for: 50h
+        labels:
+          severity: critical
+          component: backup-source
+        annotations:
+          summary: "Backup source {{ $labels.source }} has missed two nightly cycles"
+          description: "The staged source is still degraded after two backup cycles. The offsite repository may contain stale data for this source."
+          runbook_url: "https://github.com/henhalvor/dotfiles/blob/main/docs/BACKUP.md#check-backup-health"
+      - alert: BackupSourceStatusStale
+        expr: time() - henhal_backup_source_status_timestamp_seconds > 36 * 60 * 60
+        for: 1h
+        labels:
+          severity: warning
+          component: backup-source
+        annotations:
+          summary: "Backup status for {{ $labels.source }} is stale"
+          description: "The source status metric has not been refreshed in 36 hours. Check its staging/export service."
+          runbook_url: "https://github.com/henhalvor/dotfiles/blob/main/docs/BACKUP.md#check-backup-health"
+      - alert: SyncthingFolderBehind
+        expr: henhal_syncthing_pending_items > 0
+        for: 24h
+        labels:
+          severity: warning
+          component: syncthing
+        annotations:
+          summary: "Syncthing folder {{ $labels.folder }} has pending items"
+          description: "The folder has remained out of sync for 24 hours. Check connected devices and Syncthing errors without editing files on multiple hosts."
+          runbook_url: "https://github.com/henhalvor/dotfiles/blob/main/docs/BACKUP.md#syncthing"
+      - alert: SyncthingFolderStillBehind
+        expr: henhal_syncthing_pending_items > 0
+        for: 72h
+        labels:
+          severity: critical
+          component: syncthing
+        annotations:
+          summary: "Syncthing folder {{ $labels.folder }} has been out of sync for 72 hours"
+          description: "The folder has pending items for three days. Resolve device connectivity or synchronization errors."
+          runbook_url: "https://github.com/henhalvor/dotfiles/blob/main/docs/BACKUP.md#syncthing"
