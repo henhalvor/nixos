@@ -62,7 +62,7 @@
           --arg stateDir /srv/opencloud/state \
           --arg mountUuid ${lib.escapeShellArg cloudCfg.storageUuid} \
           --arg packageVersion ${lib.escapeShellArg config.services.opencloud.package.version} \
-          '{createdAt: $timestamp, mode: "offline", stateDir: $stateDir, mountUuid: $mountUuid, packageVersion: $packageVersion, xattrProbe: "passed"}' \
+          '{timestamp: $timestamp, createdAt: $timestamp, result: "healthy", mode: "offline", stateDir: $stateDir, mountUuid: $mountUuid, packageVersion: $packageVersion, xattrProbe: "passed"}' \
           >"$stage/manifest.json"
         cp "$stage/manifest.json" "$status"
       '';

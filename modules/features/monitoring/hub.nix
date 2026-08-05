@@ -177,11 +177,11 @@
         };
         nodeExporterPort = lib.mkOption {
           type = lib.types.port;
-          default = 9100;
+          default = 9300;
         };
         blackboxPort = lib.mkOption {
           type = lib.types.port;
-          default = 9115;
+          default = 9315;
         };
         prometheusRetention = lib.mkOption {
           type = lib.types.str;
@@ -214,29 +214,56 @@
       };
 
       config = lib.mkIf cfg.enable {
-        my.monitoring.hub = lib.mkIf (cfg.secretFile != null) {
-          oidcClientSecretFile = lib.mkDefault config.sops.secrets.GRAFANA_OAUTH_CLIENT_SECRET.path;
-          grafanaAdminPasswordFile = lib.mkDefault config.sops.secrets.GRAFANA_ADMIN_PASSWORD.path;
-          grafanaSecretKeyFile = lib.mkDefault config.sops.secrets.GRAFANA_SECRET_KEY.path;
-          alertmanagerEnvironmentFile = lib.mkDefault config.sops.templates."monitoring-alertmanager-env".path;
-          stackHeartbeatUrlFile = lib.mkDefault config.sops.secrets.MONITORING_STACK_HEARTBEAT_URL.path;
-          backupHeartbeatUrlFile = lib.mkDefault config.sops.secrets.MONITORING_BACKUP_HEARTBEAT_URL.path;
-        };
+        my.monitoring.hub = lib.mkMerge [
+          (lib.mkIf (cfg.secretFile != null && cfg.enableOidc) {
+            oidcClientSecretFile = lib.mkDefault config.sops.secrets.GRAFANA_OAUTH_CLIENT_SECRET.path;
+            grafanaAdminPasswordFile = lib.mkDefault config.sops.secrets.GRAFANA_ADMIN_PASSWORD.path;
+            grafanaSecretKeyFile = lib.mkDefault config.sops.secrets.GRAFANA_SECRET_KEY.path;
+          })
+          (lib.mkIf (cfg.secretFile != null && cfg.enableNotifications) {
+            alertmanagerEnvironmentFile = lib.mkDefault config.sops.templates."monitoring-alertmanager-env".path;
+          })
+          (lib.mkIf (cfg.secretFile != null && cfg.enableHeartbeats) {
+            stackHeartbeatUrlFile = lib.mkDefault config.sops.secrets.MONITORING_STACK_HEARTBEAT_URL.path;
+            backupHeartbeatUrlFile = lib.mkDefault config.sops.secrets.MONITORING_BACKUP_HEARTBEAT_URL.path;
+          })
+        ];
         my.hpBackup = lib.mkIf (cfg.secretFile != null && cfg.enableHeartbeats) {
           enableSuccessHeartbeat = true;
           successHeartbeatUrlFile = config.sops.secrets.MONITORING_BACKUP_HEARTBEAT_URL.path;
         };
 
-        sops.secrets = lib.mkIf (cfg.secretFile != null) {
-          GRAFANA_OAUTH_CLIENT_SECRET = { sopsFile = cfg.secretFile; mode = "0400"; };
-          GRAFANA_ADMIN_PASSWORD = { sopsFile = cfg.secretFile; mode = "0400"; };
-          GRAFANA_SECRET_KEY = { sopsFile = cfg.secretFile; mode = "0400"; };
-          MONITORING_TELEGRAM_BOT_TOKEN = { sopsFile = cfg.secretFile; mode = "0400"; };
-          MONITORING_TELEGRAM_CHAT_ID = { sopsFile = cfg.secretFile; mode = "0400"; };
-          MONITORING_STACK_HEARTBEAT_URL = { sopsFile = cfg.secretFile; mode = "0400"; };
-          MONITORING_BACKUP_HEARTBEAT_URL = { sopsFile = cfg.secretFile; mode = "0400"; };
-        };
-        sops.templates."monitoring-alertmanager-env" = lib.mkIf (cfg.secretFile != null) {
+        sops.secrets = lib.mkMerge [
+          (lib.mkIf (cfg.secretFile != null && cfg.enableOidc) {
+            GRAFANA_OAUTH_CLIENT_SECRET = {
+              sopsFile = cfg.secretFile;
+              owner = "grafana";
+              group = "grafana";
+              mode = "0400";
+            };
+            GRAFANA_ADMIN_PASSWORD = {
+              sopsFile = cfg.secretFile;
+              owner = "grafana";
+              group = "grafana";
+              mode = "0400";
+            };
+            GRAFANA_SECRET_KEY = {
+              sopsFile = cfg.secretFile;
+              owner = "grafana";
+              group = "grafana";
+              mode = "0400";
+            };
+          })
+          (lib.mkIf (cfg.secretFile != null && cfg.enableNotifications) {
+            MONITORING_TELEGRAM_BOT_TOKEN = { sopsFile = cfg.secretFile; mode = "0400"; };
+            MONITORING_TELEGRAM_CHAT_ID = { sopsFile = cfg.secretFile; mode = "0400"; };
+          })
+          (lib.mkIf (cfg.secretFile != null && cfg.enableHeartbeats) {
+            MONITORING_STACK_HEARTBEAT_URL = { sopsFile = cfg.secretFile; mode = "0400"; };
+            MONITORING_BACKUP_HEARTBEAT_URL = { sopsFile = cfg.secretFile; mode = "0400"; };
+          })
+        ];
+        sops.templates."monitoring-alertmanager-env" = lib.mkIf (cfg.secretFile != null && cfg.enableNotifications) {
           owner = "root";
           group = "root";
           mode = "0400";
@@ -289,12 +316,6 @@
           "d ${monitoringDir}/loki 0750 loki loki -"
           "d ${monitoringDir}/alertmanager 0750 root root -"
         ];
-        services.journald.extraConfig = ''
-          Storage=persistent
-          SystemMaxUse=2G
-          SystemKeepFree=1G
-        '';
-
         services.prometheus = {
           enable = true;
           listenAddress = "127.0.0.1";
@@ -369,7 +390,24 @@
                 group_wait: 30s
                 group_interval: 5m
                 repeat_interval: 12h
+                routes:
+                  # These conditions remain visible in Prometheus and Grafana,
+                  # but are intentionally non-actionable until their deferred
+                  # implementation/capacity work is resumed.
+                  - receiver: local-null
+                    matchers: ['alertname = BackupSourceDegraded', 'source = hermes']
+                  - receiver: local-null
+                    matchers: ['alertname = BackupSourceStillDegraded', 'source = hermes']
+                  - receiver: local-null
+                    matchers: ['alertname = NixStoreLarge']
+                  - receiver: telegram
+                    matchers: ['severity = critical']
+                    repeat_interval: 4h
+                  - receiver: telegram
+                    matchers: ['severity = warning']
+                    repeat_interval: 12h
               receivers:
+                - name: local-null
                 - name: telegram
                   telegram_configs:
                     - bot_token: ''${MONITORING_TELEGRAM_BOT_TOKEN}
@@ -406,7 +444,13 @@
             common = {
               path_prefix = "${monitoringDir}/loki";
               replication_factor = 1;
-              ring.kvstore.store = "inmemory";
+              # Loki otherwise auto-selects HP's Docker bridge address for the
+              # query frontend callback even though gRPC is loopback-only.
+              instance_addr = "127.0.0.1";
+              ring = {
+                instance_addr = "127.0.0.1";
+                kvstore.store = "inmemory";
+              };
             };
             schema_config.configs = [
               {

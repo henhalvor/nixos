@@ -121,6 +121,12 @@
         authHost = "auth.henhal.net";
       };
 
+      # Passing the montoring hub URL to cloudflare tunnel "owned" by opencloud service
+      my.opencloudTunnel.extraIngress."monitor.henhal.net" = {
+        service = "http://127.0.0.1:3000";
+        httpHostHeader = "monitor.henhal.net";
+      };
+
       my.opencloudConsistentSource.enable = true;
       my.githubMirror.enable = true;
       my.hpBackup = {
@@ -150,6 +156,7 @@
       my.monitoring.exporter = {
         enable = true;
         hubHost = "100.71.100.37";
+        journalMaxUse = "2G";
         enableBackupMetrics = true;
         enableSyncthingMetrics = true;
         extraUnits = [
@@ -176,8 +183,10 @@
       };
       my.monitoring.hub = {
         enable = true;
-        enableOidc = false;
-        enableNotifications = false;
+        enableOidc = true;
+        enableNotifications = true;
+        enableHeartbeats = true;
+        secretFile = ../../secrets/monitoring.yaml;
         lokiPushListenAddress = "100.71.100.37";
         scrapeTargets = {
           hp-server = "127.0.0.1";
@@ -188,7 +197,12 @@
 
       my.hermesRuntime.enable = true;
       my.hermesDashboard.enable = true;
-      my.hermesWorkspace.enable = true;
+      my.hermesWorkspace = {
+        enable = true;
+        # Grafana owns the conventional loopback port 3000. Workspace remains
+        # exposed through its unchanged Tailscale HTTPS port 3001.
+        workspacePort = 3003;
+      };
 
       # Driver for the USB-C Ethernet adapter.
       boot.kernelModules = [ "ax88179_178a" ];

@@ -25,7 +25,17 @@ EOF
     label="${unit//\\/\\\\}"
     label="${label//\"/\\\"}"
     active=0
-    systemctl is-active --quiet "$unit" && active=1
+    load_state="$(systemctl show --property=LoadState --value "$unit" 2>/dev/null || true)"
+    active_state="$(systemctl show --property=ActiveState --value "$unit" 2>/dev/null || true)"
+    result="$(systemctl show --property=Result --value "$unit" 2>/dev/null || true)"
+    # Long-running services must be active. Successful completed oneshots are
+    # healthy while inactive; a missing unit or failed result remains unhealthy.
+    if [[ "$load_state" == loaded ]] && {
+      [[ "$active_state" == active ]] ||
+      [[ "$active_state" == inactive && "$result" == success ]]
+    }; then
+      active=1
+    fi
     restarts="$(systemctl show --property=NRestarts --value "$unit" 2>/dev/null || true)"
     if [[ ! "$restarts" =~ ^[0-9]+$ ]]; then
       restarts=0

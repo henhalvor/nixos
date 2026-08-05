@@ -25,7 +25,10 @@ if [[ ! "$snapshot_timestamp" =~ ^[1-9][0-9]*$ ]]; then
   collector_error=1
 fi
 snapshot_age="$(( now - snapshot_timestamp ))"
-(( snapshot_timestamp > 0 )) || snapshot_age=0
+# A missing success record must look maximally stale, not freshly completed.
+# Keeping the timestamp at zero also makes the condition explicit to rules and
+# dashboards while an age of `now` trips the normal late-backup thresholds.
+(( snapshot_timestamp > 0 )) || snapshot_age="$now"
 
 check_timestamp=0
 if [[ -r "$last_check_success" ]]; then
@@ -76,11 +79,26 @@ EOF
     healthy=0
     timestamp=0
     if [[ -r "$file" ]] && json="$(<"$file")" && jq -e . >/dev/null 2>&1 <<<"$json"; then
-      result="$(jq -r '.result // empty' <<<"$json")"
+      # Older successful OpenCloud manifests predate the common result field.
+      # Accept that reviewed schema until the next backup emits result=healthy.
+      result="$(jq -r '.result // (if .mode == "offline" and .xattrProbe == "passed" then "healthy" else empty end)' <<<"$json")"
       raw_timestamp="$(jq -r '.timestamp // .createdAt // empty' <<<"$json")"
       timestamp="$(date --date="$raw_timestamp" +%s 2>/dev/null || printf 0)"
-      [[ "$result" == healthy && "$timestamp" =~ ^[1-9][0-9]*$ ]] && healthy=1
-      (( healthy )) || collector_error=1
+      if [[ ! "$timestamp" =~ ^[1-9][0-9]*$ ]]; then
+        timestamp=0
+        collector_error=1
+      fi
+      case "$result" in
+        healthy)
+          (( timestamp > 0 )) && healthy=1
+          ;;
+        degraded|failed)
+          # A valid negative source status is data, not a collector failure.
+          ;;
+        *)
+          collector_error=1
+          ;;
+      esac
     else
       collector_error=1
     fi

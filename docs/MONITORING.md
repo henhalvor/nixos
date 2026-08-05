@@ -52,8 +52,8 @@ Backends remain local/private:
 | Prometheus | `127.0.0.1:9090` | loopback |
 | Alertmanager | `127.0.0.1:9093` | loopback |
 | Loki query/readiness | `127.0.0.1:3100` | loopback |
-| Node Exporter | port `9100` | loopback/Tailscale firewall |
-| Blackbox Exporter | loopback | Prometheus only |
+| Node Exporter | port `9300` | loopback/Tailscale firewall |
+| Blackbox Exporter | `127.0.0.1:9315` | Prometheus only |
 
 ## Complete the external activation
 

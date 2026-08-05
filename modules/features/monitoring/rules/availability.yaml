@@ -62,17 +62,17 @@ groups:
           description: "The public endpoint has failed its HTTP probe for 15 minutes. Investigate Cloudflare Tunnel and the origin service immediately."
           runbook_url: "https://github.com/henhalvor/dotfiles/blob/main/docs/runbooks/monitoring-alerts.md#public-endpoint-unavailable"
       - alert: OpenCloudPublicEndpointUnavailable
-        expr: probe_success{job="blackbox-http",instance="https://cloud.henhal.net"} == 0 and on() hour() >= 4
+        expr: probe_success{job="blackbox-http",instance="https://cloud.henhal.net"} == 0 and on() (hour() < 1 or hour() >= 5)
         for: 10m
         labels:
           severity: warning
           component: opencloud
         annotations:
           summary: "OpenCloud public endpoint is unavailable outside its backup window"
-          description: "The expected 03:00 Europe/Oslo consistency window is excluded. Check OpenCloud and Cloudflare Tunnel health."
+          description: "The conservative 01:00-05:00 UTC window covering the 03:00 Europe/Oslo consistency job is excluded. Check OpenCloud and Cloudflare Tunnel health."
           runbook_url: "https://github.com/henhalvor/dotfiles/blob/main/docs/runbooks/monitoring-alerts.md#public-cloudauthmonitor-probe-failed"
       - alert: OpenCloudPublicEndpointUnavailableCritical
-        expr: probe_success{job="blackbox-http",instance="https://cloud.henhal.net"} == 0 and on() hour() >= 4
+        expr: probe_success{job="blackbox-http",instance="https://cloud.henhal.net"} == 0 and on() (hour() < 1 or hour() >= 5)
         for: 30m
         labels:
           severity: critical

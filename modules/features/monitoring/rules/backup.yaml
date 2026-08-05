@@ -1,6 +1,16 @@
 groups:
   - name: monitoring-backups
     rules:
+      - alert: ResticSnapshotNeverSucceeded
+        expr: henhal_backup_last_success_timestamp_seconds{repository="hp-offsite"} == 0
+        for: 15m
+        labels:
+          severity: critical
+          component: backup
+        annotations:
+          summary: "HP offsite Restic backup has no successful snapshot record"
+          description: "The monitoring collector cannot find a successful offsite backup timestamp. Check the Restic timer, staging services, and status files before relying on recovery data."
+          runbook_url: "https://github.com/henhalvor/dotfiles/blob/main/docs/BACKUP.md"
       - alert: ResticSnapshotLate
         expr: henhal_backup_snapshot_age_seconds{repository="hp-offsite"} > 36 * 60 * 60
         for: 30m

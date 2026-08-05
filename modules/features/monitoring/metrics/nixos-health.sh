@@ -9,8 +9,11 @@ trap 'rm -f "$tmp"' EXIT
 
 generation_timestamp=0
 collector_error=0
-if current="$(readlink -f /run/current-system 2>/dev/null)"; then
-  if built="$(stat -c %Y "$current" 2>/dev/null)"; then
+# The immutable store target carries reproducible source timestamps. The
+# /run/current-system symlink itself is replaced at activation and therefore
+# records when this generation actually became current.
+if [[ -L /run/current-system ]]; then
+  if built="$(stat -c %Y /run/current-system 2>/dev/null)"; then
     generation_timestamp="$built"
   else
     collector_error=1

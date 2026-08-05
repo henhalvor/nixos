@@ -78,6 +78,8 @@
       # remote trust boundary.
       alloyJournalConfig = ''
         loki.relabel "journal" {
+          forward_to = []
+
           rule {
             source_labels = ["__journal__hostname"]
             target_label = "host"
@@ -150,7 +152,7 @@
         };
         nodeExporterPort = mkOption {
           type = types.port;
-          default = 9100;
+          default = 9300;
           description = "Prometheus Node Exporter TCP port, reachable only via tailscaleInterface.";
         };
         lokiPort = mkOption {
@@ -199,6 +201,11 @@
           default = [ ];
           description = "Reviewed units whose complete journal is shipped after credential-pattern redaction; all other units send warning-and-higher entries only.";
         };
+        journalMaxUse = mkOption {
+          type = types.str;
+          default = "1G";
+          description = "Persistent system journal size ceiling for monitored exporter hosts.";
+        };
       };
 
       config = mkIf cfg.enable (lib.mkMerge [
@@ -215,6 +222,12 @@
           ];
 
           systemd.tmpfiles.rules = [ "d ${textfileDirectory} 0755 root root -" ];
+
+          services.journald.extraConfig = ''
+            Storage=persistent
+            SystemMaxUse=${cfg.journalMaxUse}
+            SystemKeepFree=1G
+          '';
 
           services.prometheus.exporters.node = {
             enable = true;

@@ -39,24 +39,29 @@
           result=healthy
           details='[]'
           for name in opencloud-source opencloud-identity vault shared hermes github-mirror; do
+            required=true
+            # Hermes has no reviewed native export yet. Keep its status in the
+            # report, but do not block the independent backup-success heartbeat
+            # until that source is implemented.
+            [[ "$name" == hermes ]] && required=false
             if [[ "$name" == github-mirror ]]; then
               file=/var/lib/github-mirrors/status.json
             else
               file="${statusDir}/$name.json"
             fi
             if [[ ! -f "$file" ]]; then
-              result=degraded
-              details="$(jq --arg name "$name" '. + [{source: $name, result: "missing"}]' <<<"$details")"
+              [[ "$required" == false ]] || result=degraded
+              details="$(jq --arg name "$name" --argjson required "$required" '. + [{source: $name, result: "missing", required: $required}]' <<<"$details")"
               continue
             fi
             timestamp="$(jq -r '.timestamp // .createdAt // empty' "$file")"
             age=999999
             [[ -z "$timestamp" ]] || age=$(( now - $(date --date="$timestamp" +%s 2>/dev/null || echo 0) ))
             state="$(jq -r '.result // "healthy"' "$file")"
-            if [[ "$state" != healthy || "$age" -gt 129600 ]]; then
+            if [[ "$required" == true && ( "$state" != healthy || "$age" -gt 129600 ) ]]; then
               result=degraded
             fi
-            details="$(jq --arg name "$name" --arg result "$state" --argjson age "$age" '. + [{source: $name, result: $result, ageSeconds: $age}]' <<<"$details")"
+            details="$(jq --arg name "$name" --arg result "$state" --argjson age "$age" --argjson required "$required" '. + [{source: $name, result: $result, ageSeconds: $age, required: $required}]' <<<"$details")"
           done
           jq -n --arg timestamp "$(date --iso-8601=seconds)" --arg result "$result" \
             --argjson sources "$details" '{timestamp: $timestamp, result: $result, sources: $sources}' \
