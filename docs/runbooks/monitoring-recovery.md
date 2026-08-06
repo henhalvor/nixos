@@ -27,14 +27,26 @@ recover old Prometheus metrics or Loki logs.
    curl -fsS http://127.0.0.1:3000/api/health
    ```
 
-7. Confirm Grafana recreated its data sources and dashboards from provisioning.
-8. Confirm workstation and Lenovo targets when those machines are online.
-9. Confirm the `monitoring` Keycloak realm/client exists in the restored identity
+7. Confirm local exporters and the external heartbeat timer:
+
+   ```bash
+   systemctl is-active \
+     prometheus-node-exporter prometheus-process-exporter \
+     monitoring-stack-heartbeat.timer
+   curl -fsS http://127.0.0.1:9256/metrics | head
+   ```
+
+8. Confirm Grafana recreated its data sources and all five dashboards from
+   provisioning, including the process drill-down panels.
+9. Confirm both `node` and `process` targets for workstation and Lenovo when
+   those machines are online. Ports `9300` and `9256` must remain reachable only
+   through `tailscale0`.
+10. Confirm the `monitoring` Keycloak realm/client exists in the restored identity
    database. If it does not, recreate it from the implementation plan and
    rotate the client secret.
-10. Confirm `monitor.henhal.net` still routes to the existing tunnel.
-11. Test an alert and resolved notification.
-12. Resume external heartbeat checks only after all local checks succeed.
+11. Confirm `monitor.henhal.net` still routes to the existing tunnel.
+12. Test an alert and resolved notification.
+13. Resume external heartbeat checks only after all local checks succeed.
 
 ## Recreate only monitoring state
 
@@ -70,7 +82,7 @@ Do not enable anonymous access as a recovery shortcut while Grafana is public.
 - Grafana public access requires Keycloak authentication and MFA
 - Viewer cannot administer Grafana
 - online targets are `UP`
+- `node` and `process` targets are `UP` for every online host
 - one controlled alert arrives and resolves
 - external stack and backup heartbeat checks are current
 - OpenCloud, Auth, Restic, Syncthing, and GitHub mirror workflows remain healthy
-

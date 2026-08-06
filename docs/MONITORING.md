@@ -8,10 +8,11 @@ notifications, and Grafana presents provisioned dashboards. The only public
 component is Grafana at `https://monitor.henhal.net`; it is reached through the
 existing outbound Cloudflare Tunnel and authenticated by Keycloak.
 
-Prometheus, Alertmanager, Loki, Node Exporter, Alloy, and Blackbox Exporter are
-not public services. Cross-machine telemetry uses Tailscale.
+Prometheus, Alertmanager, Loki, Node Exporter, Process Exporter, Alloy, and
+Blackbox Exporter are not public services. Cross-machine telemetry uses
+Tailscale.
 
-The canonical implementation design is
+The completed implementation record is
 [security-monitoring-implementation.md](plans/security-monitoring-implementation.md).
 
 ## What is monitored
@@ -26,6 +27,7 @@ The canonical implementation design is
 - Restic snapshot freshness, sampled repository checks, and every staged source
 - Syncthing Vault/Shared health and GitHub mirror freshness
 - selected warning/error journal events with bounded labels and redaction
+- per-executable CPU and resident-memory usage without command-line or PID labels
 
 The laptop and workstation are allowed to be offline. Their dashboards retain
 last-seen state and alerts use long grace periods. HP and the nightly backup
@@ -34,12 +36,7 @@ power or internet outage.
 
 ## Access
 
-The first rebuild intentionally starts the monitoring hub privately. Grafana
-has no initial local administrator, OIDC is disabled, notifications and
-heartbeats are disabled, and no `monitor.henhal.net` tunnel route is declared.
-This prevents a partially configured dashboard from becoming public.
-
-After completing the activation procedure below, open
+The production stack is active. Open
 `https://monitor.henhal.net` and sign in through the Keycloak `monitoring`
 realm. Routine users should be Grafana Viewers. Only explicitly assigned
 `grafana-admin` users receive administrator access.
@@ -53,16 +50,23 @@ Backends remain local/private:
 | Alertmanager | `127.0.0.1:9093` | loopback |
 | Loki query/readiness | `127.0.0.1:3100` | loopback |
 | Node Exporter | port `9300` | loopback/Tailscale firewall |
+| Process Exporter | port `9256` | loopback/Tailscale firewall |
+| Loki push proxy | HP Tailscale address, port `3101` | Tailscale, push path only |
 | Blackbox Exporter | `127.0.0.1:9315` | Prometheus only |
 
-## Complete the external activation
+Node and Process Exporter listen on all addresses so HP can scrape them, but
+the NixOS firewall permits both ports only on `tailscale0`. They are not public
+or LAN services.
 
-These steps require provider credentials and therefore cannot be represented by
-placeholder values in the repository.
+## External service configuration and rotation
 
-### 1. Create monitoring secrets
+The following provider-side configuration is already active. Use this section
+when recreating the stack or rotating credentials; never substitute placeholder
+values into the encrypted production file.
 
-Create `secrets/monitoring.yaml` with SOPS. The creation rule is already in
+### 1. Monitoring secret profile
+
+`secrets/monitoring.yaml` is managed with SOPS. The creation rule is in
 `.sops.yaml` and grants access to the personal recipients and HP only.
 
 ```yaml
@@ -77,7 +81,7 @@ MONITORING_BACKUP_HEARTBEAT_URL: <different independent HTTPS heartbeat URL>
 
 Do not commit plaintext or substitute fake encrypted values.
 
-### 2. Create the Keycloak realm and client
+### 2. Keycloak realm and client
 
 In Keycloak:
 
@@ -93,9 +97,9 @@ In Keycloak:
 7. Ensure realm roles appear in the access token as `realm_access.roles`.
 8. Assign one routine admin, one Viewer test user, and one break-glass admin.
 
-### 3. Enable secrets, OIDC, notifications, and heartbeats
+### 3. NixOS ownership
 
-Change the HP hub block to include:
+The HP hub is declared with:
 
 ```nix
 my.monitoring.hub = {
@@ -108,7 +112,7 @@ my.monitoring.hub = {
 };
 ```
 
-Add the Grafana origin to the existing tunnel declaration:
+The Grafana origin is part of the existing tunnel declaration:
 
 ```nix
 my.opencloudTunnel.extraIngress."monitor.henhal.net" = {
@@ -117,21 +121,23 @@ my.opencloudTunnel.extraIngress."monitor.henhal.net" = {
 };
 ```
 
-Then build, switch, and verify locally before creating public DNS.
+Keep these gates together. Disabling or rotating one provider should be done by
+updating SOPS/provider state and rebuilding HP, not by editing generated runtime
+files.
 
-### 4. Create Cloudflare DNS and cache rules
+### 4. Cloudflare DNS and cache rules
 
-From a machine holding the Cloudflare origin certificate:
+The existing DNS route was created with:
 
 ```bash
 cloudflared tunnel route dns hp-opencloud monitor.henhal.net
 ```
 
-Add a Cloudflare cache-bypass rule for `monitor.henhal.net`. Do not create a
+Keep a Cloudflare cache-bypass rule for `monitor.henhal.net`. Do not create a
 router port-forward and do not add Prometheus, Alertmanager, Loki, or exporter
 hostnames.
 
-### 5. Test the boundaries
+### 5. Re-test after changes
 
 - login requires Keycloak and MFA
 - a Viewer cannot edit dashboards or data sources
@@ -141,13 +147,59 @@ hostnames.
 - withholding each heartbeat triggers its external late notification
 - public requests to backend ports fail
 
+## Dashboards
+
+Five dashboards are provisioned into the read-only `Henhal Monitoring` folder:
+
+- **Fleet overview** — fleet availability, current phone-friendly CPU, memory,
+  and root-disk cards, CPU/memory timelines, public probes, backup age, and an
+  HP error indicator linking to Logs.
+- **HP services** — unit health, restart activity, local probes, service
+  resources, and relevant service logs.
+- **Backup and synchronization** — Restic, repository checks, staged sources,
+  backup heartbeat delivery, Syncthing, and GitHub mirror status.
+- **Storage and hardware** — filesystems, SMART, I/O, temperatures, battery,
+  plus current and historical process CPU/resident-memory drill-down.
+- **Logs** — warning/error overview and focused journal investigation.
+
+Process metrics are aggregated by executable name. No command line, argument,
+PID, or path label is exported. Process CPU is percent of one CPU core, so a
+multi-threaded executable may legitimately exceed 100%.
+
+Dashboard JSON under `modules/features/monitoring/dashboards/` is canonical.
+Provisioned dashboards are intentionally not editable in Grafana. To change a
+dashboard, edit and validate its JSON, build HP, deploy HP, and reload Grafana.
+Any temporary UI experiment must be exported and deliberately reconciled into
+Git before it is considered persistent.
+
+## Notifications and known deferred conditions
+
+Alertmanager groups by alert name, host, and component, waits 30 seconds before
+the first notification, and sends resolved messages. Critical alerts repeat
+every 4 hours while firing; warnings repeat every 12 hours. A critical alert
+inhibits the matching warning for the same host and component.
+
+The Hermes backup-source degradation alerts and `NixStoreLarge` remain visible
+in Prometheus and Grafana but route to `local-null`. Hermes needs a reviewed
+native export command, and Nix-store capacity is part of the deferred storage
+work. Remove those routes only when the underlying work is complete and the
+alerts are actionable.
+
+Healthchecks.io receives the monitoring-stack heartbeat every five minutes only
+after Prometheus, Alertmanager, Loki, and Grafana pass local readiness checks.
+The separate backup heartbeat is sent only after a successful nightly backup.
+The hosted service, not Grafana, is the authoritative signal when HP, power, or
+the home connection is unavailable.
+
 ## Routine checks
 
 On HP:
 
 ```bash
 systemctl --no-pager --full status \
-  prometheus alertmanager grafana loki alloy prometheus-node-exporter
+  prometheus alertmanager grafana loki alloy \
+  prometheus-node-exporter prometheus-process-exporter \
+  monitoring-stack-heartbeat.timer
 
 curl -fsS http://127.0.0.1:9090/-/ready
 curl -fsS http://127.0.0.1:9093/-/ready
@@ -162,6 +214,17 @@ Inspect Prometheus targets:
 ```bash
 curl -fsS http://127.0.0.1:9090/api/v1/targets \
   | jq -r '.data.activeTargets[] | [.labels.job, .labels.instance, .health, (.lastError // "")] | @tsv'
+```
+
+The `node` and `process` jobs should be `UP` for every currently online and
+deployed host. Workstation and Lenovo may be absent while powered off.
+
+Inspect current high-memory executable groups:
+
+```bash
+curl -fsSG \
+  --data-urlencode 'query=topk(10, sum by (host, groupname) (namedprocess_namegroup_memory_bytes{memtype="resident"}))' \
+  http://127.0.0.1:9090/api/v1/query | jq '.data.result'
 ```
 
 Inspect active alerts:
@@ -182,7 +245,8 @@ sudo journalctl -u prometheus -u alertmanager -u grafana -u loki -u alloy \
 
 1. Import `self.nixosModules.monitoringExporter` in the host.
 2. Enable `my.monitoring.exporter` and set the HP tailnet destination.
-3. Add only the necessary exporter/log-ingestion port to `tailscale0`.
+3. Keep Node Exporter `9300` and Process Exporter `9256` restricted to
+   `tailscale0`; journal shipping uses HP's Tailscale-only Loki push proxy.
 4. Add its stable MagicDNS name to `my.monitoring.hub.scrapeTargets` on HP.
 5. Rebuild the client first, then HP.
 6. Confirm the target is `UP`, logs arrive, and LAN/public access fails.

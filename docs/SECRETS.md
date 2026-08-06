@@ -50,11 +50,25 @@ host key.
 | `secrets/syncthing/<host>.yaml` | matching host only | Host-specific Syncthing identity |
 | `secrets/opencloud.yaml` | HP server only, when added | OpenCloud, Keycloak, and Cloudflare Tunnel credentials |
 | `secrets/hp-backup.yaml` | HP server root services only, when added | Restic/S3 backup credentials |
-| `secrets/monitoring.yaml` | HP server root services only, when added | Grafana OIDC/break-glass secrets, Alertmanager receiver, and independent heartbeat URLs |
+| `secrets/monitoring.yaml` | HP server root services only | Grafana OIDC/break-glass secrets, Alertmanager receiver, and independent heartbeat URLs |
 
 These HP-only paths have recipient rules in `.sops.yaml`; create a profile only
 when its real service credentials exist. Do not add an empty encrypted file or
 placeholder plaintext.
+
+The active monitoring profile contains exactly these service inputs:
+
+- `GRAFANA_OAUTH_CLIENT_SECRET`
+- `GRAFANA_ADMIN_PASSWORD`
+- `GRAFANA_SECRET_KEY`
+- `MONITORING_TELEGRAM_BOT_TOKEN`
+- `MONITORING_TELEGRAM_CHAT_ID` as a quoted YAML string
+- `MONITORING_STACK_HEARTBEAT_URL`
+- `MONITORING_BACKUP_HEARTBEAT_URL`
+
+They are declared explicitly by the monitoring hub. SOPS renders the Telegram
+environment file and root-only heartbeat/Grafana files under `/run`; none are
+loaded into interactive shells.
 
 Every profile includes the two personal editor keys. Machine recipients are
 the minimum required by that profile. In particular, Lenovo and workstation

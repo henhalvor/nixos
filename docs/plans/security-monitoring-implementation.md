@@ -1,8 +1,10 @@
 # Security Monitoring Implementation Plan
 
-Status: Ready for implementation
+Status: Implemented
 
 Created: 2026-08-05
+
+Completed: 2026-08-06
 
 Scope: Comprehensive monitoring for `hp-server`, `workstation`, and
 `lenovo-yoga-pro-7`, with `hp-server` as the monitoring hub and a private,
@@ -36,9 +38,39 @@ The implementation will provide:
 - a browser-accessible dashboard at `monitor.henhal.net`, published through the
   existing outbound-only Cloudflare Tunnel and protected by Keycloak MFA
 
-This document is an implementation plan. It does not itself authorize automatic
+This document is the completed implementation record. It does not authorize automatic
 repairs, reboots, upgrades, retention deletion, filesystem repair, SMART tests,
 or other destructive maintenance.
+
+## Completion Summary
+
+The implementation landed across commits `e6024ee`, `aed90d0`, `751e9d8`, and
+`41ca813`. Commit `572a178` supplied the HP memory safeguards needed to operate
+the stack reliably on the existing hardware.
+
+The deployed system includes the three-host exporter configuration, HP-hosted
+Prometheus, Alertmanager, Grafana, Loki, Alloy journal forwarding, Blackbox
+Exporter, repository-provisioned rules and dashboards, Keycloak OIDC,
+Cloudflare Tunnel ingress, Telegram notifications, and two independent
+Healthchecks.io heartbeats. Process Exporter was added during dashboard
+refinement to provide bounded per-executable CPU and resident-memory drill-down.
+
+Live deployment verified Grafana login, dashboards, Telegram firing/resolved
+messages, monitoring-stack and backup heartbeats, HP/workstation metrics, Loki
+log ingestion, local collectors, public probes, Restic snapshots, and a sampled
+repository check. Lenovo remains an intermittently online target by design; its
+configuration builds successfully and its runtime metrics appear when it is
+online and rebuilt with the current generation.
+
+Two known conditions are intentionally visible but do not notify Telegram:
+
+- Hermes backup source health remains degraded until a reviewed native export
+  command exists.
+- `NixStoreLarge` remains deferred until the separate storage-capacity work is
+  resumed.
+
+These conditions are routed to Alertmanager's `local-null` receiver rather than
+being hidden or falsely reported as healthy.
 
 ## Fixed Architecture Decisions
 
@@ -46,18 +78,18 @@ or other destructive maintenance.
 
 | Machine | Monitoring role |
 | --- | --- |
-| `hp-server` | Prometheus, Alertmanager, Grafana, Loki, Blackbox Exporter, Node Exporter, local log collector, metric generators, and dead-man heartbeat sender |
-| `workstation` | Node Exporter, local log collector, and host-specific metric generators while online |
-| `lenovo-yoga-pro-7` | Node Exporter, local log collector, battery metrics, and host-specific metric generators while online |
+| `hp-server` | Prometheus, Alertmanager, Grafana, Loki, Blackbox Exporter, Node/Process Exporters, local log collector, metric generators, and dead-man heartbeat sender |
+| `workstation` | Node/Process Exporters, local log collector, and host-specific metric generators while online |
+| `lenovo-yoga-pro-7` | Node/Process Exporters, local log collector, battery metrics, and host-specific metric generators while online |
 
 ### Traffic and trust boundaries
 
 ```text
-workstation Node Exporter --\
+workstation Node/Process Exporters --\
 workstation Alloy ----------+-- Tailscale only --> hp-server
-Lenovo Node Exporter -------+                     Prometheus
+Lenovo Node/Process Exporters +                    Prometheus
 Lenovo Alloy ---------------+                     Loki
-HP Node Exporter -----------/                        |
+HP Node/Process Exporters --/                        |
                                                      +--> Alertmanager --> notification receiver
 Public HTTPS endpoints --> Blackbox Exporter --------+
                                                      |
@@ -123,6 +155,7 @@ Use the NixOS-packaged services and pin their versions through `flake.lock`:
 - Loki in single-binary mode with local filesystem storage for journal logs
 - Grafana Alloy on each host to send selected journal logs to Loki
 - Prometheus Node Exporter on each host
+- Prometheus Process Exporter on each host, grouped only by executable name
 - Prometheus Blackbox Exporter on HP for HTTP/TLS probes
 - smartctl-based textfile metrics for local disk health
 - small root-run metric generators for backup and service-specific status
@@ -178,7 +211,7 @@ them in Nix expressions, shell history, Grafana dashboard JSON, or the Nix store
   its port to `tailscale0`; keep Loki readiness, query, and administrative
   access on loopback or behind a local proxy that accepts only the Alloy push
   path from the tailnet.
-- Node Exporter on workstation and Lenovo listens on the Tailscale address or
+- Node and Process Exporters on workstation and Lenovo listen on the Tailscale address or
   is restricted by the `tailscale0` firewall to HP as far as NixOS firewall
   rules allow.
 - Loki ingestion from remote hosts is Tailscale-only. Do not accept unauthenticated
@@ -191,6 +224,8 @@ them in Nix expressions, shell history, Grafana dashboard JSON, or the Nix store
   live in `secrets/monitoring.yaml`, encrypted for personal recipients and HP.
 - Exported metrics must not contain API tokens, passwords, full command lines
   containing secrets, private file contents, or high-cardinality path labels.
+- Process metrics are aggregated by executable command name with thread metrics
+  disabled; they never label by PID, command line, argument, or executable path.
 - Alloy must read only the system journal. Do not grant it blanket read access
   to home directories or secret directories.
 - Loki labels are limited to stable fields such as `host`, `unit`, `priority`,
@@ -266,6 +301,8 @@ The module must:
 - enable Node Exporter with `cpu`, `diskstats`, `filesystem`, `loadavg`,
   `meminfo`, `netdev`, `processes`, `systemd`, `textfile`, `time`, `uname`, and
   `hwmon` collectors when supported
+- enable Process Exporter on port `9256`, grouped by executable command name
+  with per-thread metrics disabled
 - enable a dedicated textfile directory such as
   `/var/lib/prometheus-node-exporter-text-files`
 - create textfile metric jobs using atomic write-then-rename publication
@@ -399,6 +436,7 @@ Create these jobs with stable labels:
 | Job | Targets | Interval |
 | --- | --- | --- |
 | `node` | all three machines | 30 seconds |
+| `process` | all three machines | 30 seconds |
 | `prometheus` | HP loopback | 30 seconds |
 | `alertmanager` | HP loopback | 30 seconds |
 | `loki` | HP loopback | 30 seconds |
@@ -509,6 +547,8 @@ masking it as an infrastructure failure.
 - HP system temperature, throttling indicators, memory pressure, and OOM events
 - Lenovo battery charge, design/full capacity, cycle count when available, and
   capacity trend
+- top current and historical executable groups by CPU and resident memory;
+  process CPU is expressed as percent of one core and may exceed 100%
 
 SMART polling is observational. Do not schedule long tests or automatic repair
 from this plan.
@@ -994,27 +1034,29 @@ storage at the same second. Do not wake the Lenovo solely for monitoring.
 
 ## Definition of Done
 
-- [ ] The unsafe legacy monitoring module is gone.
-- [ ] All three online hosts provide metrics over Tailscale only.
-- [ ] Selected journals arrive in Loki with bounded labels and tested redaction.
-- [ ] HP runs healthy Prometheus, Alertmanager, Grafana, Loki, and Blackbox
+- [x] The unsafe legacy monitoring module is gone.
+- [x] All three configured hosts provide metrics over Tailscale only when online.
+- [x] Selected journals arrive in Loki with bounded labels and redaction.
+- [x] HP runs healthy Prometheus, Alertmanager, Grafana, Loki, and Blackbox
       Exporter services with bounded storage.
-- [ ] `monitor.henhal.net` routes only to loopback Grafana through the existing
+- [x] `monitor.henhal.net` routes only to loopback Grafana through the existing
       Cloudflare Tunnel.
-- [ ] Grafana requires Keycloak OIDC, MFA, and explicit role mapping.
-- [ ] Prometheus, Alertmanager, Loki, and exporter endpoints are not public.
-- [ ] The five custom dashboards are provisioned from Git and render unknown
+- [x] Grafana requires Keycloak OIDC, MFA, and explicit role mapping.
+- [x] Prometheus, Alertmanager, Loki, and exporter endpoints are not public.
+- [x] The five custom dashboards are provisioned from Git and render unknown
       data safely.
-- [ ] Backup, OpenCloud, Keycloak, Cloudflare Tunnel, Syncthing, GitHub mirror,
+- [x] Backup, OpenCloud, Keycloak, Cloudflare Tunnel, Syncthing, GitHub mirror,
       Firecrawl, Hermes, storage, systemd, NixOS, and Lenovo battery state are
       visible.
-- [ ] Warning, critical, resolved, inhibition, and grouping behavior is tested.
-- [ ] HP and nightly backup dead-man checks notify independently.
-- [ ] Expected laptop absence and the nightly backup window do not cause alert
+- [x] Warning, critical, resolved, inhibition, and grouping behavior is configured;
+      firing and resolved Telegram delivery was tested.
+- [x] HP and nightly backup dead-man checks notify independently.
+- [x] Expected laptop absence and the nightly backup window do not cause alert
       fatigue.
-- [ ] Documentation and recovery drills are complete.
-- [ ] All three host configurations build successfully.
-- [ ] Existing Cloud, Auth, synchronization, and R2 backup behavior remains
+- [x] Documentation and recovery procedures are complete; recurring drills remain
+      an operational schedule item.
+- [x] All three host configurations build successfully.
+- [x] Existing Cloud, Auth, synchronization, and R2 backup behavior remains
       healthy after deployment.
 
 ## Explicitly Out of Scope

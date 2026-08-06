@@ -40,10 +40,11 @@ Detailed breakdown of what each host includes and its specific settings.
 </details>
 
 <details>
-<summary>Server & Connectivity (2)</summary>
+<summary>Server & Connectivity (3)</summary>
 
 - `sshServer` — OpenSSH
 - `tailscale` — VPN
+- `monitoringExporter` — Tailscale-only Node/Process metrics and journal forwarding
 </details>
 
 <details>
@@ -154,10 +155,11 @@ my.desktop.browser = "vivaldi";
 </details>
 
 <details>
-<summary>Server & Connectivity (2)</summary>
+<summary>Server & Connectivity (3)</summary>
 
 - `sshServer` — OpenSSH
 - `tailscale` — VPN
+- `monitoringExporter` — Tailscale-only Node/Process, battery, Syncthing, and journal telemetry
 </details>
 
 <details>
@@ -265,8 +267,8 @@ my.desktop.browser = "vivaldi";
 - `serverBase` — fail2ban, auto-upgrades, GC
 - `sshServer` — OpenSSH
 - `tailscale` — VPN
-- `monitoringExporter` — host metrics and selected journal forwarding
-- `monitoringHub` — Prometheus, Alertmanager, Grafana, Loki, probes, and dashboards
+- `monitoringExporter` — Node/Process metrics, custom collectors, and selected journal forwarding over Tailscale
+- `monitoringHub` — Prometheus, Telegram Alertmanager, Grafana, Loki, probes, dashboards, and external heartbeats
 - `laptopServer` — lid-close ignore, wake-on-LAN
 </details>
 
