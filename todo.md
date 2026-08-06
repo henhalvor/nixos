@@ -12,6 +12,8 @@
 - Low power mode for workstation so i cant hear fan noise but dont have to turn of the system.
 <!-- - Printer setup -->
 
+Phase 6 and 7 custom dashboards and alerts security-monitoring-implementation.md
+
 <!-- - Notification setup??? What is currently being used, Why isnt noctalia notifications working? -->
 
 - Only-office instead of libre office

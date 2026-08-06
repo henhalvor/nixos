@@ -155,6 +155,11 @@
           default = 9300;
           description = "Prometheus Node Exporter TCP port, reachable only via tailscaleInterface.";
         };
+        processExporterPort = mkOption {
+          type = types.port;
+          default = 9256;
+          description = "Prometheus Process Exporter TCP port, reachable only via tailscaleInterface.";
+        };
         lokiPort = mkOption {
           type = types.port;
           default = 3101;
@@ -252,7 +257,26 @@
             extraFlags = [ "--collector.textfile.directory=${textfileDirectory}" ];
           };
 
-          networking.firewall.interfaces.${cfg.tailscaleInterface}.allowedTCPPorts = [ cfg.nodeExporterPort ];
+          # Aggregate processes by executable name. This provides useful CPU
+          # and memory attribution without exporting command lines, arguments,
+          # PIDs, or another unbounded label.
+          services.prometheus.exporters.process = {
+            enable = true;
+            port = cfg.processExporterPort;
+            listenAddress = "0.0.0.0";
+            extraFlags = [ "--threads=false" ];
+            settings.process_names = [
+              {
+                name = "{{.Comm}}";
+                cmdline = [ ".+" ];
+              }
+            ];
+          };
+
+          networking.firewall.interfaces.${cfg.tailscaleInterface}.allowedTCPPorts = [
+            cfg.nodeExporterPort
+            cfg.processExporterPort
+          ];
 
           systemd.services."henhal-monitoring-nixos-health" = {
             description = "Publish NixOS health metrics";

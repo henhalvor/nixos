@@ -17,6 +17,10 @@
         targets = [ "${target}:${toString cfg.nodeExporterPort}" ];
         labels.host = host;
       }) cfg.scrapeTargets;
+      processStaticConfigs = lib.mapAttrsToList (host: target: {
+        targets = [ "${target}:${toString cfg.processExporterPort}" ];
+        labels.host = host;
+      }) cfg.scrapeTargets;
 
       blackboxTargets = map (host: "https://${host}") (
         (lib.optional cfg.enableOidc cfg.publicHost) ++ [ cfg.authHost ] ++ cfg.extraPublicProbeHosts
@@ -179,6 +183,10 @@
           type = lib.types.port;
           default = 9300;
         };
+        processExporterPort = lib.mkOption {
+          type = lib.types.port;
+          default = 9256;
+        };
         blackboxPort = lib.mkOption {
           type = lib.types.port;
           default = 9315;
@@ -333,6 +341,11 @@
               job_name = "node";
               scrape_interval = "30s";
               static_configs = nodeStaticConfigs;
+            }
+            {
+              job_name = "process";
+              scrape_interval = "30s";
+              static_configs = processStaticConfigs;
             }
             {
               job_name = "prometheus";
