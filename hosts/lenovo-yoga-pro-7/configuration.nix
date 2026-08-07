@@ -86,7 +86,7 @@
         self.nixosModules.gthumb
         self.nixosModules.mpv
         self.nixosModules.zathura
-        self.nixosModules.libreoffice
+        self.nixosModules.onlyoffice
         self.nixosModules.nautilus
         self.nixosModules.missionCenter
         self.nixosModules.gnomeCalculator

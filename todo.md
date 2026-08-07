@@ -12,23 +12,27 @@
 - Low power mode for workstation so i cant hear fan noise but dont have to turn of the system.
 <!-- - Printer setup -->
 
-Phase 6 and 7 custom dashboards and alerts security-monitoring-implementation.md
+<!-- Phase 6 and 7 custom dashboards and alerts security-monitoring-implementation.md -->
 
 <!-- - Notification setup??? What is currently being used, Why isnt noctalia notifications working? -->
 
-- Only-office instead of libre office
+<!-- - Only-office instead of libre office -->
   <!-- - Remove current screenshot tool, use noctalia built in -->
   <!-- - Remove current clipboard and launcher keybinds use noctalia built in -->
-  - hermes agent backup export && hermes agent update
+
+- hermes agent backup export && hermes agent update
 
 <!-- PHASE 4 in security and backup implementation plan -->
 
+<!-- - Set up bitwarden account with google authenticator + migrate passwords there -->
+
+- Rebuild lenovo yoga pro 7 laptop + configure hybernation
 <!-- PHASE 6 in implementation plan -->
 
-confirm github repo backup is working
+<!-- confirm github repo backup is working -->
 
-- Sops breakglass key externaly stored
-- Bitwarden password manager
+<!-- - Sops breakglass key externaly stored -->
+<!-- - Bitwarden password manager -->
 
 <!-- - Floating email window -->
 
