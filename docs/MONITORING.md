@@ -1,5 +1,9 @@
 # Monitoring
 
+The monitored ttyd, nginx gateway, and OAuth proxy units and their redacted
+operational checks are documented in the
+[secure web terminal runbook](runbooks/ttyd-web-terminal.md).
+
 ## Overview
 
 `hp-server` is the monitoring hub for the three NixOS systems. Prometheus

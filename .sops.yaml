@@ -49,6 +49,12 @@ creation_rules:
         - *henhal-lenovo
         - *henhal-workstation
         - *hp-server
+  - path_regex: secrets/ttyd\.yaml$
+    key_groups:
+      - age:
+        - *henhal-lenovo
+        - *henhal-workstation
+        - *hp-server
   - path_regex: secrets/workstation-services\.yaml$
     key_groups:
       - age:

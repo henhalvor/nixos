@@ -1,5 +1,9 @@
 # OpenCloud service and client guide
 
+The browser terminal shares this outbound-only Cloudflare Tunnel but has its
+own Keycloak realm and OAuth boundary. See the
+[secure web terminal runbook](runbooks/ttyd-web-terminal.md).
+
 ## Overview
 
 OpenCloud provides the normal file service for documents, photos, music, and

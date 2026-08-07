@@ -49,6 +49,8 @@
         self.nixosModules.opencloud
         self.nixosModules.opencloudKeycloak
         self.nixosModules.opencloudTunnel
+        self.nixosModules.ttydWebTerminalTarget
+        self.nixosModules.ttydWebTerminalGateway
         self.nixosModules.opencloudConsistentSource
         self.nixosModules.githubMirror
         self.nixosModules.hpResticS3
@@ -126,6 +128,27 @@
         service = "http://127.0.0.1:3000";
         httpHostHeader = "monitor.henhal.net";
       };
+      my.opencloudTunnel.extraIngress."terminal.henhal.net" = {
+        service = "http://127.0.0.1:4180";
+        httpHostHeader = "terminal.henhal.net";
+      };
+
+      my.ttydWebTerminalTarget = {
+        enable = true;
+        displayName = "HP server (restricted)";
+        basePath = "/hp/";
+      };
+      my.ttydWebTerminalGateway = {
+        enable = true;
+        publicHost = "terminal.henhal.net";
+        authHost = "auth.henhal.net";
+        secretFile = ../../secrets/ttyd.yaml;
+        targets.hp = {
+          displayName = "HP server (restricted)";
+          path = "/hp/";
+          upstream = "http://unix:/run/ttyd-web-terminal/ttyd.sock:";
+        };
+      };
 
       my.opencloudConsistentSource.enable = true;
       my.githubMirror.enable = true;
@@ -170,6 +193,9 @@
           "syncthing.service"
           "firecrawl.service"
           "hermes-agent.service"
+          "ttyd-web-terminal.service"
+          "oauth2-proxy.service"
+          "nginx.service"
         ];
         fullJournalUnits = [
           "opencloud.service"
@@ -179,6 +205,9 @@
           "github-mirror.service"
           "firecrawl.service"
           "hermes-agent.service"
+          "ttyd-web-terminal.service"
+          "oauth2-proxy.service"
+          "nginx.service"
         ];
       };
       my.monitoring.hub = {
