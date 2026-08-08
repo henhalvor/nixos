@@ -149,16 +149,6 @@
     # p10k config — user manages ~/.p10k.zsh manually or via dotfiles
     home.file.".p10k.zsh" = {
       source = ./p10k.zsh;
-      onChange = ''
-        if [[ -n "$ZDOTDIR" ]]; then
-          zsh_path="$ZDOTDIR/.zshrc"
-        else
-          zsh_path="$HOME/.zshrc"
-        fi
-        if [[ -f "$zsh_path" ]]; then
-          source "$zsh_path"
-        fi
-      '';
     };
   };
 }

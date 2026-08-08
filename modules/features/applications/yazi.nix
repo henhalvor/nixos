@@ -74,7 +74,7 @@
         SECRETS_LOADER="$HOME/.local/secrets/load-secrets.sh"
         if [[ -f "$SECRETS_LOADER" ]]; then
           source "$SECRETS_LOADER"
-        else
+        elif [[ "${config.my.account.role}" == "personal" ]]; then
           echo "Warning: Secrets loader script not found at $SECRETS_LOADER" >&2
         fi
         exec nvim "$@"

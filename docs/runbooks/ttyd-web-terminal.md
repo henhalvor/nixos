@@ -5,9 +5,10 @@ This runbook completes and operates the browser terminal at
 `oauth2-proxy` through the existing `my.opencloudTunnel`; nginx and ttyd remain
 loopback-only on `hp-server`.
 
-The HP shell is deliberately the unprivileged `webdev` account. It has no
-sudo, SSH keys, SOPS identities, production credentials, or access to
-`/home/henhal`. Administrative work remains available over Tailscale SSH.
+The HP shell is deliberately the unprivileged `code-shell` account. It has no
+sudo, authorized login keys, inherited personal credentials, SOPS identities,
+production credentials, or access to `/home/henhal`. Administrative work
+remains available over Tailscale SSH.
 
 ## One-time control-plane setup
 
@@ -95,7 +96,7 @@ From a clean browser outside the home network, prove:
 - unauthenticated requests redirect to the `terminal` realm;
 - MFA and the `ttyd-user` role are required;
 - `/` shows only the fixed HP target and unknown paths return 404;
-- `/hp/` opens a writable terminal whose `id` reports `webdev`;
+- `/hp/` opens a writable terminal whose `id` reports `code-shell`;
 - `/home/henhal`, runtime secrets, `sudo`, and privileged groups are unavailable;
 - reconnecting attaches to tmux session `web` and a second client is rejected;
 - logout prevents a new connection.
@@ -108,7 +109,7 @@ record that behavior rather than assuming instant revocation.
 Reset only the HP terminal:
 
 ```bash
-sudo -u webdev tmux kill-session -t web
+sudo -u code-shell tmux kill-session -t web
 sudo systemctl restart ttyd-web-terminal.service
 ```
 
@@ -116,7 +117,7 @@ Terminate all active browser access:
 
 ```bash
 sudo systemctl stop oauth2-proxy.service nginx.service ttyd-web-terminal.service
-sudo -u webdev tmux kill-session -t web
+sudo -u code-shell tmux kill-session -t web
 ```
 
 During suspected compromise, first disable the Cloudflare hostname, then
@@ -125,9 +126,10 @@ rotate both values in `secrets/ttyd.yaml`, update the Keycloak client secret,
 rebuild, and retest. Rotating only the OIDC client secret does not invalidate
 every existing oauth2-proxy cookie.
 
-Treat every file or Git credential readable by `webdev` as exposed. HP should
-normally have no persistent push credential. Prefer a short-lived login or a
-repository-scoped, expiring credential and remove it afterward.
+Treat every file or Git credential readable by `code-shell` as exposed. Follow
+the dedicated, passphrase-protected, host-specific credential policy in the
+[code-shell implementation plan](../plans/ttyd-code-shell-environment-implementation.md),
+and revoke that credential during a suspected compromise.
 
 ## Future coding server
 

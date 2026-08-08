@@ -28,7 +28,7 @@ before a WebSocket terminal can be opened.
 
 This is remote **coding** access, not a replacement for administrative SSH.
 Every target terminal will run as a host-local, dedicated, unprivileged
-`webdev` user. It must not run as `root`, as an administrative wheel user, or
+`code-shell` user. It must not run as `root`, as an administrative wheel user, or
 as a service account. Server administration, deployment, recovery, and secret
 editing will continue over Tailscale SSH.
 
@@ -85,7 +85,7 @@ HP ttyd                  coding-server ttyd
 127.0.0.1:7681           <coding Tailscale IP>:7681
   |                         |
   v                         v
-HP webdev tmux           coding webdev tmux
+HP code-shell tmux       coding code-shell tmux
 ```
 
 `ttyd` has no native Keycloak OIDC support. `oauth2-proxy` is therefore the
@@ -118,7 +118,7 @@ Use these initial values:
 | Keycloak client ID | `ttyd` |
 | OAuth callback | `https://terminal.henhal.net/oauth2/callback` |
 | Required realm role | `ttyd-user` |
-| Unix account | host-local `webdev` on every target |
+| Unix account | host-local `code-shell` on every target |
 | Persistent terminal | host-local tmux session `web` |
 
 ## Security Requirements
@@ -168,13 +168,13 @@ Use these initial values:
 
 ### Terminal, target, and Unix account boundary
 
-- Declare a separate persistent `webdev` normal user on each terminal host,
+- Declare a separate persistent `code-shell` system user on each terminal host,
   with its own host-local home, no wheel group, no trusted Nix role, no Docker
   group, no service groups, and no authorized SSH keys.
 - Do not copy the `henhal` home, SSH keys, Git credentials, browser data,
   SOPS/age identities, Cloudflare credentials, Restic credentials, or
   application secrets into the account.
-- Give each `webdev` only its own code workspace. Do not share its home or
+- Give each `code-shell` only its own code workspace. Do not share its home or
   credentials between HP and the coding server. Clone repositories with a
   dedicated, least-privilege, host-specific Git credential only if pushing is
   required; a read-only deploy key is preferred when it is sufficient.
@@ -184,7 +184,7 @@ Use these initial values:
 - Enable every ttyd instance's writable mode, base path, same-origin WebSocket
   check, auth-proxy header, and a single-client limit. Do not configure ttyd
   Basic Auth as a second, weaker password database.
-- Run each ttyd instance under systemd as its local `webdev`, set `HOME`,
+- Run each ttyd instance under systemd as its local `code-shell`, set `HOME`,
   `USER`, `LOGNAME`, a safe `PATH`, working directory, and `TERM` explicitly,
   and use a restrictive umask.
 - Apply compatible systemd hardening (`PrivateTmp`, protected kernel controls,
@@ -265,7 +265,7 @@ details directly in the host configuration.
 ### 1. Add reusable target and gateway modules
 
 Add `modules/features/remote-access/ttyd-target.nix` and export a reusable
-`self.nixosModules.ttydWebTerminalTarget`. It owns one host's `webdev`
+`self.nixosModules.ttydWebTerminalTarget`. It owns one host's `code-shell`
 account, workspace, resource slice, and hardened ttyd unit. Its interface must
 distinguish a loopback HP target from a Tailscale-only remote target without
 allowing arbitrary runtime destinations.
@@ -290,7 +290,7 @@ my.ttydWebTerminalGateway = {
 
 The target module should own:
 
-- the `webdev` user, group, home, workspace, and safe shell environment
+- the `code-shell` user, group, home, workspace, and safe shell environment
 - the resource-control slice
 - a custom hardened `ttyd-web-terminal.service`
 - listener/firewall behavior appropriate to local or remote target mode
@@ -339,7 +339,7 @@ tunnel credential.
 After its hostname, hardware, and stable Tailscale identity exist:
 
 - import `ttydWebTerminalTarget` into that host only
-- declare its host-local `webdev`, code workspace, resource limits, and ttyd
+- declare its host-local `code-shell`, code workspace, resource limits, and ttyd
   base path `/coding/`
 - bind ttyd to its stable Tailscale address and restrict the firewall source to
   HP's stable Tailscale address
@@ -380,7 +380,7 @@ After deployment, add an as-built section or dedicated runbook linked from
    `terminal.henhal.net` is not already routed.
 3. Inspect HP memory, disk space, and current service failures before adding a
    persistent coding workload.
-4. Confirm `webdev` has no need for wheel, Docker, SOPS, production service
+4. Confirm `code-shell` has no need for wheel, Docker, SOPS, production service
    credentials, or the existing `henhal` home. If any is claimed to be needed,
    stop and perform a separate privilege review rather than weakening this
    plan implicitly.
@@ -443,7 +443,7 @@ fail-closed by construction.
    SSH forward or host-resolution override. Direct unauthenticated requests to
    the gateway or ttyd must fail; unauthenticated proxy requests must redirect
    to the `terminal` realm.
-5. Verify that the shell UID is `webdev`, `sudo`/setuid escalation fails,
+5. Verify that the shell UID is `code-shell`, `sudo`/setuid escalation fails,
    sensitive homes and runtime secrets are unreadable, and resource controls
    are attached to the intended cgroup.
 6. Exercise terminal resize, copy/paste, reconnect, tmux attachment, concurrent
@@ -523,7 +523,7 @@ host definition and stable Tailscale identity.
 1. Inspect the new machine's actual CPU, memory, storage, users, repository
    ownership, and Tailscale address; choose its permanent hostname separately.
 2. Import and configure `ttydWebTerminalTarget` with base path `/coding/`,
-   host-local `webdev`, and resource limits sized for that machine.
+   host-local `code-shell`, and resource limits sized for that machine.
 3. Deploy the coding server first. From HP, test its Tailscale-only ttyd origin,
    trusted-header rejection, firewall source restriction, host identity, tmux,
    privilege boundary, and resource controls. From another tailnet peer, prove
@@ -599,12 +599,12 @@ local service remains alive during activation.
 2. Disable the Keycloak user and client and revoke realm sessions.
 3. Run the gateway-wide reset to kill `oauth2-proxy`, the gateway, every ttyd
    instance, and each host's `web` tmux session. Verify no child processes
-   remain under either host's `webdev` account.
+   remain under either host's `code-shell` account.
 4. Rotate both the OIDC client secret and OAuth cookie secret; rotation of only
    the client secret does not invalidate every existing proxy cookie.
 5. Review redacted Keycloak, OAuth proxy, gateway, Cloudflare, Tailscale,
    systemd, and filesystem evidence. Assume every file and credential readable
-   by `webdev` on any reached target may have been exposed.
+   by `code-shell` on any reached target may have been exposed.
 6. Re-enable only after the cause is understood and all access and recovery
    tests pass again.
 
@@ -621,7 +621,7 @@ The implementation is complete only when:
 - No ttyd terminal can be reached through the web gateway without a valid
   OAuth proxy session, and neither target selection nor URL arguments can
   choose an arbitrary command or upstream.
-- Every shell runs only as that host's unprivileged `webdev`, cannot use
+- Every shell runs only as that host's unprivileged `code-shell`, cannot use
   sudo/setuid escalation, and cannot read administrative homes, root, SOPS,
   backup, tunnel, or service credentials.
 - A single writable browser client per target can reconnect to its intended

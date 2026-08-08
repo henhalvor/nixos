@@ -226,6 +226,22 @@ The user module is deliberately slim — identity only:
 Features define `options.my.*`, the user module sets their values, and hosts
 decide which features to include.
 
+### Restricted service-owned accounts
+
+Human identities such as `henhal` remain in `modules/users/`. An account that
+exists only for one service is owned by that feature instead. For example,
+`ttydWebTerminalTarget` owns the `code-shell` system user, its restricted Home
+Manager declaration, workspace, and service unit. This keeps the complete
+identity boundary removable and auditable in one place.
+
+Shared Home Manager modules use `my.account.role` only when behavior depends on
+identity or privilege. The default `personal` role preserves normal user
+behavior. The `restricted-code-shell` role disables personal secret injection,
+automatic credential creation, personal SSH aliases, desktop theme assets, and
+personal home paths while still reusing ordinary CLI application modules.
+Application styling and general program configuration should not grow role
+checks unless they cross this security boundary.
+
 ## Nix-on-Droid
 
 The Android configuration lives in `modules/nix-on-droid/`. It doesn't use

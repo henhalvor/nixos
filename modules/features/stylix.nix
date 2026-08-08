@@ -81,16 +81,26 @@
   };
 
   # Home Manager module — HM-specific stylix target overrides
-  flake.homeModules.stylix = {...}: {
-    # Disable Stylix auto-theming for neovim (the wrapped nvim config handles its own theme)
-    stylix.targets.neovim.enable = false;
+  flake.homeModules.stylix = {
+    config,
+    lib,
+    ...
+  }: {
+    config = lib.mkMerge [
+      (lib.mkIf (config.my.account.role == "restricted-code-shell") {
+        # A service-owned coding shell does not need desktop theme assets.
+        stylix.enable = lib.mkForce false;
+      })
+      (lib.mkIf (config.my.account.role == "personal") {
+        # The wrapped nvim config handles its own theme.
+        stylix.targets.neovim.enable = false;
 
-    # Use qtct for Qt theming (avoids deprecated "gnome" platform warning)
-    stylix.targets.qt.platform = "qtct";
-    qt.platformTheme.name = "qtct";
+        # Use qtct for Qt theming (avoids deprecated "gnome" platform warning).
+        stylix.targets.qt.platform = "qtct";
+        qt.platformTheme.name = "qtct";
 
-    stylix.targets.kde = {
-      enable = true;
-    };
+        stylix.targets.kde.enable = true;
+      })
+    ];
   };
 }

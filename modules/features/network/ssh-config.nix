@@ -6,7 +6,11 @@
     home-manager.sharedModules = [self.homeModules.sshConfig];
   };
 
-  flake.homeModules.sshConfig = {...}: let
+  flake.homeModules.sshConfig = {
+    config,
+    lib,
+    ...
+  }: let
     portsToForward = [
       {
         bind.port = 3000;
@@ -94,104 +98,105 @@
         host.port = 19003;
       } # Expo Debugger
     ];
-  in {
-    programs.ssh = {
-      enable = true;
-      enableDefaultConfig = false;
-      matchBlocks = {
-        "server" = {
-          hostname = "10.0.0.120";
-          user = "henhal";
-          identityFile = "~/.ssh/id_workstation";
-          extraOptions = {
-            RequestTTY = "yes";
-            RemoteCommand = "tmux new-session -A -s main";
-            ExitOnForwardFailure = "yes";
-            ControlMaster = "auto";
-            ControlPath = "~/.ssh/control:%h:%p:%r";
-            ControlPersist = "10m";
-            IPQoS = "lowdelay throughput";
+  in
+    lib.mkIf (config.my.account.role == "personal") {
+      programs.ssh = {
+        enable = true;
+        enableDefaultConfig = false;
+        matchBlocks = {
+          "server" = {
+            hostname = "10.0.0.120";
+            user = "henhal";
+            identityFile = "~/.ssh/id_workstation";
+            extraOptions = {
+              RequestTTY = "yes";
+              RemoteCommand = "tmux new-session -A -s main";
+              ExitOnForwardFailure = "yes";
+              ControlMaster = "auto";
+              ControlPath = "~/.ssh/control:%h:%p:%r";
+              ControlPersist = "10m";
+              IPQoS = "lowdelay throughput";
+            };
+            compression = true;
+            serverAliveInterval = 15;
+            serverAliveCountMax = 6;
+            dynamicForwards = [
+              {
+                port = 8888;
+                address = "localhost";
+              }
+            ];
+            localForwards = portsToForward;
           };
-          compression = true;
-          serverAliveInterval = 15;
-          serverAliveCountMax = 6;
-          dynamicForwards = [
-            {
-              port = 8888;
-              address = "localhost";
-            }
-          ];
-          localForwards = portsToForward;
-        };
 
-        "workstation" = {
-          hostname = "10.0.0.5";
-          user = "henhal";
-          extraOptions = {
-            RequestTTY = "yes";
-            RemoteCommand = "tmux new-session -A -s main";
-            Compression = "yes";
-            ControlMaster = "auto";
-            ControlPath = "~/.ssh/control:%h:%p:%r";
-            ControlPersist = "10m";
+          "workstation" = {
+            hostname = "10.0.0.5";
+            user = "henhal";
+            extraOptions = {
+              RequestTTY = "yes";
+              RemoteCommand = "tmux new-session -A -s main";
+              Compression = "yes";
+              ControlMaster = "auto";
+              ControlPath = "~/.ssh/control:%h:%p:%r";
+              ControlPersist = "10m";
+            };
+            localForwards = portsToForward;
+            compression = true;
+            serverAliveInterval = 30;
+            serverAliveCountMax = 3;
           };
-          localForwards = portsToForward;
-          compression = true;
-          serverAliveInterval = 30;
-          serverAliveCountMax = 3;
-        };
 
-        "workstation-tailscale" = {
-          hostname = "workstation.tail37a5eb.ts.net";
-          user = "henhal";
-          extraOptions = {
-            RequestTTY = "yes";
-            RemoteCommand = "tmux new-session -A -s main";
-            Compression = "yes";
-            ControlMaster = "auto";
-            ControlPath = "~/.ssh/control:%h:%p:%r";
-            ControlPersist = "10m";
+          "workstation-tailscale" = {
+            hostname = "workstation.tail37a5eb.ts.net";
+            user = "henhal";
+            extraOptions = {
+              RequestTTY = "yes";
+              RemoteCommand = "tmux new-session -A -s main";
+              Compression = "yes";
+              ControlMaster = "auto";
+              ControlPath = "~/.ssh/control:%h:%p:%r";
+              ControlPersist = "10m";
+            };
+            localForwards = portsToForward;
+            compression = true;
+            serverAliveInterval = 30;
+            serverAliveCountMax = 3;
           };
-          localForwards = portsToForward;
-          compression = true;
-          serverAliveInterval = 30;
-          serverAliveCountMax = 3;
-        };
 
-        "server-tailscale" = {
-          hostname = "hp-server-1.tail37a5eb.ts.net";
-          user = "henhal";
-          identityFile = "~/.ssh/id_workstation";
-          extraOptions = {
-            RequestTTY = "yes";
-            RemoteCommand = "tmux new-session -A -s main";
-            Compression = "yes";
-            ControlMaster = "auto";
-            ControlPath = "~/.ssh/control:%h:%p:%r";
-            ControlPersist = "10m";
+          "server-tailscale" = {
+            hostname = "hp-server-1.tail37a5eb.ts.net";
+            user = "henhal";
+            identityFile = "~/.ssh/id_workstation";
+            extraOptions = {
+              RequestTTY = "yes";
+              RemoteCommand = "tmux new-session -A -s main";
+              Compression = "yes";
+              ControlMaster = "auto";
+              ControlPath = "~/.ssh/control:%h:%p:%r";
+              ControlPersist = "10m";
+            };
+            compression = true;
+            serverAliveInterval = 30;
+            serverAliveCountMax = 3;
           };
-          compression = true;
-          serverAliveInterval = 30;
-          serverAliveCountMax = 3;
-        };
 
-        "laptop" = {
-          hostname = "10.0.0.25";
-          user = "henhal";
-          identityFile = "~/.ssh/id_workstation";
-          extraOptions = {
-            RequestTTY = "yes";
-            RemoteCommand = "tmux new-session -A -s main";
-            Compression = "yes";
-            ControlMaster = "auto";
-            ControlPath = "~/.ssh/control:%h:%p:%r";
-            ControlPersist = "10m";
+          "laptop" = {
+            hostname = "10.0.0.25";
+            user = "henhal";
+            identityFile = "~/.ssh/id_workstation";
+            extraOptions = {
+              RequestTTY = "yes";
+              RemoteCommand = "tmux new-session -A -s main";
+              Compression = "yes";
+              ControlMaster = "auto";
+              ControlPath = "~/.ssh/control:%h:%p:%r";
+              ControlPersist = "10m";
+            };
+            compression = true;
+            serverAliveInterval = 30;
+            serverAliveCountMax = 3;
           };
-          compression = true;
-          serverAliveInterval = 30;
-          serverAliveCountMax = 3;
         };
       };
     };
-  };
 }

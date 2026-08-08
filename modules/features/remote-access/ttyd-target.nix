@@ -1,4 +1,4 @@
-{...}: {
+{self, ...}: {
   flake.nixosModules.ttydWebTerminalTarget = {
     config,
     lib,
@@ -9,6 +9,7 @@
     isLoopback = lib.elem cfg.listenAddress ["127.0.0.1" "::1"];
     isRemote = cfg.exposure == "tailscale";
     localSocket = "/run/ttyd-web-terminal/ttyd.sock";
+    homeManagerService = "home-manager-${lib.replaceStrings ["-"] ["\\x2d"] cfg.user}.service";
     listenerArgs =
       if isLoopback
       then [
@@ -23,31 +24,33 @@
         "--interface"
         cfg.listenAddress
       ];
-    ttydArgs = listenerArgs ++ [
-      "--auth-header"
-      cfg.authHeader
-      "--writable"
-      "--check-origin"
-      "--max-clients"
-      "1"
-      "--base-path"
-      cfg.basePath
-      "--terminal-type"
-      "xterm-256color"
-      "--client-option"
-      "titleFixed=${cfg.displayName}"
-      "--cwd"
-      cfg.workspace
-      "--debug"
-      "5"
-      "${lib.getExe pkgs.tmux}"
-      "new-session"
-      "-A"
-      "-s"
-      cfg.tmuxSession
-      "${lib.getExe pkgs.zsh}"
-      "-l"
-    ];
+    ttydArgs =
+      listenerArgs
+      ++ [
+        "--auth-header"
+        cfg.authHeader
+        "--writable"
+        "--check-origin"
+        "--max-clients"
+        "1"
+        "--base-path"
+        cfg.basePath
+        "--terminal-type"
+        "xterm-256color"
+        "--client-option"
+        "titleFixed=${cfg.displayName}"
+        "--cwd"
+        cfg.workspace
+        "--debug"
+        "5"
+        "${lib.getExe pkgs.tmux}"
+        "new-session"
+        "-A"
+        "-s"
+        cfg.tmuxSession
+        "${lib.getExe pkgs.zsh}"
+        "-l"
+      ];
   in {
     options.my.ttydWebTerminalTarget = {
       enable = lib.mkEnableOption "a hardened ttyd web-terminal target";
@@ -57,7 +60,7 @@
       };
       user = lib.mkOption {
         type = lib.types.str;
-        default = "webdev";
+        default = "code-shell";
         description = "Dedicated unprivileged Unix account for this target.";
       };
       workspace = lib.mkOption {
@@ -142,6 +145,10 @@
           assertion = !(lib.elem cfg.user config.users.groups.docker.members);
           message = "The ttyd account must not be a Docker group member because Docker access is root-equivalent.";
         }
+        {
+          assertion = cfg.workspace == "/home/${cfg.user}" || lib.hasPrefix "/home/${cfg.user}/" cfg.workspace;
+          message = "The ttyd workspace must remain inside the dedicated account home.";
+        }
       ];
 
       users.groups.${cfg.user} = {};
@@ -160,9 +167,20 @@
         extraGroups = [];
       };
 
-      systemd.tmpfiles.rules = [
-        "d ${cfg.workspace} 0700 ${cfg.user} ${cfg.user} -"
-      ] ++ lib.optional isLoopback "d /run/ttyd-web-terminal 0750 ${cfg.user} ttyd-web-terminal -";
+      home-manager.users.${cfg.user} = {
+        nixpkgs.config.allowUnfree = true;
+        home.username = cfg.user;
+        home.homeDirectory = "/home/${cfg.user}";
+        home.stateVersion = "25.05";
+        programs.home-manager.enable = true;
+        my.account.role = "restricted-code-shell";
+      };
+
+      systemd.tmpfiles.rules =
+        [
+          "d ${cfg.workspace} 0700 ${cfg.user} ${cfg.user} -"
+        ]
+        ++ lib.optional isLoopback "d /run/ttyd-web-terminal 0750 ${cfg.user} ttyd-web-terminal -";
 
       systemd.slices.ttyd-web-terminal = {
         description = "Resource boundary for browser terminal workloads";
@@ -180,7 +198,8 @@
       systemd.services.ttyd-web-terminal = {
         description = "Hardened ttyd browser terminal for ${cfg.displayName}";
         wantedBy = ["multi-user.target"];
-        after = ["network.target"];
+        after = ["network.target" homeManagerService];
+        requires = [homeManagerService];
         serviceConfig = {
           User = cfg.user;
           Group = cfg.user;
@@ -195,7 +214,7 @@
             "USER=${cfg.user}"
             "LOGNAME=${cfg.user}"
             "TERM=xterm-256color"
-            "PATH=${lib.makeBinPath [pkgs.coreutils pkgs.git pkgs.nix pkgs.tmux pkgs.zsh]}"
+            "PATH=/etc/profiles/per-user/${cfg.user}/bin:${lib.makeBinPath [pkgs.coreutils pkgs.git pkgs.nix pkgs.tmux pkgs.zsh]}"
           ];
           NoNewPrivileges = true;
           PrivateTmp = true;
@@ -211,11 +230,14 @@
             "/home/${cfg.user}"
             cfg.workspace
           ];
-          RestrictAddressFamilies = ["AF_UNIX"] ++ lib.optionals isRemote ["AF_INET" "AF_INET6"];
+          # The listener remains a Unix socket locally, but coding tools need
+          # outbound IPv4/IPv6 for Git and package registries.
+          RestrictAddressFamilies = ["AF_UNIX" "AF_INET" "AF_INET6"];
           RestrictNamespaces = true;
           RestrictRealtime = true;
           LockPersonality = true;
-          MemoryDenyWriteExecute = true;
+          # JIT runtimes such as Node.js require executable memory mappings.
+          MemoryDenyWriteExecute = false;
           CapabilityBoundingSet = "";
           SystemCallArchitectures = "native";
           # libwebsockets uses chown(2) to assign its Unix socket to the narrow

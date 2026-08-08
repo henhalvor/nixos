@@ -1,7 +1,9 @@
 # Base system configuration — shared across all hosts
 # Source: nixos/default.nix + inline config from lib/mk-nixos-system.nix
-{...}: {
+{self, ...}: {
   flake.nixosModules.base = {pkgs, ...}: {
+    imports = [self.nixosModules.accountRole];
+
     # System platform
     nixpkgs.hostPlatform = "x86_64-linux";
 

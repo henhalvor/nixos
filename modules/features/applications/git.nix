@@ -1,8 +1,8 @@
 # Git — version control config with options
 # Source: home/modules/settings/git.nix
 # Template B: HM-only with options (user provides name/email)
-{ self, ... }: {
-  flake.nixosModules.git = { lib, ... }: {
+{self, ...}: {
+  flake.nixosModules.git = {lib, ...}: {
     options.my.git = {
       userName = lib.mkOption {
         type = lib.types.str;
@@ -14,16 +14,28 @@
       };
     };
     config = {
-      home-manager.sharedModules = [ self.homeModules.git ];
+      home-manager.sharedModules = [self.homeModules.git];
     };
   };
 
-  flake.homeModules.git = { config, lib, pkgs, ... } @ args: let
+  flake.homeModules.git = {
+    config,
+    lib,
+    pkgs,
+    ...
+  } @ args: let
     # Support both NixOS (osConfig.my.git.*) and standalone (my.git.* HM options)
     osConfig = args.osConfig or {};
     hasMy = osConfig ? my && osConfig.my ? git;
-    userName = if hasMy then osConfig.my.git.userName else config.my.git.userName;
-    userEmail = if hasMy then osConfig.my.git.userEmail else config.my.git.userEmail;
+    userName =
+      if hasMy
+      then osConfig.my.git.userName
+      else config.my.git.userName;
+    userEmail =
+      if hasMy
+      then osConfig.my.git.userEmail
+      else config.my.git.userEmail;
+    isRestrictedCodeShell = config.my.account.role == "restricted-code-shell";
   in {
     # HM-level options for non-NixOS environments (nix-on-droid, standalone HM)
     options.my.git = {
@@ -54,6 +66,7 @@
 
       programs.ssh = {
         enable = true;
+        enableDefaultConfig = lib.mkIf isRestrictedCodeShell false;
         matchBlocks = {
           "github.com" = {
             identityFile = "${config.home.homeDirectory}/.ssh/id_ed25519";
@@ -65,9 +78,10 @@
         };
       };
 
-      # Generate SSH key if it doesn't exist
-      home.activation = {
-        generateGitHubSSHKey = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      # Personal accounts retain the existing bootstrap behavior. Restricted
+      # browser shells provision a separate passphrase-protected key manually.
+      home.activation = lib.mkIf (!isRestrictedCodeShell) {
+        generateGitHubSSHKey = lib.hm.dag.entryAfter ["writeBoundary"] ''
           if [ ! -f "${config.home.homeDirectory}/.ssh/id_ed25519" ]; then
             ${pkgs.openssh}/bin/ssh-keygen -t ed25519 -C "${userEmail}" -f "${config.home.homeDirectory}/.ssh/id_ed25519" -N ""
             echo "New SSH key generated for GitHub. Please add this public key to your GitHub account:"

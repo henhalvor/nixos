@@ -99,10 +99,15 @@
     home-manager.sharedModules = [self.homeModules.secrets];
   };
 
-  flake.homeModules.secrets = {osConfig, ...}: let
+  flake.homeModules.secrets = {
+    config,
+    lib,
+    osConfig,
+    ...
+  }: let
     interactiveEnv = osConfig.sops.templates.interactive-ai-env.path;
   in {
-    home.file.".local/secrets/load-secrets.sh" = {
+    home.file.".local/secrets/load-secrets.sh" = lib.mkIf (config.my.account.role == "personal") {
       executable = true;
       text = ''
         #!/usr/bin/env bash

@@ -14,6 +14,10 @@
   }: let
     # Headless hosts intentionally do not import desktopCommon.
     terminal = lib.attrByPath ["my" "desktop" "terminal"] "kitty" config;
+    sessionxCustomPaths =
+      if config.my.account.role == "restricted-code-shell"
+      then "${config.home.homeDirectory}/code"
+      else "${config.home.homeDirectory}/code,${config.home.homeDirectory}/dotfiles";
     launchTerminal = pkgs.writeShellScriptBin "launch-terminal" ''
       # Auto-attach tmux for local shells (not in SSH)
       if [ -z "$TMUX" ] && [ -z "$SSH_CONNECTION" ]; then
@@ -78,7 +82,7 @@
           extraConfig = ''
             set -g @sessionx-bind 'o'
             set -g @sessionx-x-path '$HOME'
-            set -g @sessionx-custom-paths '/home/henhal/code,/home/henhal/dotfiles'
+            set -g @sessionx-custom-paths '${sessionxCustomPaths}'
             set -g @sessionx-custom-paths-subdirectories 'true'
             set -g @sessionx-zoxide-mode 'on'
           '';

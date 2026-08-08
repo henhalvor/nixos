@@ -21,7 +21,7 @@ in {
     pkgs = import inputs.nixpkgs {
       inherit system;
       config.allowUnfree = true;
-      overlays = [ inputs.nix-on-droid.overlays.default ];
+      overlays = [inputs.nix-on-droid.overlays.default];
     };
 
     home-manager-path = inputs.home-manager.outPath;
@@ -40,7 +40,7 @@ in {
           experimental-features = nix-command flakes
         '';
 
-        environment.packages = with pkgs; [ vim git openssh wget curl ];
+        environment.packages = with pkgs; [vim git openssh wget curl];
         environment.etcBackupExtension = ".bak";
         environment.sessionVariables.HOSTNAME = "galaxy-tab-s10-ultra";
 
@@ -80,6 +80,7 @@ in {
 
             # Shared homeModules from dendritic features
             imports = [
+              self.homeModules.accountRole
               self.homeModules.zsh
               self.homeModules.tmux
               self.homeModules.yazi
@@ -101,18 +102,19 @@ in {
               userName = "Henrik";
               userEmail = "henhalvor@gmail.com";
             };
+            my.account.role = "personal";
 
             # Android hostname override
             home.sessionVariables.HOSTNAME = "galaxy-tab-s10-ultra";
 
             # Termux config — must be copied, not symlinked
-            home.activation.termuxConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+            home.activation.termuxConfig = lib.hm.dag.entryAfter ["writeBoundary"] ''
               $DRY_RUN_CMD mkdir -p ~/.termux/
               $DRY_RUN_CMD cp -f ${./termux.properties} ~/.termux/termux.properties
             '';
 
             # Copy Nerd Fonts for terminal glyph rendering
-            home.activation.copyNerdFonts = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+            home.activation.copyNerdFonts = lib.hm.dag.entryAfter ["writeBoundary"] ''
               $VERBOSE_ECHO "Copying Nerd Fonts to ~/.termux/fonts/"
               $DRY_RUN_CMD mkdir -p ~/.termux/fonts/
               $DRY_RUN_CMD cp -f ${pkgs.nerd-fonts.hack}/share/fonts/truetype/NerdFonts/Hack/*.ttf ~/.termux/fonts/
