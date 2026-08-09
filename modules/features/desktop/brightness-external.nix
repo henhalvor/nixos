@@ -4,7 +4,15 @@
 # Note: This script is also inlined in hyprland.nix and niri.nix for keybindings.
 # This feature provides it as a standalone command.
 { self, ... }: {
-  flake.nixosModules.brightnessExternal = { ... }: {
+  flake.nixosModules.brightnessExternal = { config, lib, pkgs, ... }: let
+    normalUsers = builtins.attrNames (lib.filterAttrs (_: user: user.isNormalUser) config.users.users);
+  in {
+    hardware.i2c.enable = true;
+    users.groups.i2c.members = normalUsers;
+    services.udev.extraRules = ''
+      KERNEL=="i2c-[0-9]*", GROUP="i2c", MODE="0660"
+    '';
+    environment.systemPackages = [ pkgs.ddcutil ];
     home-manager.sharedModules = [ self.homeModules.brightnessExternal ];
   };
 

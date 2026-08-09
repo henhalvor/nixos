@@ -40,10 +40,11 @@ Detailed breakdown of what each host includes and its specific settings.
 </details>
 
 <details>
-<summary>Server & Connectivity (2)</summary>
+<summary>Server & Connectivity (3)</summary>
 
 - `sshServer` — OpenSSH
 - `tailscale` — VPN
+- `monitoringExporter` — Tailscale-only Node/Process metrics and journal forwarding
 </details>
 
 <details>
@@ -154,10 +155,11 @@ my.desktop.browser = "vivaldi";
 </details>
 
 <details>
-<summary>Server & Connectivity (2)</summary>
+<summary>Server & Connectivity (3)</summary>
 
 - `sshServer` — OpenSSH
 - `tailscale` — VPN
+- `monitoringExporter` — Tailscale-only Node/Process, battery, Syncthing, and journal telemetry
 </details>
 
 <details>
@@ -260,19 +262,14 @@ my.desktop.browser = "vivaldi";
 </details>
 
 <details>
-<summary>Server Features (5)</summary>
+<summary>Server Features (6)</summary>
 
 - `serverBase` — fail2ban, auto-upgrades, GC
 - `sshServer` — OpenSSH
 - `tailscale` — VPN
-- `serverMonitoring` — Prometheus + Grafana
+- `monitoringExporter` — Node/Process metrics, custom collectors, and selected journal forwarding over Tailscale
+- `monitoringHub` — Prometheus, Telegram Alertmanager, Grafana, Loki, probes, dashboards, and external heartbeats
 - `laptopServer` — lid-close ignore, wake-on-LAN
-</details>
-
-<details>
-<summary>Remote Development (1)</summary>
-
-- `vscode-server` — VS Code remote server (via `inputs.vscode-server`)
 </details>
 
 <details>
@@ -297,7 +294,6 @@ my.desktop.browser = "vivaldi";
 ```nix
 networking.hostName = "hp-server";
 programs.dconf.enable = true;
-services.vscode-server.enable = true;
 
 # No desktop environment
 # No my.desktop.* settings

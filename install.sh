@@ -280,7 +280,7 @@ QUICK REFERENCE:
   Rebuild:          sudo nixos-rebuild switch --flake .#<hostname>
   Test (no switch): sudo nixos-rebuild test --flake .#<hostname>
   Update inputs:    nix flake update
-  Edit secrets:     nix-shell -p sops --run "sops secrets/secrets.yaml"
+  Edit secrets:     sops secrets/shared-interactive.yaml
 
 DOCUMENTATION:
   docs/ARCHITECTURE.md   — Dendritic pattern deep-dive

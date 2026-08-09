@@ -6,13 +6,36 @@
 <!-- - Better screenshot tool (able to select screen area.) -->
 
 - Better image organization in nautilus or other files manager alternative
-- Printer setup
 
-<!-- - Remove current screenshot tool, use noctalia built in -->
-<!-- - Remove current clipboard and launcher keybinds use noctalia built in -->
+- Annoying: When doing electron testing or agentic coding, the focus in my window manager (niri or hyprland) gets focused when an electron windows opens or my agent finsihes a turn in the terminal chat, the focus gets taken away from what im doing and set to the active agent or electron window. this is quite jarring, any fixes?
+
+- Low power mode for workstation so i cant hear fan noise but dont have to turn of the system.
+<!-- - Printer setup -->
+
+<!-- Phase 6 and 7 custom dashboards and alerts security-monitoring-implementation.md -->
+
+<!-- - Notification setup??? What is currently being used, Why isnt noctalia notifications working? -->
+
+<!-- - Only-office instead of libre office -->
+  <!-- - Remove current screenshot tool, use noctalia built in -->
+  <!-- - Remove current clipboard and launcher keybinds use noctalia built in -->
+
+- hermes agent backup export && hermes agent update
+
+<!-- PHASE 4 in security and backup implementation plan -->
+
+<!-- - Set up bitwarden account with google authenticator + migrate passwords there -->
+
+- Rebuild lenovo yoga pro 7 laptop + configure hybernation
+<!-- PHASE 6 in implementation plan -->
+
+<!-- confirm github repo backup is working -->
+
+<!-- - Sops breakglass key externaly stored -->
+<!-- - Bitwarden password manager -->
 
 <!-- - Floating email window -->
 
 <!-- - Swaylock / swayidle should use wallpaper defined in user config -->
 
-- rice swaylock
+- rice swaylock (find out why noctalia lock is not being used)

@@ -21,51 +21,52 @@
       };
 
       folderTopology = {
-        documents = {
-          path = "Documents";
-          participants = [
-            "workstation"
-            "yoga-pro-7"
-          ];
-          ignorePerms = false;
-        };
-        downloads = {
-          path = "Downloads";
-          participants = [
-            "workstation"
-            "android-phone"
-          ];
-          ignorePerms = true;
-        };
-        pictures = {
-          path = "Pictures";
-          participants = [
-            "workstation"
-            "yoga-pro-7"
-          ];
-          ignorePerms = false;
-          ignorePatterns = [
-            "/Camera"
-            "/Screenshots"
-          ];
-        };
-        music = {
-          path = "Music";
-          participants = [
-            "workstation"
-            "yoga-pro-7"
-          ];
-          ignorePerms = false;
-        };
-        camera = {
-          path = "Pictures/Camera";
-          participants = [
-            "workstation"
-            "yoga-pro-7"
-            "android-phone"
-          ];
-          ignorePerms = true;
-        };
+        # documents = {
+        #   path = "Documents";
+        #   participants = [
+        #     "workstation"
+        #     "yoga-pro-7"
+        #   ];
+        #   ignorePerms = false;
+        # };
+        # downloads = {
+        #   path = "Downloads";
+        #   participants = [
+        #     "workstation"
+        #     "android-phone"
+        #   ];
+        #   ignorePerms = true;
+        # };
+        # pictures = {
+        #   path = "Pictures";
+        #   participants = [
+        #     "workstation"
+        #     "yoga-pro-7"
+        #   ];
+        #   ignorePerms = false;
+        #   ignorePatterns = [
+        #     "/Camera"
+        #     "/Screenshots"
+        #   ];
+        # };
+        # music = {
+        #   path = "Music";
+        #   participants = [
+        #     "workstation"
+        #     "yoga-pro-7"
+        #   ];
+        #   ignorePerms = false;
+        # };
+        # camera = {
+        #   path = "Pictures/Camera";
+        #   participants = [
+        #     "workstation"
+        #     "yoga-pro-7"
+        #     "android-phone"
+        #   ];
+        #   ignorePerms = true;
+        # };
+        # Obsidian app on android requires an actual file system folder
         vault = {
           path = "Vault";
           participants = [
@@ -76,16 +77,22 @@
             "hp-server"
           ];
           ignorePerms = true;
-        };
-        screenshots = {
-          path = "Pictures/Screenshots";
-          participants = [
-            "workstation"
-            "yoga-pro-7"
-            "android-phone"
+          # Per-device pane/window layout is not vault content and creates
+          # avoidable conflict copies when synchronized across devices.
+          ignorePatterns = [
+            ".obsidian/workspace.json"
+            ".obsidian/workspace-mobile.json"
           ];
-          ignorePerms = true;
         };
+        # screenshots = {
+        #   path = "Pictures/Screenshots";
+        #   participants = [
+        #     "workstation"
+        #     "yoga-pro-7"
+        #     "android-phone"
+        #   ];
+        #   ignorePerms = true;
+        # };
         shared = {
           path = "Shared";
           participants = [
@@ -93,6 +100,7 @@
             "yoga-pro-7"
             "android-phone"
             "android-tablet"
+            "hp-server"
           ];
           ignorePerms = true;
         };

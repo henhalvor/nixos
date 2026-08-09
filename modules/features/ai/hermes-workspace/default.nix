@@ -6,7 +6,10 @@
     ...
   }: let
     cfg = config.my.hermesWorkspace;
-    ownerHome = lib.attrByPath ["users" "users" cfg.ownerUser "home"] "/home/${cfg.ownerUser}" config;
+    ownerHome =
+      lib.attrByPath ["users" "users" cfg.ownerUser "home"]
+      "/home/${cfg.ownerUser}"
+      config;
   in {
     options.my.hermesWorkspace = {
       enable = lib.mkEnableOption ''
@@ -58,22 +61,17 @@
         }
       ];
 
-      environment.systemPackages = with pkgs; [
-        git
-        nodejs_22
-        pnpm
-      ];
+      environment.systemPackages = with pkgs; [git nodejs_22 pnpm];
 
       sops.secrets.HERMES_WORKSPACE_PASSWORD = {
+        sopsFile = ../../../../secrets/hp-agent.yaml;
         owner = cfg.ownerUser;
-        group = "keys";
-        mode = "0440";
+        mode = "0400";
       };
 
       sops.templates."hermes-workspace-env" = {
         owner = cfg.ownerUser;
-        group = "users";
-        mode = "0440";
+        mode = "0400";
         content = ''
           PORT=${toString cfg.workspacePort}
           HOST=127.0.0.1
@@ -89,8 +87,13 @@
       systemd.services.hermes-workspace = {
         description = "Hermes Workspace + Tailscale Serve";
         documentation = ["https://github.com/outsourc-e/hermes-workspace"];
-        after = ["network-online.target" "tailscaled.service" "hermes-dashboard.service"];
-        wants = ["network-online.target"];
+        after = [
+          "network-online.target"
+          "tailscaled.service"
+          "hermes-agent.service"
+          "hermes-dashboard.service"
+        ];
+        wants = ["network-online.target" "hermes-agent.service"];
         wantedBy = ["multi-user.target"];
 
         # Runs as root because tailscale serve needs root to talk to tailscaled.
@@ -102,12 +105,23 @@
           Restart = "on-failure";
           RestartSec = 10;
           EnvironmentFile = config.sops.templates."hermes-workspace-env".path;
-          Environment = "PATH=${lib.makeBinPath [pkgs.nodejs_22 pkgs.pnpm pkgs.git pkgs.tailscale pkgs.sudo pkgs.coreutils]}";
+          Environment = "PATH=${
+            lib.makeBinPath [
+              pkgs.nodejs_22
+              pkgs.pnpm
+              pkgs.git
+              pkgs.tailscale
+              pkgs.sudo
+              pkgs.coreutils
+            ]
+          }";
         };
 
         preStart = ''
           set -euo pipefail
-          if [ ! -f ${lib.escapeShellArg cfg.workspaceDir}/server-entry.js ]; then
+          if [ ! -f ${
+            lib.escapeShellArg cfg.workspaceDir
+          }/server-entry.js ]; then
             echo "Hermes Workspace is not cloned at ${cfg.workspaceDir}" >&2
             exit 1
           fi
@@ -122,7 +136,9 @@
 
           # Expose Workspace on a separate HTTPS port so it does not replace
           # the existing dashboard route at https://<node>.tail<id>.ts.net/.
-          ${lib.getExe pkgs.tailscale} serve --bg --https=${toString cfg.tailscaleHttpsPort} ${toString cfg.workspacePort}
+          ${lib.getExe pkgs.tailscale} serve --bg --https=${
+            toString cfg.tailscaleHttpsPort
+          } ${toString cfg.workspacePort}
 
           exec sudo -u ${cfg.ownerUser} \
             --preserve-env=PORT,HOST,NODE_ENV,HERMES_API_URL,HERMES_DASHBOARD_URL,HERMES_PASSWORD,COOKIE_SECURE,TRUST_PROXY \
@@ -131,7 +147,9 @@
         '';
 
         postStop = ''
-          ${lib.getExe pkgs.tailscale} serve --https=${toString cfg.tailscaleHttpsPort} off 2>/dev/null || true
+          ${lib.getExe pkgs.tailscale} serve --https=${
+            toString cfg.tailscaleHttpsPort
+          } off 2>/dev/null || true
         '';
       };
     };

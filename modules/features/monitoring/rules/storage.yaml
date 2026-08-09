@@ -1,0 +1,35 @@
+groups:
+  - name: monitoring-storage
+    rules:
+      - record: henhal:node_memory_available_ratio
+        expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes
+      - alert: HostMemoryPressure
+        expr: henhal:node_memory_available_ratio < 0.10
+        for: 30m
+        labels:
+          severity: warning
+          component: memory
+        annotations:
+          summary: "Available memory on {{ $labels.host }} is below 10%"
+          description: "Memory availability has remained low for 30 minutes. Check the top memory users and recent workload changes."
+          runbook_url: "https://github.com/henhalvor/dotfiles/blob/main/docs/runbooks/monitoring-alerts.md#memory-pressure"
+      - alert: NodeOutOfMemoryKilledProcess
+        expr: increase(node_vmstat_oom_kill[15m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+          component: memory
+        annotations:
+          summary: "The kernel OOM killer ran on {{ $labels.host }}"
+          description: "At least one process was killed due to memory exhaustion in the last 15 minutes. Inspect logs and memory use."
+          runbook_url: "https://github.com/henhalvor/dotfiles/blob/main/docs/runbooks/monitoring-alerts.md#memory-pressure"
+      - alert: NixStoreLarge
+        expr: henhal_nix_store_bytes > 80 * 1024 * 1024 * 1024
+        for: 24h
+        labels:
+          severity: warning
+          component: nix-store
+        annotations:
+          summary: "Nix store on {{ $labels.host }} exceeds 80 GiB"
+          description: "The Nix store has exceeded the agreed 80 GiB threshold for 24 hours. Review generations and garbage-collection policy before reclaiming space."
+          runbook_url: "https://github.com/henhalvor/dotfiles/blob/main/docs/runbooks/monitoring-alerts.md#nix-store-growth"

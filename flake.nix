@@ -23,10 +23,6 @@
 
     zen-browser.url = "github:0xc000022070/zen-browser-flake";
 
-    vscode-server.url = "github:nix-community/nixos-vscode-server";
-
-    hermes-agent.url = "github:NousResearch/hermes-agent/c9e8d82ef42970b31d683b9c3e8319b2d54d8b08";
-
     garbage-day-nvim = {
       url = "github:Zeioth/garbage-day.nvim";
       flake = false;

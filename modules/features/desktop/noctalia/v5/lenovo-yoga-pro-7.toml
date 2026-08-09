@@ -134,9 +134,9 @@ app_icon_colorize = true
 corner_radius_scale = 2.0
 font_family = "Hack Nerd Font"
 launch_apps_as_systemd_services = true
-polkit_agent = false
-setup_wizard_enabled = false
 telemetry_enabled = false
+polkit_agent = true
+niri_overview_type_to_launch_enabled = false
 
 [theme]
 builtin = "Ayu"

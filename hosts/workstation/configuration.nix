@@ -37,14 +37,15 @@
         self.nixosModules.nvidiaGraphics
         self.nixosModules.gaming
         self.nixosModules.virtualization
+        self.nixosModules.docker
         self.nixosModules.syncthing
         self.nixosModules.bootWindows
 
         # Server/connectivity (Phase 4)
         self.nixosModules.sshServer
         self.nixosModules.tailscale
+        self.nixosModules.monitoringExporter
         self.nixosModules.sunshine
-        # self.nixosModules.hermesAgent
 
         # Desktop foundation (Phase 5)
         self.nixosModules.desktopCommon
@@ -59,7 +60,7 @@
         self.nixosModules.noctalia
         # self.nixosModules.waybar
         self.nixosModules.hyprlock
-        self.nixosModules.mako
+        # self.nixosModules.mako
         self.nixosModules.rofi
         self.nixosModules.clipman
         self.nixosModules.grimblast
@@ -80,12 +81,14 @@
         self.nixosModules.googleChrome
         self.nixosModules.microsoftEdge
         self.nixosModules.obsidian
+        self.nixosModules.opencloudDesktop
         self.nixosModules.spotify
         self.nixosModules.gimp
         self.nixosModules.gthumb
         self.nixosModules.mpv
         self.nixosModules.zathura
-        self.nixosModules.libreoffice
+        # self.nixosModules.libreoffice
+        self.nixosModules.onlyoffice
         self.nixosModules.nautilus
         self.nixosModules.missionCenter
         self.nixosModules.gnomeCalculator
@@ -95,6 +98,7 @@
         self.nixosModules.opencode
         self.nixosModules.kdeconnect
         self.nixosModules.codecrafters-cli
+        self.nixosModules.ohMyPi
 
         # Settings & Environment (Phase 9)
         self.nixosModules.git
@@ -130,15 +134,17 @@
         identitySopsFile = ../../secrets/syncthing/workstation.yaml;
       };
 
+      my.monitoring.exporter = {
+        enable = true;
+        hubHost = "hp-server-1.tail37a5eb.ts.net";
+        enableSyncthingMetrics = true;
+        extraUnits = [
+          "syncthing.service"
+        ];
+      };
+
       # Sunshine user
       my.sunshine.user = "henhal";
-
-      # my.hermesAgent = {
-      #   ownerUser = "henhal";
-      #   repoRoot = "/home/henhal/.dotfiles";
-      #   provider = "ollama-cloud";
-      #   model = "minimax-m2.7:cloud";
-      # };
 
       # Hyprland host-specific config
       my.hyprland = {
@@ -171,7 +177,7 @@
       ];
 
       # Default session
-      services.displayManager.defaultSession = "hyprland";
+      services.displayManager.defaultSession = "niri";
 
       # Workstation-specific hardware
       hardware.logitech.wireless.enable = true;

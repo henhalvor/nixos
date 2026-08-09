@@ -42,6 +42,7 @@
         # Server/connectivity (Phase 4)
         self.nixosModules.sshServer
         self.nixosModules.tailscale
+        self.nixosModules.monitoringExporter
 
         # Desktop foundation (Phase 5)
         self.nixosModules.desktopCommon
@@ -54,7 +55,7 @@
         # self.nixosModules.gnome
 
         # Desktop components (Phase 7)
-        self.nixosModules.mako
+        # self.nixosModules.mako
         self.nixosModules.noctalia
         self.nixosModules.swaylock
         self.nixosModules.swayidle
@@ -79,12 +80,13 @@
         self.nixosModules.googleChrome
         self.nixosModules.microsoftEdge
         self.nixosModules.obsidian
+        self.nixosModules.opencloudDesktop
         self.nixosModules.spotify
         self.nixosModules.gimp
         self.nixosModules.gthumb
         self.nixosModules.mpv
         self.nixosModules.zathura
-        self.nixosModules.libreoffice
+        self.nixosModules.onlyoffice
         self.nixosModules.nautilus
         self.nixosModules.missionCenter
         self.nixosModules.gnomeCalculator
@@ -93,6 +95,7 @@
         self.nixosModules.amazonQ
         self.nixosModules.opencode
         self.nixosModules.kdeconnect
+        self.nixosModules.ohMyPi
 
         # Settings & Environment (Phase 9)
         self.nixosModules.git
@@ -125,6 +128,16 @@
         user = "henhal";
         deviceName = "yoga-pro-7";
         identitySopsFile = ../../secrets/syncthing/lenovo-yoga-pro-7.yaml;
+      };
+
+      my.monitoring.exporter = {
+        enable = true;
+        hubHost = "hp-server-1.tail37a5eb.ts.net";
+        enableBattery = true;
+        enableSyncthingMetrics = true;
+        extraUnits = [
+          "syncthing.service"
+        ];
       };
 
       # Default session

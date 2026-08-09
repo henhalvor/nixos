@@ -1,0 +1,105 @@
+groups:
+  - name: monitoring-hosts
+    rules:
+      - record: henhal:filesystem_usage_ratio
+        expr: 1 - (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay|squashfs"})
+      - alert: FilesystemNearlyFull
+        expr: henhal:filesystem_usage_ratio > 0.80
+        for: 1h
+        labels:
+          severity: warning
+          component: storage
+        annotations:
+          summary: "Filesystem {{ $labels.mountpoint }} on {{ $labels.host }} is above 80%"
+          description: "Free space has been below 20% for one hour. Identify growth before the filesystem reaches the critical threshold."
+          runbook_url: "https://github.com/henhalvor/dotfiles/blob/main/docs/runbooks/monitoring-alerts.md#filesystem-capacity"
+      - alert: FilesystemFull
+        expr: henhal:filesystem_usage_ratio > 0.90
+        for: 15m
+        labels:
+          severity: critical
+          component: storage
+        annotations:
+          summary: "Filesystem {{ $labels.mountpoint }} on {{ $labels.host }} is above 90%"
+          description: "Free space has been below 10% for 15 minutes. Free space safely; service and backup failures are likely."
+          runbook_url: "https://github.com/henhalvor/dotfiles/blob/main/docs/runbooks/monitoring-alerts.md#filesystem-capacity"
+      - alert: InodesNearlyExhausted
+        expr: 1 - (node_filesystem_files_free{fstype!~"tmpfs|overlay|squashfs"} / node_filesystem_files{fstype!~"tmpfs|overlay|squashfs"}) > 0.80
+        for: 1h
+        labels:
+          severity: warning
+          component: storage
+        annotations:
+          summary: "Inode usage on {{ $labels.mountpoint }} is above 80%"
+          description: "The filesystem has had less than 20% free inodes for one hour. Investigate excessive small-file creation."
+          runbook_url: "https://github.com/henhalvor/dotfiles/blob/main/docs/runbooks/monitoring-alerts.md#filesystem-capacity"
+      - alert: InodesExhausted
+        expr: 1 - (node_filesystem_files_free{fstype!~"tmpfs|overlay|squashfs"} / node_filesystem_files{fstype!~"tmpfs|overlay|squashfs"}) > 0.90
+        for: 15m
+        labels:
+          severity: critical
+          component: storage
+        annotations:
+          summary: "Inode usage on {{ $labels.mountpoint }} is above 90%"
+          description: "The filesystem has less than 10% free inodes. New files and service writes may fail."
+          runbook_url: "https://github.com/henhalvor/dotfiles/blob/main/docs/runbooks/monitoring-alerts.md#filesystem-capacity"
+      - alert: T7OpenCloudMountMissing
+        expr: absent(node_filesystem_size_bytes{host="hp-server",mountpoint="/srv/opencloud"})
+        for: 2m
+        labels:
+          severity: critical
+          component: opencloud-storage
+        annotations:
+          summary: "The T7 OpenCloud filesystem is not mounted"
+          description: "No mounted filesystem is reported at /srv/opencloud. Do not restart or write OpenCloud until the expected T7 mount is verified."
+          runbook_url: "https://github.com/henhalvor/dotfiles/blob/main/docs/runbooks/monitoring-alerts.md#t7-opencloud-mount"
+      - alert: SmartDeviceUnhealthy
+        expr: henhal_storage_smart_healthy == 0
+        for: 15m
+        labels:
+          severity: critical
+          component: storage-hardware
+        annotations:
+          summary: "SMART/NVMe health is failing for {{ $labels.device }}"
+          description: "The normalized disk health collector reports a failing device. Preserve current backups and inspect SMART data; do not run destructive repairs."
+          runbook_url: "https://github.com/henhalvor/dotfiles/blob/main/docs/runbooks/monitoring-alerts.md#disk-health"
+      - alert: DriveTemperatureHigh
+        expr: henhal_storage_temperature_celsius > 60
+        for: 15m
+        labels:
+          severity: warning
+          component: storage-hardware
+        annotations:
+          summary: "Drive {{ $labels.device }} temperature is above 60°C"
+          description: "Drive temperature has exceeded 60°C for 15 minutes. Check cooling, cable placement, and workload."
+          runbook_url: "https://github.com/henhalvor/dotfiles/blob/main/docs/runbooks/monitoring-alerts.md#disk-health"
+      - alert: DriveTemperatureCritical
+        expr: henhal_storage_temperature_celsius > 70
+        for: 5m
+        labels:
+          severity: critical
+          component: storage-hardware
+        annotations:
+          summary: "Drive {{ $labels.device }} temperature is above 70°C"
+          description: "Drive temperature has exceeded 70°C for 5 minutes. Reduce load and correct cooling immediately."
+          runbook_url: "https://github.com/henhalvor/dotfiles/blob/main/docs/runbooks/monitoring-alerts.md#disk-health"
+      - alert: NixosGenerationStale
+        expr: time() - henhal_nixos_generation_timestamp_seconds > 30 * 24 * 60 * 60
+        for: 1h
+        labels:
+          severity: warning
+          component: nixos
+        annotations:
+          summary: "NixOS generation on {{ $labels.host }} is older than 30 days"
+          description: "The host has not deployed a NixOS generation for 30 days. Review available updates and schedule a deliberate rebuild."
+          runbook_url: "https://github.com/henhalvor/dotfiles/blob/main/docs/runbooks/monitoring-alerts.md#stale-nixos-generation"
+      - alert: NixosGenerationOld
+        expr: time() - henhal_nixos_generation_timestamp_seconds > 60 * 24 * 60 * 60
+        for: 1h
+        labels:
+          severity: critical
+          component: nixos
+        annotations:
+          summary: "NixOS generation on {{ $labels.host }} is older than 60 days"
+          description: "The host has not deployed a NixOS generation for 60 days. Review updates and rebuild deliberately."
+          runbook_url: "https://github.com/henhalvor/dotfiles/blob/main/docs/runbooks/monitoring-alerts.md#stale-nixos-generation"
