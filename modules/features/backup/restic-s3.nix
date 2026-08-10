@@ -12,10 +12,13 @@
       cfg = config.my.hpBackup;
       sourceLock = "/var/lib/hp-backup/source.lock";
       statusDir = "/var/lib/restic-status";
+      radicalePackage =
+        if config.services.radicale.package == null then pkgs.radicale else config.services.radicale.package;
       # Built-in Restic sources. Do not repeat these in `my.hpBackup.extraPaths`:
       # - /run/opencloud-backup/current: complete stopped-service OpenCloud unit
       # - /var/lib/opencloud-identity-backup/latest: Keycloak/OpenLDAP export
       # - /var/lib/{vault,shared}-backup/latest: staged Syncthing directories
+      # - /var/lib/radicale-backup/latest: verified stopped-service DAV store
       # - /var/lib/github-mirrors/current and /var/lib/hermes-backup/latest
       # `extraPaths` is only for ordinary HP-local files that can be read live.
       backupPaths = [
@@ -23,6 +26,7 @@
         "/var/lib/opencloud-identity-backup/latest"
         "/var/lib/vault-backup/latest"
         "/var/lib/shared-backup/latest"
+        "/var/lib/radicale-backup/latest"
         "/var/lib/github-mirrors/current"
         "/var/lib/hermes-backup/latest"
       ] ++ cfg.extraPaths;
@@ -38,7 +42,7 @@
           now="$(date +%s)"
           result=healthy
           details='[]'
-          for name in opencloud-source opencloud-identity vault shared hermes github-mirror; do
+          for name in opencloud-source opencloud-identity vault shared radicale hermes github-mirror; do
             required=true
             # Hermes has no reviewed native export yet. Keep its status in the
             # report, but do not block the independent backup-success heartbeat
@@ -222,6 +226,93 @@
         folderId = "shared";
         source = "/home/henhal/Shared";
       };
+      radicaleStage = pkgs.writeShellApplication {
+        name = "radicale-backup-stage";
+        runtimeInputs = with pkgs; [
+          coreutils
+          jq
+          rsync
+          systemd
+          util-linux
+        ];
+        text = ''
+          set -o pipefail
+          root=/var/lib/radicale-backup
+          source=${lib.escapeShellArg "${config.my.opencloud.radicale.storageRoot}/collections"}
+          status=${statusDir}/radicale.json
+          candidate=""
+          radicale_stopped=0
+
+          cleanup() {
+            if (( radicale_stopped )); then
+              systemctl start radicale.service || true
+            fi
+            [[ -z "$candidate" ]] || rm -rf "$candidate"
+          }
+          trap cleanup EXIT
+
+          fail() {
+            mkdir -p ${statusDir}
+            jq -n --arg timestamp "$(date --iso-8601=seconds)" --arg detail "$1" \
+              '{timestamp: $timestamp, result: "degraded", detail: $detail}' >"$status.tmp"
+            mv -f "$status.tmp" "$status"
+            exit 0
+          }
+
+          verify_storage() {
+            # The service is stopped while verification runs, so no
+            # inter-process lock is needed. Avoid creating a root-owned
+            # .Radicale.lock in either the live or staged collection root.
+            ${radicalePackage}/bin/radicale \
+              --verify-storage \
+              -C /dev/null \
+              --auth-type denyall \
+              --rights-type owner_only \
+              --storage-type multifilesystem_nolock \
+              --storage-filesystem-folder "$1" \
+              --no-storage-skip-broken-item
+          }
+
+          mountpoint -q /srv/opencloud || fail "the OpenCloud data filesystem is not mounted"
+          [[ "$(findmnt -no UUID -T /srv/opencloud)" == ${lib.escapeShellArg config.my.opencloud.storageUuid} ]] \
+            || fail "the mounted OpenCloud filesystem UUID is not the reviewed T7"
+          [[ -d "$source" && -r "$source" ]] || fail "the Radicale collection directory is unavailable"
+          [[ "$(stat -c '%U:%G' "$source")" == radicale:radicale ]] \
+            || fail "the Radicale collection directory has unexpected ownership"
+          systemctl is-active --quiet radicale.service || fail "Radicale is not active"
+
+          exec 9>${sourceLock}; flock -x 9 || fail "could not acquire source lock"
+          radicale_stopped=1
+          systemctl stop radicale.service || fail "could not stop Radicale"
+          systemctl is-active --quiet radicale.service && fail "Radicale remained active after stop"
+          verify_storage "$source" || fail "Radicale live storage verification failed"
+
+          candidate="$(mktemp -d "$root/candidate.XXXXXX")" || fail "could not create Radicale staging directory"
+          mkdir -p "$candidate/collections"
+          rsync -aHAX --numeric-ids "$source/" "$candidate/collections/" \
+            || fail "Radicale collection staging failed"
+          verify_storage "$candidate/collections" || fail "Radicale staged storage verification failed"
+
+          jq -n \
+            --arg timestamp "$(date --iso-8601=seconds)" \
+            --arg source "$source" \
+            --arg method "stopped-service verified rsync -aHAX" \
+            --arg radicaleVersion ${lib.escapeShellArg radicalePackage.version} \
+            --arg opencloudVersion ${lib.escapeShellArg config.services.opencloud.package.version} \
+            '{timestamp: $timestamp, result: "healthy", source: $source, method: $method, verification: "passed", radicaleVersion: $radicaleVersion, opencloudVersion: $opencloudVersion}' \
+            >"$candidate/manifest.json"
+
+          systemctl start radicale.service || fail "could not restart Radicale after staging"
+          radicale_stopped=0
+          systemctl is-active --quiet radicale.service || fail "Radicale did not become active after staging"
+
+          rm -rf "$root/previous"
+          [[ ! -d "$root/latest" ]] || mv "$root/latest" "$root/previous"
+          mv "$candidate" "$root/latest"
+          candidate=""
+          cp "$root/latest/manifest.json" "$status"
+        '';
+      };
       hermesExport = pkgs.writeShellApplication {
         name = "hermes-backup-export";
         runtimeInputs = with pkgs; [
@@ -327,7 +418,7 @@
             "/home/henhal/Documents"
             "/home/henhal/Pictures"
           ];
-          description = "Additional absolute paths for Restic to back up. Use only ordinary HP-local files that can be read live. Do not add OpenCloud, Vault, Shared, identity, GitHub mirror, or Hermes paths: those are built-in staged/exported sources.";
+          description = "Additional absolute paths for Restic to back up. Use only ordinary HP-local files that can be read live. Do not add OpenCloud, Radicale, Vault, Shared, identity, GitHub mirror, or Hermes paths: those are built-in staged/exported sources.";
         };
         hermesExportCommand = lib.mkOption {
           type = lib.types.nullOr lib.types.lines;
@@ -359,6 +450,10 @@
           {
             assertion = config.my.githubMirror.enable;
             message = "my.hpBackup requires my.githubMirror.enable.";
+          }
+          {
+            assertion = config.my.opencloud.radicale.enable;
+            message = "my.hpBackup requires my.opencloud.radicale.enable.";
           }
           {
             assertion = !cfg.enableSuccessHeartbeat || cfg.successHeartbeatUrlFile != null;
@@ -436,6 +531,16 @@
             user = "root";
             group = "root";
           };
+          "/var/lib/radicale-backup".d = {
+            mode = "0700";
+            user = "root";
+            group = "root";
+          };
+          "/var/lib/radicale-backup/latest".d = {
+            mode = "0700";
+            user = "root";
+            group = "root";
+          };
           "/var/lib/hermes-backup".d = {
             mode = "0700";
             user = "root";
@@ -465,6 +570,16 @@
           after = [ "syncthing.service" "syncthing-vault-backup.service" ];
           serviceConfig.Type = "oneshot";
           script = "exec ${sharedStage}/bin/syncthing-shared-backup";
+        };
+        systemd.services.radicale-backup-stage = {
+          description = "Create a verified stopped-service Radicale backup source";
+          after = [ "radicale.service" ];
+          serviceConfig.Type = "oneshot";
+          unitConfig = {
+            RequiresMountsFor = "/srv/opencloud";
+            ConditionPathIsMountPoint = "/srv/opencloud";
+          };
+          script = "exec ${radicaleStage}/bin/radicale-backup-stage";
         };
         systemd.services.hermes-export = {
           description = "Create a validated Hermes export when configured";
@@ -498,6 +613,7 @@
             "opencloud-identity-export.service"
             "syncthing-vault-backup.service"
             "syncthing-shared-backup.service"
+            "radicale-backup-stage.service"
             "hermes-export.service"
           ];
           wants = [
@@ -505,6 +621,7 @@
             "opencloud-identity-export.service"
             "syncthing-vault-backup.service"
             "syncthing-shared-backup.service"
+            "radicale-backup-stage.service"
             "hermes-export.service"
           ];
           unitConfig = {

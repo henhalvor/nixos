@@ -22,9 +22,10 @@ The completed implementation record is
 - SMART/NVMe health and disk temperature
 - Lenovo battery capacity and charge state
 - public availability and TLS expiry for Cloud, Auth, and Monitor
-- OpenCloud, Keycloak, PostgreSQL, Cloudflare Tunnel, Firecrawl, Hermes, and
+- OpenCloud, Radicale, Keycloak, PostgreSQL, Cloudflare Tunnel, Firecrawl, Hermes, and
   the monitoring stack itself
-- Restic snapshot freshness, sampled repository checks, and every staged source
+- Restic snapshot freshness, sampled repository checks, and every staged source,
+  including the required Radicale calendar/contact stage
 - Syncthing Vault/Shared health and GitHub mirror freshness
 - selected warning/error journal events with bounded labels and redaction
 - per-executable CPU and resident-memory usage without command-line or PID labels
@@ -275,6 +276,11 @@ system disk. They are intentionally not included in the R2 Restic backup.
 Dashboards, alert rules, collectors, and provisioning live in Git, so the stack
 can be recreated after loss. Keycloak realm/client data is covered by the
 existing identity export.
+
+Radicale operational logs remain bounded journal data and are not backed up.
+Its calendar/contact collections are independently protected through the
+validated `/var/lib/radicale-backup/latest` Restic source described in
+[BACKUP.md](BACKUP.md).
 
 See [monitoring-recovery.md](runbooks/monitoring-recovery.md) for rebuilding the
 stack and [monitoring-alerts.md](runbooks/monitoring-alerts.md) for incident

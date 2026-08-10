@@ -2,7 +2,7 @@ groups:
   - name: monitoring-services
     rules:
       - alert: ImportantSystemdUnitFailed
-        expr: node_systemd_unit_state{state="failed",name=~"(opencloud|keycloak|postgresql|cloudflared-tunnel-.*|restic-backups-hp-offsite|prometheus|alertmanager|grafana|loki|alloy|blackbox-exporter)\\.service"} == 1
+        expr: node_systemd_unit_state{state="failed",name=~"(opencloud|radicale|keycloak|postgresql|cloudflared-tunnel-.*|restic-backups-hp-offsite|prometheus|alertmanager|grafana|loki|alloy|blackbox-exporter)\\.service"} == 1
         for: 10m
         labels:
           severity: warning
@@ -12,7 +12,7 @@ groups:
           description: "The unit has remained failed for 10 minutes. Inspect its journal and dependencies before restarting it."
           runbook_url: "https://github.com/henhalvor/dotfiles/blob/main/docs/runbooks/monitoring-alerts.md#systemd-unit-failed"
       - alert: CriticalSystemdUnitFailed
-        expr: node_systemd_unit_state{state="failed",name=~"(opencloud|keycloak|cloudflared-tunnel-.*|restic-backups-hp-offsite|prometheus|alertmanager|grafana|loki)\\.service"} == 1
+        expr: node_systemd_unit_state{state="failed",name=~"(opencloud|radicale|keycloak|cloudflared-tunnel-.*|restic-backups-hp-offsite|prometheus|alertmanager|grafana|loki)\\.service"} == 1
         for: 2m
         labels:
           severity: critical

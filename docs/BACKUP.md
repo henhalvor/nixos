@@ -5,7 +5,8 @@
 The HP server is the recovery hub. It collects OpenCloud data, Syncthing's
 `Vault` and `Shared` folders, selected HP-local files, Keycloak/OpenLDAP
 identity data, and GitHub mirrors. A nightly Restic job encrypts and stores
-deduplicated snapshots in the private Cloudflare R2 repository.
+deduplicated snapshots in the private Cloudflare R2 repository. Radicale
+calendar and contact data is a separate required staged source.
 
 Synchronization is useful availability, but is not a backup: a deletion or
 bad change can synchronize to every peer. Restic snapshots are the off-site,
@@ -28,6 +29,7 @@ repository password recoverable independently of HP and R2.
 | `/var/lib/opencloud-identity-backup/latest` | Keycloak PostgreSQL custom dump and OpenLDAP LDIF export | Logical exports while the relevant writers are stopped. |
 | `/var/lib/vault-backup/latest` | Syncthing `~/Vault` | Syncthing must be idle, then stops while `rsync -aHAX` stages the data. |
 | `/var/lib/shared-backup/latest` | Syncthing `~/Shared` | Same staged boundary as Vault. |
+| `/var/lib/radicale-backup/latest` | Radicale calendars, tasks, and contacts | Radicale stops; live and staged storage are verified around an `rsync -aHAX` copy. |
 | `/var/lib/github-mirrors/current` | Validated bare Git mirrors | Published only after mirror validation. |
 | `/var/lib/hermes-backup/latest` | Hermes export, if a reviewed exporter is configured | Exporter-specific; degraded while no reviewed export exists. |
 
@@ -47,7 +49,8 @@ Add a path there only when all of the following are true:
 
 Do not add `/home/henhal/Vault` or `/home/henhal/Shared`: their staged copies
 are already included. Do not add `/srv/opencloud/state`; it must only be read
-through the stopped-service OpenCloud source.
+through the stopped-service OpenCloud source. Do not add
+`/srv/opencloud/radicale/collections`; use only its validated stage.
 
 ### How client files reach backup
 
@@ -58,6 +61,7 @@ through the stopped-service OpenCloud source.
 | Obsidian vault | `~/Vault` | Syncthing -> HP -> staged Vault source -> Restic -> R2 |
 | Local shared files | `~/Shared` | Syncthing -> HP -> staged Shared source -> Restic -> R2 |
 | Active code | Git/GitHub, not a sync root | GitHub -> HP mirror -> Restic -> R2 |
+| Calendars, tasks, and contacts | CalDAV/CardDAV clients using `cloud.henhal.net` | Client -> authenticated OpenCloud proxy -> Radicale on HP/T7 -> validated stage -> Restic -> R2 |
 
 Never place a Syncthing folder inside `~/Cloud`, or make both systems own the
 same directory.
@@ -70,10 +74,13 @@ when it next becomes available.
 
 During a run:
 
-1. Keycloak/OpenLDAP, Vault, Shared, GitHub, and Hermes sources are prepared.
+1. Keycloak/OpenLDAP, Vault, Shared, Radicale, GitHub, and Hermes sources are prepared.
 2. OpenCloud stops while its state is read by Restic, then restarts in cleanup.
 3. Syncthing stops briefly once for Vault staging and once for Shared staging.
 4. Restic uploads only new encrypted chunks and snapshot metadata to R2.
+
+Radicale stops only while its storage is verified and copied into the private
+staging directory. It restarts before Restic reads that immutable stage.
 
 The expected recovery-point objective is about 24 hours. A file is not
 off-site protected until it has reached HP and a successful Restic snapshot has
@@ -90,13 +97,15 @@ sudo jq -s . \
   /var/lib/restic-status/opencloud-identity.json \
   /var/lib/restic-status/vault.json \
   /var/lib/restic-status/shared.json \
+  /var/lib/restic-status/radicale.json \
   /var/lib/restic-status/hermes.json \
   /var/lib/github-mirrors/status.json
 ```
 
 A Restic run can succeed while an auxiliary source is `degraded`; that is not a
 fully healthy recovery set. In particular, Hermes remains degraded until a
-reviewed native exporter is configured.
+reviewed native exporter is configured. Radicale is required, so a degraded or
+stale Radicale stage suppresses the external success heartbeat until repaired.
 
 ## Routine verification
 
@@ -174,6 +183,31 @@ For an HP-local extra path such as `Documents`, use its direct snapshot path:
 `/home/henhal/Documents/<file>`. For Vault, use
 `/var/lib/vault-backup/latest/contents/<file>`.
 
+### Restore calendars and contacts into isolation
+
+Never test by restoring over the live Radicale tree. Restore the staged source
+to a temporary directory and validate it first:
+
+```bash
+restore_dir="$(mktemp -d)"
+sudo restic-hp-offsite restore <snapshot-id> \
+  --target "$restore_dir" \
+  --include /var/lib/radicale-backup/latest
+
+sudo radicale --verify-storage -C /dev/null \
+  --auth-type denyall \
+  --rights-type owner_only \
+  --storage-type multifilesystem \
+  --storage-filesystem-folder \
+    "$restore_dir/var/lib/radicale-backup/latest/collections" \
+  --no-storage-skip-broken-item
+```
+
+For a full rehearsal, start a separate Radicale instance on another loopback
+port against the restored tree with no Cloudflare exposure. Verify a restored
+event, task, recurring event, contact, and contact photo with disposable
+credentials before removing the temporary restore.
+
 OpenCloud data is application state, not a normal folder tree. Do not restore
 individual files by copying bytes from `/run/opencloud-backup/current/state`.
 Recover it through the full OpenCloud procedure below.
@@ -216,7 +250,7 @@ depending on the system for irreplaceable data.
 3. Stop the public-facing and stateful services before replacing data:
 
    ```bash
-   sudo systemctl stop cloudflared-tunnel-*.service opencloud.service keycloak.service openldap.service
+   sudo systemctl stop cloudflared-tunnel-*.service opencloud.service radicale.service keycloak.service openldap.service
    ```
 
 4. Restore OpenCloud's state to the mounted T7 with metadata preserved. First
@@ -243,10 +277,16 @@ depending on the system for irreplaceable data.
    the restored snapshot. For example, Shared comes from
    `$restore_root/var/lib/shared-backup/latest/contents/` and Vault from
    `$restore_root/var/lib/vault-backup/latest/contents/`.
-7. Start OpenLDAP, PostgreSQL/Keycloak, OpenCloud, and finally the tunnel.
+7. With Radicale stopped, restore its selected validated collection tree from
+   `$restore_root/var/lib/radicale-backup/latest/collections/` to
+   `/srv/opencloud/radicale/collections/` using `rsync -aHAX --numeric-ids`.
+   Verify storage, ownership `radicale:radicale`, and restrictive modes before
+   starting the service.
+8. Start OpenLDAP, PostgreSQL/Keycloak, Radicale, OpenCloud, and finally the tunnel.
    Verify local loopback listeners, Keycloak login and MFA, browser/desktop/
-   Android access, and a disposable upload before re-enabling normal use.
-8. Run a new successful Restic backup and keep the pre-recovery snapshot until
+   Android access, DAV discovery and read/write using a disposable app token,
+   and a disposable upload before re-enabling normal use.
+9. Run a new successful Restic backup and keep the pre-recovery snapshot until
    the replacement has been stable for a reviewed period.
 
 The exact Keycloak/OpenLDAP replacement commands are deliberately not a
@@ -259,6 +299,8 @@ the installed NixOS versions, then add them to this runbook.
 - Do not expose the R2 repository as a mount, file browser, WebDAV share, or
   OpenCloud Space.
 - Do not copy live `/srv/opencloud/state` while OpenCloud is running.
+- Do not copy live `/srv/opencloud/radicale/collections` while Radicale is
+  running or add it to `my.hpBackup.extraPaths`.
 - Do not restore over a live OpenCloud state tree without stopping its service.
 - Do not use Syncthing replicas as proof of backup.
 - Do not add automatic `forget`/`prune` or R2 lifecycle deletion without a

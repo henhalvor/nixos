@@ -20,7 +20,9 @@ remain Git/GitHub-managed.
 | Cloudflare Tunnel | Public HTTPS ingress; forwards only to loopback services on HP |
 | OpenCloud service | `127.0.0.1:9200` on HP |
 | Keycloak service | `127.0.0.1:8080` on HP |
+| Radicale | `127.0.0.1:5232`, private CalDAV/CardDAV storage behind OpenCloud |
 | OpenCloud storage | `/srv/opencloud/state` on the UUID-mounted Samsung T7 |
+| Calendar/contact storage | `/srv/opencloud/radicale/collections` on the same T7 |
 
 Cloudflare Access must not be enabled for `cloud.henhal.net` or
 `auth.henhal.net`: its browser-focused login layer breaks OIDC, desktop,
@@ -136,6 +138,36 @@ use the Keycloak/OpenCloud account password and do not reuse a token between
 devices. Test token revocation after setup: removing one app token must not
 affect browser, desktop, Android, or other clients.
 
+## Calendars and contacts
+
+OpenCloud is the authenticated public proxy for the loopback-only Radicale
+service. It forwards `/caldav/`, `/carddav/`, and the corresponding
+`.well-known` discovery endpoints after authenticating the user, then supplies
+the account in `X-Remote-User`. Radicale uses `owner_only` rights, so each user
+can access only collections below their own principal.
+
+OpenCloud does not provide a calendar or contacts web UI. Use a standards-based
+CalDAV/CardDAV client and configure it with:
+
+```text
+Server:   https://cloud.henhal.net
+Username: the OpenCloud username verified during initial DAV setup
+Password: a dedicated OpenCloud app token for this device and client
+```
+
+Generate the app token in the OpenCloud user settings. Use one revocable token
+per device and do not use or store the Keycloak password in a DAV client.
+Automatic discovery should find the predefined **Personal Calendar** and
+**Personal Address Book**. If a client requires explicit URLs, use the URLs it
+discovers rather than inventing paths manually.
+
+After configuring a client, create a disposable event, task, and contact and
+verify their round trip on a second client. Revoke the token when retiring or
+losing a device. Before renaming a Keycloak/OpenCloud username, verify the DAV
+principal behavior: Radicale collection ownership is keyed by the username
+OpenCloud supplies in `X-Remote-User`, so a rename may require an explicit
+collection migration.
+
 ## Operations and troubleshooting
 
 ### Expected backup outage
@@ -147,12 +179,12 @@ should recover automatically when the job cleanup restarts OpenCloud.
 Check service health:
 
 ```bash
-systemctl is-active opencloud.service keycloak.service
+systemctl is-active opencloud.service keycloak.service radicale.service
 systemctl is-active cloudflared-tunnel-d5383138-72c4-4879-924a-319edc4c20c6.service
-sudo ss -lntp | rg ':(8080|9200)\b'
+sudo ss -lntp | rg ':(5232|8080|9200)\b'
 ```
 
-OpenCloud and Keycloak must only listen on loopback. An unauthenticated request
+OpenCloud, Keycloak, and Radicale must only listen on loopback. An unauthenticated request
 to the user API returning `401` is normal and confirms that the endpoint is
 reachable but protected:
 
@@ -168,6 +200,7 @@ After reproducing one failed Android or desktop upload, inspect HP's logs:
 ```bash
 sudo journalctl -u opencloud.service --since '5 minutes ago' --no-pager -o short-iso | tail -n 250
 sudo journalctl -u keycloak --since '15 minutes ago' --no-pager -o short-iso | tail -n 250
+sudo journalctl -u radicale.service --since '15 minutes ago' --no-pager -o short-iso | tail -n 250
 ```
 
 Do not paste bearer tokens into issue reports or chat. Error `token is expired`
@@ -178,6 +211,8 @@ or destination-folder failure.
 
 - Files in OpenCloud are not independently backed up until the next successful
   HP Restic snapshot.
+- Calendar and contact changes are not independently backed up until the next
+  successful snapshot contains a fresh healthy Radicale stage.
 - The T7 must remain mounted at `/srv/opencloud`; OpenCloud is deliberately
   prevented from falling back to HP's root filesystem when it is absent.
 - Keycloak MFA, recovery codes, the break-glass identity, SOPS identities, and

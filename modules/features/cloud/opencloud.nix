@@ -34,6 +34,22 @@
         readOnly = true;
         description = "UUID of the verified Samsung T7 ext4 OpenCloud filesystem.";
       };
+
+      radicale = {
+        enable = lib.mkEnableOption "OpenCloud-authenticated CalDAV and CardDAV through Radicale";
+        port = lib.mkOption {
+          type = lib.types.port;
+          default = 5232;
+          readOnly = true;
+          description = "Loopback-only Radicale listener used by OpenCloud.";
+        };
+        storageRoot = lib.mkOption {
+          type = lib.types.strMatching "^/srv/opencloud(/.*)?$";
+          default = "/srv/opencloud/radicale";
+          readOnly = true;
+          description = "Radicale data root on the mounted OpenCloud T7 filesystem.";
+        };
+      };
     };
 
     config = lib.mkIf cfg.enable {
@@ -265,6 +281,41 @@
           GRAPH_HTTP_ADDR = "127.0.0.1:19220";
         };
         environmentFile = config.sops.templates."opencloud-env".path;
+        settings.proxy.additional_policies = lib.mkIf cfg.radicale.enable [
+          {
+            name = "default";
+            routes = [
+              {
+                endpoint = "/caldav/";
+                backend = "http://127.0.0.1:${toString cfg.radicale.port}";
+                remote_user_header = "X-Remote-User";
+                skip_x_access_token = true;
+                additional_headers = [ { "X-Script-Name" = "/caldav"; } ];
+              }
+              {
+                endpoint = "/.well-known/caldav";
+                backend = "http://127.0.0.1:${toString cfg.radicale.port}";
+                remote_user_header = "X-Remote-User";
+                skip_x_access_token = true;
+                additional_headers = [ { "X-Script-Name" = "/caldav"; } ];
+              }
+              {
+                endpoint = "/carddav/";
+                backend = "http://127.0.0.1:${toString cfg.radicale.port}";
+                remote_user_header = "X-Remote-User";
+                skip_x_access_token = true;
+                additional_headers = [ { "X-Script-Name" = "/carddav"; } ];
+              }
+              {
+                endpoint = "/.well-known/carddav";
+                backend = "http://127.0.0.1:${toString cfg.radicale.port}";
+                remote_user_header = "X-Remote-User";
+                skip_x_access_token = true;
+                additional_headers = [ { "X-Script-Name" = "/carddav"; } ];
+              }
+            ];
+          }
+        ];
       };
 
       systemd.services.opencloud = {
@@ -273,7 +324,8 @@
           ConditionPathIsMountPoint = "/srv/opencloud";
         };
         requires = [ "opencloud-ldap-init.service" ];
-        after = [ "opencloud-ldap-init.service" ];
+        wants = lib.optional cfg.radicale.enable "radicale.service";
+        after = [ "opencloud-ldap-init.service" ] ++ lib.optional cfg.radicale.enable "radicale.service";
       };
     };
   };

@@ -73,7 +73,7 @@ henhal_backup_heartbeat_delivery_healthy{repository="hp-offsite"} ${heartbeat_he
 # HELP henhal_backup_source_status_timestamp_seconds Timestamp of a staged backup source status record.
 # TYPE henhal_backup_source_status_timestamp_seconds gauge
 EOF
-  for source in opencloud-source opencloud-identity vault shared hermes github-mirror; do
+  for source in opencloud-source opencloud-identity vault shared radicale hermes github-mirror; do
     file="${status_dir}/${source}.json"
     [[ "$source" == github-mirror ]] && file="$github_status"
     healthy=0

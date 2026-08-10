@@ -76,6 +76,7 @@ sudo jq -s . \
   /var/lib/restic-status/opencloud-identity.json \
   /var/lib/restic-status/vault.json \
   /var/lib/restic-status/shared.json \
+  /var/lib/restic-status/radicale.json \
   /var/lib/restic-status/hermes.json \
   /var/lib/github-mirrors/status.json
 ```
@@ -85,6 +86,21 @@ the failed source or backup and preserve the last good snapshot.
 
 Hermes remains degraded until a reviewed native export command is configured;
 this is a known source-level warning, not evidence that all backups failed.
+
+For a Radicale source alert, inspect both the staging unit and the service:
+
+```bash
+systemctl --no-pager --full status radicale.service radicale-backup-stage.service
+sudo journalctl -u radicale.service -u radicale-backup-stage.service \
+  --since '2 days ago' --no-pager
+sudo jq . /var/lib/restic-status/radicale.json
+findmnt /srv/opencloud
+```
+
+Do not point Restic at the live collection directory to bypass a failed stage.
+Confirm the T7 mount, service ownership, and Radicale storage verification;
+the previous validated stage should remain available while the source reports
+degraded.
 
 ## Filesystem capacity
 

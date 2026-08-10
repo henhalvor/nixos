@@ -47,6 +47,7 @@
         # the real domain, tunnel UUID, S3 identity, and encrypted SOPS profiles
         # have been created.  See docs/runbooks/phase-5-deployment.md.
         self.nixosModules.opencloud
+        self.nixosModules.opencloudRadicale
         self.nixosModules.opencloudKeycloak
         self.nixosModules.opencloudTunnel
         self.nixosModules.opencloudConsistentSource
@@ -119,6 +120,7 @@
         enable = true;
         cloudHost = "cloud.henhal.net";
         authHost = "auth.henhal.net";
+        radicale.enable = true;
       };
 
       # Passing the montoring hub URL to cloudflare tunnel "owned" by opencloud service
@@ -133,9 +135,9 @@
         enable = true;
         # Built-in staged/exported sources must not be repeated here:
         # /run/opencloud-backup/current, /var/lib/opencloud-identity-backup,
-        # /var/lib/{vault,shared}-backup, /var/lib/github-mirrors, and
-        # /var/lib/hermes-backup. This list is only ordinary HP-local files
-        # that may be read live by Restic.
+        # /var/lib/{vault,shared,radicale}-backup,
+        # /var/lib/github-mirrors, and /var/lib/hermes-backup. This list is
+        # only ordinary HP-local files that may be read live by Restic.
         extraPaths = [
           "/home/henhal/Documents"
           "/home/henhal/Pictures"
@@ -167,6 +169,8 @@
           "restic-backups-hp-offsite.service"
           "restic-hp-offsite-check.service"
           "github-mirror.service"
+          "radicale.service"
+          "radicale-backup-stage.service"
           "syncthing.service"
           "firecrawl.service"
           "hermes-agent.service"
