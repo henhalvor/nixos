@@ -7,6 +7,7 @@
     ...
   }: let
     cfg = config.my.githubMirror;
+    ownersFile = pkgs.writeText "github-mirror-owners" (builtins.readFile cfg.ownersFile);
     mirrorScript = pkgs.writeShellApplication {
       name = "github-mirror-refresh";
       runtimeInputs = with pkgs; [coreutils findutils gawk git git-lfs gh jq util-linux];
@@ -16,7 +17,7 @@
         root=/var/lib/github-mirrors
         current="$root/current"
         status="$root/status.json"
-        allowlist=${lib.escapeShellArg (toString cfg.ownersFile)}
+        allowlist=${ownersFile}
         limit=${toString cfg.repositoryLimit}
         lock=/var/lib/hp-backup/source.lock
 
