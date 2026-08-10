@@ -31,8 +31,18 @@ sync_all_monitors = true
 [calendar]
 enabled = true
 
+    [calendar.account.opencloud]
+    name = "Opencloud"
+    provider = "custom"
+    server_url = "https://cloud.henhal.net/caldav/"
+    type = "caldav"
+    username = "6ea9774d-9461-4dc5-b8f7-47583a7e0dbc"
+
     [calendar.account.personal_google]
     type = "google"
+
+[control_center.calendar]
+show_events_card = false
 
 [dock]
 auto_hide = true
@@ -54,6 +64,9 @@ enabled = true
 
     [hot_corners.top_right]
     action = "control_center"
+
+[location]
+auto_locate = true
 
 [lockscreen_widgets]
 enabled = false
