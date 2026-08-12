@@ -25,7 +25,22 @@
       options = ["fmask=0077" "dmask=0077"];
     };
 
-    swapDevices = [];
+    # Persistent swap is intentionally plaintext because the root ext4 filesystem
+    # is not encrypted. See docs/LENOVO-YOGA-PRO-7-SLEEP-HIBERNATION.md for the
+    # accepted security risk and the required recovery procedure.
+    swapDevices = [
+      {
+        device = "/swapfile";
+        # 32 GiB covers the installed memory with a small hibernation margin.
+        size = 32768;
+      }
+    ];
+
+    # The resume device is the partition containing /swapfile. The offset is in
+    # 4 KiB pages and was recorded from `filefrag -v /swapfile` after creation.
+    # Recalculate it before changing, deleting, or recreating the swapfile.
+    boot.resumeDevice = "/dev/disk/by-uuid/6d349d18-9193-4deb-a5ab-937d306da763";
+    boot.kernelParams = [ "resume_offset=5347328" ];
 
     networking.useDHCP = lib.mkDefault true;
     nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";

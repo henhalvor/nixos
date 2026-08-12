@@ -176,6 +176,14 @@
         enable32Bit = true;
       };
 
+      # Keep short lid closures as fast modern standby, then hibernate after
+      # two hours to avoid continued battery drain during longer closures.
+      # The swapfile resume configuration lives in hardware.nix.
+      services.logind.settings.Login.HandleLidSwitch = lib.mkForce "suspend-then-hibernate";
+      systemd.sleep.extraConfig = ''
+        HibernateDelaySec=2h
+      '';
+
       # Logitech wireless peripherals
       hardware.logitech.wireless.enable = true;
       hardware.logitech.wireless.enableGraphical = true;
