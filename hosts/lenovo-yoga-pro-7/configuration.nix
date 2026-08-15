@@ -106,9 +106,10 @@
         self.nixosModules.nerdFonts
         self.nixosModules.udiskie
         self.nixosModules.devTools
-        self.nixosModules.sessionVariables
-        self.nixosModules.direnv
-        self.nixosModules.bottles
+         self.nixosModules.sessionVariables
+         self.nixosModules.direnv
+         self.nixosModules.devShellBootstrap
+         self.nixosModules.bottles
         self.nixosModules.utils
 
         # Scripts & Utilities (Phase 10)

@@ -35,9 +35,10 @@
         self.nixosModules.sshConfig
         self.nixosModules.secrets
         self.nixosModules.devTools
-        self.nixosModules.sessionVariables
-        self.nixosModules.direnv
-        self.nixosModules.utils
+         self.nixosModules.sessionVariables
+         self.nixosModules.direnv
+         self.nixosModules.devShellBootstrap
+         self.nixosModules.utils
 
         self.nixosModules.firecrawl
         self.nixosModules.hermesRuntime

@@ -21,6 +21,34 @@ nix run nixpkgs#sops -- secrets/monitoring.yaml
 
 ---
 
+**Bootstrap a general-purpose development shell**
+
+Run this from an existing project directory. It creates `flake.nix` and
+`.envrc`, ensures `.direnv` is ignored by Git, allows the direnv configuration,
+and opens the shell:
+
+```bash
+dev-init
+```
+
+An explicit directory is also supported:
+
+```bash
+dev-init /path/to/project
+```
+
+Existing files are preserved unless replacement is explicit:
+
+```bash
+dev-init --force
+```
+
+Inside a Git worktree, `dev-init` marks the generated flake as intent-to-add so
+Nix can evaluate it. The file remains unstaged and still needs a normal `git
+add` when you want to commit it.
+
+---
+
 **Check the monitoring stack on hp-server**
 
 ```bash

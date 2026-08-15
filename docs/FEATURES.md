@@ -160,6 +160,7 @@ These are imported by every host.
 | `nerdFonts` | `nerd-fonts.nix` | HM-only | Hack + JetBrainsMono Nerd Fonts |
 | `udiskie` | `udiskie.nix` | HM-only | Auto-mount removable media |
 | `devTools` | `dev-tools.nix` | HM-only | CLI dev tools (jq, fd, ripgrep, etc.) |
+| `devShellBootstrap` | `dev-shell-bootstrap.nix` | HM + Package | Installs `dev-init` and bootstraps standalone direnv-enabled development shells |
 | `sessionVariables` | `session-variables.nix` | HM-only | XDG dirs, EDITOR, BROWSER, etc. |
 | `direnv` | `direnv.nix` | HM-only | direnv + nix-direnv |
 | `utils` | `utils.nix` | HM-only | Small utilities (btop, fastfetch, etc.) |
@@ -179,6 +180,7 @@ These are imported by every host.
 | `rust` | `dev-shells/rust.nix` | Rust toolchain via rust-overlay + rust-analyzer |
 | `react-native` | `dev-shells/react-native.nix` | React Native + Android SDK + emulator helpers (~590 lines) |
 | `sandbox` | `dev-shells/sandbox.nix` | FHS sandbox for prebuilt binaries |
+| `allround` | `dev-shell-bootstrap.nix` | General-purpose Node, Rust, Go, Python, and native build shell |
 
 Usage: `nix develop .#<shell-name>`
 
@@ -196,6 +198,7 @@ Available via `nix run .#<name>` or `nix build .#<name>`:
 | `emu-buttons` | Emulator button helper |
 | `expo-open-all` | Open all Expo dev tools |
 | `maestro-studio-desktop` | Maestro Studio .desktop entry |
+| `dev-init` | Bootstrap a standalone `flake.nix` and `.envrc` in a project directory |
 
 ## Nix-on-Droid Modules
 
