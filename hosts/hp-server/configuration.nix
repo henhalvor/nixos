@@ -13,6 +13,7 @@
         self.nixosModules.base
         self.nixosModules.bootloader
         self.nixosModules.networking
+        self.nixosModules.garbageCollection
         inputs.home-manager.nixosModules.home-manager
         inputs.stylix.nixosModules.stylix
         self.nixosModules.stylix

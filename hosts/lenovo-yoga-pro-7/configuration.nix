@@ -38,6 +38,7 @@
         self.nixosModules.syncthing
         self.nixosModules.amdGraphics
         self.nixosModules.minimalBattery
+        self.nixosModules.garbageCollection
 
         # Server/connectivity (Phase 4)
         self.nixosModules.sshServer

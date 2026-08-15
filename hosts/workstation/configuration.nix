@@ -40,6 +40,7 @@
         self.nixosModules.docker
         self.nixosModules.syncthing
         self.nixosModules.bootWindows
+        self.nixosModules.garbageCollection
 
         # Server/connectivity (Phase 4)
         self.nixosModules.sshServer
