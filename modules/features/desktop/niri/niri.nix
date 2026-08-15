@@ -399,10 +399,19 @@ in
                 allow-when-locked = true;
                 repeat = false;
               };
-              content.spawn = [
-                "swaylock"
-                "-f"
-              ];
+              content.spawn =
+                if config.noctaliaVersion == "v5" then
+                  [
+                    "noctalia"
+                    "msg"
+                    "session"
+                    "lock"
+                  ]
+                else
+                  [
+                    "swaylock"
+                    "-f"
+                  ];
             };
             "Mod+G" = _: {
               props.repeat = false;

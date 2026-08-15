@@ -6,7 +6,7 @@
     options.my.rofi.lockCommand = lib.mkOption {
       type = lib.types.str;
       default = "hyprlock";
-      description = "Lock screen command for power desktop entry";
+      description = "Lock screen command for power desktop entry (hyprlock, swaylock, noctalia, loginctl)";
     };
 
     config.home-manager.sharedModules = [self.homeModules.rofi];
@@ -24,6 +24,7 @@
       {
         hyprlock = "${pkgs.hyprlock}/bin/hyprlock";
         swaylock = "${pkgs.swaylock}/bin/swaylock";
+        noctalia = "${lib.getExe config.programs.noctalia.package} msg session lock";
         loginctl = "loginctl lock-session";
       }
       .${osConfig.my.rofi.lockCommand}

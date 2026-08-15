@@ -168,7 +168,7 @@
       };
 
       # Rofi lock command
-      my.rofi.lockCommand = "hyprlock";
+      my.rofi.lockCommand = if config.my.noctalia.version == "v5" then "noctalia" else "hyprlock";
 
       # Workstation-specific NVIDIA overrides (desktop GPU doesn't need power saving)
       hardware.nvidia.powerManagement.enable = lib.mkForce false;

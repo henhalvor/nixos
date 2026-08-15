@@ -9,6 +9,7 @@
   flake.nixosModules.lenovoYogaPro7Config =
     {
       pkgs,
+      config,
       lib,
       ...
     }:
@@ -125,6 +126,13 @@
       # v4 is the stable fallback; change to "v5" to test the new shell.
       my.noctalia.version = "v5";
 
+      my.swayidle = {
+        lockCommand = if config.my.noctalia.version == "v5" then "noctalia" else "swaylock";
+        session = "niri";
+      };
+
+      my.rofi.lockCommand = if config.my.noctalia.version == "v5" then "noctalia" else "swaylock";
+
       my.syncthing = {
         user = "henhal";
         deviceName = "yoga-pro-7";
@@ -161,16 +169,6 @@
       #   launcher = "rofi";
       # };
       #
-      # # Swayidle config (niri session, swaylock)
-      # my.swayidle = {
-      #   lockCommand = "swaylock";
-      #   session = "niri";
-      # };
-      #
-      # # Rofi lock command
-      # my.rofi.lockCommand = "swaylock";
-      #
-
       # Laptop-specific hardware
       hardware.graphics = {
         enable = true;

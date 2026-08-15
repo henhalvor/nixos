@@ -7,7 +7,7 @@
       lockCommand = lib.mkOption {
         type = lib.types.str;
         default = "swaylock";
-        description = "Lock screen command name (swaylock, hyprlock, loginctl)";
+        description = "Lock screen command name (swaylock, hyprlock, noctalia, loginctl)";
       };
       session = lib.mkOption {
         type = lib.types.str;
@@ -19,12 +19,19 @@
     config.home-manager.sharedModules = [self.homeModules.swayidle];
   };
 
-  flake.homeModules.swayidle = {pkgs, osConfig, ...}: let
+  flake.homeModules.swayidle = {
+    config,
+    lib,
+    pkgs,
+    osConfig,
+    ...
+  }: let
     cfg = osConfig.my.swayidle;
     lockBin =
       {
         swaylock = "${pkgs.swaylock}/bin/swaylock -f";
         hyprlock = "${pkgs.hyprlock}/bin/hyprlock";
+        noctalia = "${lib.getExe config.programs.noctalia.package} msg session lock";
         loginctl = "loginctl lock-session";
       }
       .${cfg.lockCommand}
@@ -34,7 +41,7 @@
       if cfg.session == "niri"
       then {
         timeout = 600;
-        command = "niri msg action power-off-monitors";
+        command = "${lib.getExe osConfig.programs.niri.package} msg action power-off-monitors";
       }
       else {
         timeout = 600;
