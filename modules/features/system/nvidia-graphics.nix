@@ -17,6 +17,33 @@
 
     services.xserver.videoDrivers = ["nvidia"];
 
+    # Prevent the NVIDIA driver from retaining an oversized pool of freed
+    # compositor buffers. Without this profile, long-running Niri sessions can
+    # exhaust VRAM and leave games displaying a black or frozen frame.
+    environment.etc."nvidia/nvidia-application-profiles-rc.d/50-limit-free-buffer-pool-in-wayland-compositors.json".text =
+      builtins.toJSON {
+        rules = [
+          {
+            pattern = {
+              feature = "procname";
+              matches = "niri";
+            };
+            profile = "Limit Free Buffer Pool On Wayland Compositors";
+          }
+        ];
+        profiles = [
+          {
+            name = "Limit Free Buffer Pool On Wayland Compositors";
+            settings = [
+              {
+                key = "GLVidHeapReuseRatio";
+                value = 0;
+              }
+            ];
+          }
+        ];
+      };
+
     hardware.graphics = {
       enable = true;
       enable32Bit = true;
