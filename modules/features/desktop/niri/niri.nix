@@ -599,6 +599,12 @@ in
 
           # ── Window Rules ───────────────────────────────────────────────
           window-rules = [
+            # Prevent auto focusing on window open (for llm agents doing testing)
+            {
+              matches = [ { app-id = "^(chromium|kalk|firefox|zen(-beta)?|electron)$"; } ];
+              open-focused = false;
+            }
+
             # Global: rounded corners
             {
               geometry-corner-radius = 25;
