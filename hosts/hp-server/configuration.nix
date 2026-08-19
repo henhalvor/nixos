@@ -35,15 +35,15 @@
         self.nixosModules.sshConfig
         self.nixosModules.secrets
         self.nixosModules.devTools
-         self.nixosModules.sessionVariables
-         self.nixosModules.direnv
-         self.nixosModules.devShellBootstrap
-         self.nixosModules.utils
+        self.nixosModules.sessionVariables
+        self.nixosModules.direnv
+        self.nixosModules.devShellBootstrap
+        self.nixosModules.utils
 
-        self.nixosModules.firecrawl
-        self.nixosModules.hermesRuntime
-        self.nixosModules.hermesDashboard
-        self.nixosModules.hermesWorkspace
+        # self.nixosModules.firecrawl
+        # self.nixosModules.hermesRuntime
+        # self.nixosModules.hermesDashboard
+        # self.nixosModules.hermesWorkspace
 
         # Phase 5 services are imported now but intentionally not enabled until
         # the real domain, tunnel UUID, S3 identity, and encrypted SOPS profiles
@@ -110,7 +110,7 @@
 
       # The gateway already has a 2G hard limit in hermes-runtime.nix; reduce
       # it here for this 8 GiB host while leaving room for core services.
-      my.hermesRuntime.memoryMax = "1536M";
+      # my.hermesRuntime.memoryMax = "1536M";
 
       my.syncthing = {
         user = "henhal";
@@ -174,8 +174,8 @@
           "radicale.service"
           "radicale-backup-stage.service"
           "syncthing.service"
-          "firecrawl.service"
-          "hermes-agent.service"
+          # "firecrawl.service"
+          # "hermes-agent.service"
         ];
         fullJournalUnits = [
           "opencloud.service"
@@ -183,8 +183,8 @@
           "cloudflared-tunnel-d5383138-72c4-4879-924a-319edc4c20c6.service"
           "restic-backups-hp-offsite.service"
           "github-mirror.service"
-          "firecrawl.service"
-          "hermes-agent.service"
+          # "firecrawl.service"
+          # "hermes-agent.service"
         ];
       };
       my.monitoring.hub = {
@@ -201,14 +201,14 @@
         };
       };
 
-      my.hermesRuntime.enable = true;
-      my.hermesDashboard.enable = true;
-      my.hermesWorkspace = {
-        enable = true;
-        # Grafana owns the conventional loopback port 3000. Workspace remains
-        # exposed through its unchanged Tailscale HTTPS port 3001.
-        workspacePort = 3003;
-      };
+      # my.hermesRuntime.enable = true;
+      # my.hermesDashboard.enable = true;
+      # my.hermesWorkspace = {
+      #   enable = true;
+      #   # Grafana owns the conventional loopback port 3000. Workspace remains
+      #   # exposed through its unchanged Tailscale HTTPS port 3001.
+      #   workspacePort = 3003;
+      # };
 
       # Driver for the USB-C Ethernet adapter.
       boot.kernelModules = [ "ax88179_178a" ];
