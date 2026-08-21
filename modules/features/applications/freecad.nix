@@ -40,12 +40,37 @@
             --replace-fail "Exec=FreeCAD - --single-instance %F" \
                            "Exec=FreeCAD --single-instance %F"
 
+          # Keep the existing XCB/XWayland path. FreeCAD has a native Wayland
+          # platform plugin, but it has shown blank 3D views on Niri/Sway. Do
+          # not switch this to Wayland without manually testing PartDesign's
+          # 3D viewport and task dialogs.
+          #
+          # FreeCAD is a Qt Widgets application with embedded Python/PySide.
+          # Its package wrapper supplies a matched Qt and Python runtime, but
+          # desktop-wide Qt and Python variables otherwise leak into it. In
+          # particular, Kvantum/qt5ct, mixed Qt 5/Qt 6 plugin paths, and the
+          # user Python base were associated with task-dialog teardown
+          # instability and SIGSEGVs in FreeCAD's Qt hover handling. Strip
+          # those variables in
+          # this outer wrapper before FreeCAD's own wrapper adds its runtime.
           wrapProgram $out/bin/FreeCAD \
             --set QT_QPA_PLATFORM xcb \
-            --set SDL_VIDEODRIVER x11
+            --set SDL_VIDEODRIVER x11 \
+            --unset QT_STYLE_OVERRIDE \
+            --unset QT_QPA_PLATFORMTHEME \
+            --unset QT_PLUGIN_PATH \
+            --unset QML2_IMPORT_PATH \
+            --unset PYTHONPATH \
+            --unset PYTHONUSERBASE
           wrapProgram $out/bin/freecad \
             --set QT_QPA_PLATFORM xcb \
-            --set SDL_VIDEODRIVER x11
+            --set SDL_VIDEODRIVER x11 \
+            --unset QT_STYLE_OVERRIDE \
+            --unset QT_QPA_PLATFORMTHEME \
+            --unset QT_PLUGIN_PATH \
+            --unset QML2_IMPORT_PATH \
+            --unset PYTHONPATH \
+            --unset PYTHONUSERBASE
         '';
       };
     in
