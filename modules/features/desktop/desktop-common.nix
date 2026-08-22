@@ -15,6 +15,9 @@
     xdg.portal = {
       enable = true;
       extraPortals = [pkgs.xdg-desktop-portal-gtk];
+      # Niri has no backend-specific portal configuration. Select GTK as the
+      # fallback so its FileChooser implementation is available there.
+      config.common.default = ["gtk"];
     };
 
     programs.dconf.enable = true;
