@@ -194,6 +194,12 @@
         enableHeartbeats = true;
         secretFile = ../../secrets/monitoring.yaml;
         lokiPushListenAddress = "100.71.100.37";
+
+        localProbeTargets = {
+          grafana = "http://127.0.0.1:3000/api/health";
+          keycloak = "http://127.0.0.1:8080/realms/opencloud/.well-known/openid-configuration";
+          opencloud = "http://127.0.0.1:9200/";
+        };
         scrapeTargets = {
           hp-server = "127.0.0.1";
           workstation = "workstation.tail37a5eb.ts.net";
