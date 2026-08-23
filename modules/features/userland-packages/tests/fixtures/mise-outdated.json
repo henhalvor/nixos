@@ -1,0 +1,12 @@
+{
+  "node": {
+    "requested": "22",
+    "current": "22.14.0",
+    "latest": "22.15.0"
+  },
+  "npm:@openai/codex": {
+    "requested": "latest",
+    "current": "0.42.0",
+    "latest": "0.42.0"
+  }
+}

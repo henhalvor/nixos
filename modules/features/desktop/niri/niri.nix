@@ -392,7 +392,7 @@ in
             };
             "Mod+A" = _: {
               props.repeat = false;
-              content.spawn-sh = "${config.terminal} --title opencode-ai -e opencode --model github-copilot/gpt-5-mini";
+              content.spawn-sh = "${config.terminal} --title opencode-ai -e ${pkgs.mise}/bin/mise exec -- opencode --model github-copilot/gpt-5-mini";
             };
             "Mod+Shift+L" = _: {
               props = {

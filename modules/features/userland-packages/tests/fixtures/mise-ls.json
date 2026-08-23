@@ -1,0 +1,22 @@
+{
+  "node": [
+    {
+      "version": "22.14.0",
+      "install_path": "/home/test/.local/share/mise/installs/node/22.14.0",
+      "source": {
+        "type": "config",
+        "path": "/home/test/.config/mise/config.toml"
+      }
+    }
+  ],
+  "npm:@openai/codex": [
+    {
+      "version": "0.42.0",
+      "install_path": "/home/test/.local/share/mise/installs/npm-openai-codex/0.42.0",
+      "source": {
+        "type": "config",
+        "path": "/home/test/.config/mise/config.toml"
+      }
+    }
+  ]
+}

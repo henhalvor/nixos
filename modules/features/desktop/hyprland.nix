@@ -395,7 +395,7 @@
             "$mainMod, E, exec, hyprctl dispatch exec '[float; size 1111 650] kitty -e yazi-float'"
             "$mainMod, I, exec, hyprctl dispatch exec '[float; size 1111 650] kitty -e btop'"
             "$mainMod, B, exec, hyprctl dispatch exec '[float; size 1111 650] kitty -e bluetui'"
-            "$mainMod, A, exec, hyprctl dispatch exec '[float; size 1111 650; title opencode-ai] kitty --title opencode-ai -e opencode --model github-copilot/gpt-5-mini'"
+            "$mainMod, A, exec, hyprctl dispatch exec '[float; size 1111 650; title opencode-ai] kitty --title opencode-ai -e ${pkgs.mise}/bin/mise exec -- opencode --model github-copilot/gpt-5-mini'"
             "$mainMod SHIFT, L, exec, ${lockBin}"
 
             # Scrolling layout

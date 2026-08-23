@@ -26,7 +26,7 @@
           # Languages
           go
           rustc
-          nodejs_20
+          nodejs_22
           python3
         ];
 

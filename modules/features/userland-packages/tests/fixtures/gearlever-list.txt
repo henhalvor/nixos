@@ -1,0 +1,2 @@
+Example Editor [1.4.0] [AppImageUpdateManager] /home/test/Applications/Example Editor.AppImage
+Second App [2.0.0] [UpdatesNotAvailable] /home/test/AppImages/Second.AppImage

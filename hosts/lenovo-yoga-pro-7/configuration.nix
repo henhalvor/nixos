@@ -93,11 +93,7 @@
         self.nixosModules.missionCenter
         self.nixosModules.gnomeCalculator
         self.nixosModules.vial
-        self.nixosModules.claudeCode
-        self.nixosModules.amazonQ
-        self.nixosModules.opencode
         self.nixosModules.kdeconnect
-        self.nixosModules.ohMyPi
 
         # Settings & Environment (Phase 9)
         self.nixosModules.git
@@ -106,10 +102,11 @@
         self.nixosModules.nerdFonts
         self.nixosModules.udiskie
         self.nixosModules.devTools
-         self.nixosModules.sessionVariables
-         self.nixosModules.direnv
-         self.nixosModules.devShellBootstrap
-         self.nixosModules.bottles
+        self.nixosModules.sessionVariables
+        self.nixosModules.direnv
+        self.nixosModules.devShellBootstrap
+        self.nixosModules.userlandPackages
+        self.nixosModules.bottles
         self.nixosModules.utils
 
         # Scripts & Utilities (Phase 10)
@@ -138,6 +135,11 @@
         user = "henhal";
         deviceName = "yoga-pro-7";
         identitySopsFile = ../../secrets/syncthing/lenovo-yoga-pro-7.yaml;
+      };
+
+      my.userlandPackages = {
+        enable = true;
+        enableGui = true;
       };
 
       my.monitoring.exporter = {

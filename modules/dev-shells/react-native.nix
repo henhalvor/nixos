@@ -532,8 +532,8 @@
       GRADLE_OPTS = "-Dorg.gradle.project.android.aapt2FromMavenOverride=${ANDROID_SDK_ROOT}/build-tools/34.0.0/aapt2";
 
       nativeBuildInputs = [
-        unstablePkgs.nodejs_20
-        unstablePkgs.nodePackages.eas-cli
+        unstablePkgs.nodejs_22
+        unstablePkgs.eas-cli
         unstablePkgs.yarn
         unstablePkgs.watchman
         unstablePkgs.corretto17
