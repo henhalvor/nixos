@@ -105,7 +105,6 @@ Detailed breakdown of what each host includes and its specific settings.
 networking.hostName = "workstation";
 my.noctalia.version = "v5";
 my.syncthing.user = "henhal";
-my.sunshine.user = "henhal";
 services.displayManager.defaultSession = "niri";
 my.desktop.terminal = "kitty";
 my.desktop.browser = "zen-beta";
@@ -115,9 +114,11 @@ my.desktop.browser = "zen-beta";
 # Custom Linux firmware packages
 ```
 
-Niri's workstation variant uses `HDMI-A-1` and `DP-1`, with workspaces
-assigned across both displays. Hyprland and Sway remain available as
-alternative sessions, but they are not the default.
+Niri's workstation variant uses `HDMI-A-1`, `DP-1`, and the experimental
+`sunshine` virtual output. Workspaces are assigned across the physical
+displays, with workspace 10 reserved for Sunshine/Moonlight streaming.
+Hyprland and Sway remain available as alternative sessions, but they are not
+the default.
 
 ---
 
@@ -232,8 +233,9 @@ my.desktop.browser = "zen-beta";
 # USB-C ethernet adapter kernel module (ax88179_178a)
 ```
 
-The laptop uses Niri's laptop output variant for its internal display. Its
-lid policy suspends briefly and then hibernates after two hours.
+The laptop uses Niri's laptop output variant for its internal display. It has
+the `moonlight` client installed for connecting to the workstation over
+Tailscale. Its lid policy suspends briefly and then hibernates after two hours.
 
 ---
 
@@ -381,6 +383,7 @@ nix-on-droid switch --flake .#default
 | Gaming | ✅ | — | — | — |
 | Secure Boot | ✅ | — | — | — |
 | Sunshine | ✅ | — | — | — |
+| Moonlight Qt | ✅ | ✅ | — | — |
 | Server stack | — | — | ✅ | — |
 | Battery mgmt | — | ✅ | — | — |
 | Desktop apps | ✅ | ✅ | — | — |

@@ -13,7 +13,7 @@ As of 2026-08-23, the setup has three NixOS hosts and one nix-on-droid configura
 
 The current configuration is already declarative. Each NixOS machine has its own `nixosConfiguration`, while shared features and Home Manager modules live in the flake. The current configuration does not yet include a dedicated development machine, a Mac, a `deploy-rs` deployment output, or a Disko and `nixos-anywhere` replacement workflow.
 
-Remote administration currently works through Tailscale and SSH. Sunshine exists for the workstation, but there is not yet a tested remote GUI workflow for a separate development desktop or a future Mac. The current SSH aliases also start an interactive tmux session, so deployment commands need a non-interactive SSH override.
+Remote administration currently works through Tailscale and SSH. Sunshine now has a workstation preflight path using an experimental Niri virtual output, while Moonlight Qt is installed on the workstation and Lenovo Yoga as the first client pair. The remote GUI path still needs live pairing and streaming tests. The current SSH aliases also start an interactive tmux session, so deployment commands need a non-interactive SSH override.
 
 The proposed GMKtec K12 has not been purchased or installed. A Mac mini has also not been purchased, so Xcode and the iOS Simulator are not currently available.
 
@@ -122,7 +122,7 @@ Use Sunshine on the K12 and Moonlight on the workstation, Yoga, tablet, or anoth
 
 Sunshine supports Linux Wayland capture, AMD encoding, and recent releases include headless-monitor support. See the [Sunshine configuration documentation](https://docs.lizardbyte.dev/projects/sunshine/latest/md_docs_2configuration.html).
 
-The current Sunshine module is a useful starting point, but its monitor scripts are tied to the workstation's Hyprland monitor names. Split those scripts from the generic Sunshine feature before reusing it on the K12.
+The Sunshine module uses declarative applications and a stable Niri `sunshine` virtual output. It does not modify physical monitors or depend on Hyprland output names. The Niri virtual-output package is pinned to an open upstream pull request and must be rechecked when upstream support changes.
 
 The K12 needs a graphical session for Sunshine. The simplest arrangement is an always-on, locked development session with automatic login and sleep disabled. If automatic login is not acceptable, use a tested headless or virtual-display arrangement and keep SSH as the recovery path.
 
@@ -175,8 +175,37 @@ KVM should be a recovery upgrade, not a prerequisite for the development workflo
 2. Add Disko and a replacement-ready hardware layout.
 3. Add Tailscale policy for SSH and GUI access.
 4. Add `deploy-rs` around the existing host configurations.
-5. Configure Sunshine and test Moonlight from the Yoga and a mobile device while away from the home network.
+5. Configure Sunshine and test Moonlight Qt from the Yoga and a mobile device while away from the home network. Use the workstation Tailscale address, verify the `sunshine` virtual output, and test reconnect, input, audio, and physical-display behavior before adding another development host.
 6. Add the Mac mini later with a `darwinConfigurations` entry, nix-darwin, Home Manager, Tailscale, Screen Sharing, and Xcode.
 7. Add KVM only after the recovery tests show that it solves a real remaining problem.
+8. Add the optional fleet dashboard only after the installation, access, deployment, and recovery workflows work without it.
+
+## Later improvement: fleet dashboard
+
+The fleet dashboard is a convenience layer, not part of the base system. Every machine must remain manageable through Tailscale, SSH, the relevant remote desktop tool, and the normal deployment commands when the dashboard is unavailable.
+
+The HP server can later host a private fleet portal with three parts:
+
+- [Homepage](https://gethomepage.dev/configs/services/) as the front page for machine cards, service links, and simple availability checks;
+- the existing Grafana fleet overview for metrics, logs, alerts, service health, and backup status;
+- [OliveTin](https://docs.olivetin.app/) for a small set of predefined actions.
+
+The Homepage view should include HP, the workstation, Yoga, K12, and Mac mini. Each card can show whether the machine is online, its expected availability, links to the relevant Grafana view, and the connection details for SSH or remote desktop.
+
+Start with a narrow set of OliveTin actions:
+
+- wake the workstation or K12;
+- restart Sunshine on the K12;
+- run a read-only fleet health check;
+- show backup status or start the existing backup job;
+- reboot or power off a machine after explicit confirmation.
+
+Do not initially expose arbitrary commands, a root terminal, unrestricted service names, or one-click fleet deployment. Normal NixOS activation should remain an operator action from the workstation or Yoga until the deployment and rollback workflow has been tested independently.
+
+Run the action service as a dedicated `fleet-control` identity. Give it no personal SSH key, no interactive shell, and no access to SOPS or development secrets. Each target should accept only an exact allowlist of root-owned commands. Disable PTY, forwarding, and unrestricted sudo. Prefer OliveTin `exec` actions over shell strings, require confirmation for disruptive actions, and keep action logs. See the [OliveTin execution guidance](https://docs.olivetin.app/action_execution/shellvsexec.html) and [confirmation input](https://docs.olivetin.app/args/input_confirmation.html).
+
+Bind Homepage and OliveTin to loopback on HP and publish the portal only inside the tailnet with [Tailscale Serve](https://tailscale.com/docs/features/tailscale-serve). Restrict it to personal administration devices with tailnet grants. The action interface should not share Grafana's public Cloudflare route.
+
+If HP is down, the portal is also down. External monitoring should report that failure, while direct Tailscale, SSH, local access, or KVM remains the recovery path. Do not make the portal a dependency for recovering HP or any other machine.
 
 This gives each machine one clear job and makes replacement mostly a matter of reinstalling the declared system, restoring secrets, and cloning the required repositories.

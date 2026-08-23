@@ -51,7 +51,8 @@ These are imported by every host.
 | `monitoringExporter` | `monitoring/exporter.nix` | NixOS-only | Tailscale-only Node/Process exporters, bounded journal shipping, and custom health metrics |
 | `monitoringHub` | `monitoring/hub.nix` | NixOS-only | HP Prometheus, Telegram Alertmanager, Grafana, Loki, Blackbox probes, dashboards, and external dead-man heartbeats |
 | `laptopServer` | `laptop-server.nix` | NixOS-only | Lid-close ignore, wake-on-LAN |
-| `sunshine` | `sunshine.nix` | NixOS-only | Sunshine game streaming with `options.my.sunshine.user` |
+| `moonlight` | `moonlight.nix` | NixOS-only | Moonlight Qt game-streaming client (`pkgs.moonlight-qt`) |
+| `sunshine` | `sunshine/sunshine.nix` | NixOS-only | Sunshine streaming server with declarative Wayland virtual-display capture |
 
 ## Desktop Foundation
 
