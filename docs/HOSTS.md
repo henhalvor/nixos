@@ -6,8 +6,9 @@ Detailed breakdown of what each host includes and its specific settings.
 
 ## Workstation
 
-**Type:** Desktop workstation  
-**Primary DE:** Hyprland  
+**Type:** Desktop workstation<br>
+**Default window manager:** Niri<br>
+**Desktop shell:** Noctalia v5<br>
 **GPU:** NVIDIA  
 **Bootloader:** Lanzaboote (secure boot)
 
@@ -24,7 +25,7 @@ Detailed breakdown of what each host includes and its specific settings.
 </details>
 
 <details>
-<summary>System Services (11)</summary>
+<summary>System Services</summary>
 
 - `pipewire` — audio
 - `bluetooth` — Bluetooth + blueman
@@ -34,30 +35,31 @@ Detailed breakdown of what each host includes and its specific settings.
 - `nvidiaGraphics` — NVIDIA drivers + VAAPI
 - `gaming` — Steam, gamemode, gamescope
 - `virtualization` — libvirt + QEMU
+- `docker` — containers
 - `syncthing` — file sync
 - `bootWindows` — Windows boot entry
-- `sunshine` — game streaming
+- `garbageCollection` — scheduled Nix store cleanup
 </details>
 
 <details>
-<summary>Server & Connectivity (3)</summary>
+<summary>Server & Connectivity</summary>
 
 - `sshServer` — OpenSSH
 - `tailscale` — VPN
 - `monitoringExporter` — Tailscale-only Node/Process metrics and journal forwarding
+- `sunshine` — game streaming
 </details>
 
 <details>
-<summary>Desktop (11)</summary>
+<summary>Desktop</summary>
 
 - `desktopCommon` — XDG, fonts, GTK/Qt
 - `sddm` — display manager
-- `hyprland` — primary WM
-- `sway` — secondary WM
-- `niri` — tertiary WM
-- `waybar` — status bar
-- `hyprlock` — lock screen
-- `mako` — notifications
+- `hyprland` — alternative WM
+- `sway` — alternative WM
+- `niri` — default WM/session
+- `noctalia` — Noctalia v5 shell and panel
+- `hyprlock` — alternative lock screen
 - `rofi` — app launcher
 - `clipman` — clipboard
 - `grimblast` — screenshots
@@ -66,31 +68,34 @@ Detailed breakdown of what each host includes and its specific settings.
 </details>
 
 <details>
-<summary>Applications (26)</summary>
+<summary>Applications</summary>
 
 - `kitty` — terminal
+- `freecad` — CAD
 - `nvim` — Neovim
 - `zsh` — shell
 - `tmux` — multiplexer
 - `yazi` — file manager
 - `vivaldi`, `zenBrowser`, `brave`, `firefox`, `googleChrome`, `microsoftEdge` — browsers
 - `obsidian` — notes
+- `opencloudDesktop` — OpenCloud client
 - `spotify` — music
 - `gimp`, `gthumb`, `mpv`, `zathura` — media
-- `libreoffice` — office
+- `onlyoffice` — office
 - `nautilus` — file manager (GUI)
 - `missionCenter` — system monitor
 - `gnomeCalculator` — calculator
 - `vial` — keyboard firmware
 - `claudeCode`, `amazonQ`, `opencode` — AI tools
+- `kdeconnect`, `codecrafters-cli`, `ohMyPi` — additional tools
 </details>
 
 <details>
-<summary>Settings & Utilities (13)</summary>
+<summary>Settings & Utilities</summary>
 
 - `git`, `sshConfig`, `secrets` — dev config
 - `nerdFonts`, `udiskie` — fonts, auto-mount
-- `devTools`, `sessionVariables`, `direnv`, `bottles`, `utils` — environment
+- `devTools`, `sessionVariables`, `direnv`, `devShellBootstrap`, `bottles`, `utils` — environment
 - `powerMonitor`, `yaziFloat`, `brightnessExternal` — scripts
 </details>
 
@@ -98,32 +103,29 @@ Detailed breakdown of what each host includes and its specific settings.
 
 ```nix
 networking.hostName = "workstation";
+my.noctalia.version = "v5";
 my.syncthing.user = "henhal";
 my.sunshine.user = "henhal";
-
-# Dual monitor setup
-my.hyprland.monitors = [
-  "HDMI-A-1,1920x1080@144,0x0,1"
-  "DP-1,2560x1440@144,1920x0,1"
-];
-my.hyprland.lockCommand = "hyprlock";
-my.hyprland.launcher = "rofi";
-my.hyprland.bar = "waybar";
-my.rofi.lockCommand = "hyprlock";
+services.displayManager.defaultSession = "niri";
 my.desktop.terminal = "kitty";
-my.desktop.browser = "vivaldi";
+my.desktop.browser = "zen-beta";
 
 # NVIDIA power management disabled
 # Logitech wireless peripherals enabled
-# Custom firmware packages (linux_firmware, sof-firmware)
+# Custom Linux firmware packages
 ```
+
+Niri's workstation variant uses `HDMI-A-1` and `DP-1`, with workspaces
+assigned across both displays. Hyprland and Sway remain available as
+alternative sessions, but they are not the default.
 
 ---
 
 ## Lenovo Yoga Pro 7
 
-**Type:** Laptop  
-**Primary DE:** Niri (noctalia shell)  
+**Type:** Laptop<br>
+**Default window manager:** Niri<br>
+**Desktop shell:** Noctalia v5<br>
 **GPU:** AMD (integrated)  
 **Bootloader:** systemd-boot
 
@@ -140,7 +142,7 @@ my.desktop.browser = "vivaldi";
 </details>
 
 <details>
-<summary>System Services (10)</summary>
+<summary>System Services</summary>
 
 - `pipewire` — audio
 - `bluetooth` — Bluetooth + blueman
@@ -151,11 +153,12 @@ my.desktop.browser = "vivaldi";
 - `virtualization` — libvirt + QEMU
 - `syncthing` — file sync
 - `amdGraphics` — AMD GPU drivers
-- `minimalBattery` — TLP power management
+- `minimalBattery` — battery-aware CPU/GPU power caps
+- `garbageCollection` — scheduled Nix store cleanup
 </details>
 
 <details>
-<summary>Server & Connectivity (3)</summary>
+<summary>Server & Connectivity</summary>
 
 - `sshServer` — OpenSSH
 - `tailscale` — VPN
@@ -163,15 +166,12 @@ my.desktop.browser = "vivaldi";
 </details>
 
 <details>
-<summary>Desktop (12)</summary>
+<summary>Desktop</summary>
 
 - `desktopCommon` — XDG, fonts, GTK/Qt
 - `sddm` — display manager
-- `hyprland` — secondary WM
-- `niri` — primary WM
-- `sway` — tertiary WM
-- `gnome` — GNOME fallback
-- `noctalia` — Niri shell/panel
+- `niri` — default WM/session
+- `noctalia` — Noctalia v5 shell and panel
 - `swaylock` — lock screen
 - `swayidle` — idle daemon
 - `rofi` — app launcher
@@ -182,31 +182,35 @@ my.desktop.browser = "vivaldi";
 </details>
 
 <details>
-<summary>Applications (26)</summary>
+<summary>Applications</summary>
 
 - `kitty` — terminal
+- `freecad` — CAD
+- `thunderbird` — mail client
 - `nvim` — Neovim
 - `zsh` — shell
 - `tmux` — multiplexer
 - `yazi` — file manager
 - `vivaldi`, `zenBrowser`, `brave`, `firefox`, `googleChrome`, `microsoftEdge` — browsers
 - `obsidian` — notes
+- `opencloudDesktop` — OpenCloud client
 - `spotify` — music
 - `gimp`, `gthumb`, `mpv`, `zathura` — media
-- `libreoffice` — office
+- `onlyoffice` — office
 - `nautilus` — file manager (GUI)
 - `missionCenter` — system monitor
 - `gnomeCalculator` — calculator
 - `vial` — keyboard firmware
 - `claudeCode`, `amazonQ`, `opencode` — AI tools
+- `kdeconnect`, `ohMyPi` — additional tools
 </details>
 
 <details>
-<summary>Settings & Utilities (12)</summary>
+<summary>Settings & Utilities</summary>
 
 - `git`, `sshConfig`, `secrets` — dev config
 - `nerdFonts`, `udiskie` — fonts, auto-mount
-- `devTools`, `sessionVariables`, `direnv`, `bottles`, `utils` — environment
+- `devTools`, `sessionVariables`, `direnv`, `devShellBootstrap`, `bottles`, `utils` — environment
 - `powerMonitor`, `yaziFloat` — scripts
 </details>
 
@@ -214,66 +218,77 @@ my.desktop.browser = "vivaldi";
 
 ```nix
 networking.hostName = "lenovo-yoga-pro-7";
+my.noctalia.version = "v5";
 my.syncthing.user = "henhal";
-
-# Single high-DPI display
-my.hyprland.monitors = [ "eDP-1,2560x1600@60,0x0,1.6" ];
-my.hyprland.lockCommand = "hyprlock";
-my.hyprland.launcher = "rofi";
-
-my.swayidle.lockCommand = "swaylock";
+services.displayManager.defaultSession = "niri";
+my.swayidle.lockCommand = "noctalia";
 my.swayidle.session = "niri";
-my.rofi.lockCommand = "swaylock";
+my.rofi.lockCommand = "noctalia";
 
 my.desktop.terminal = "kitty";
-my.desktop.browser = "vivaldi";
+my.desktop.browser = "zen-beta";
 
 # Logitech wireless peripherals enabled
 # USB-C ethernet adapter kernel module (ax88179_178a)
 ```
 
+The laptop uses Niri's laptop output variant for its internal display. Its
+lid policy suspends briefly and then hibernates after two hours.
+
 ---
 
 ## HP Server
 
-**Type:** Headless server  
-**Primary DE:** None  
-**GPU:** NVIDIA (compute)  
+**Type:** Headless server<br>
+**Window manager / desktop shell:** None<br>
+**Graphics:** No desktop graphics module<br>
 **Bootloader:** systemd-boot
 
 ### Enabled Features
 
 <details>
-<summary>Infrastructure (5)</summary>
+<summary>Infrastructure</summary>
 
 - `base` — core NixOS settings
 - `bootloader` — systemd-boot
 - `networking` — NetworkManager + firewall
+- `garbageCollection` — scheduled Nix store cleanup
 - `stylix` — Stylix theming (for terminal apps)
 - `userHenhal` — user account
 </details>
 
 <details>
-<summary>System Services (3)</summary>
+<summary>Host Services</summary>
 
-- `pipewire` — audio (for remote streaming)
-- `bluetooth` — Bluetooth
-- `nvidiaGraphics` — NVIDIA drivers
+- `systemdLogind` — login and power handling
+- `docker` — containers
+- `syncthing` — file sync
+- `laptopServer` — ignore lid-close actions and use the performance governor
 </details>
 
 <details>
-<summary>Server Features (6)</summary>
+<summary>Access and Monitoring</summary>
 
-- `serverBase` — fail2ban, auto-upgrades, GC
 - `sshServer` — OpenSSH
 - `tailscale` — VPN
 - `monitoringExporter` — Node/Process metrics, custom collectors, and selected journal forwarding over Tailscale
 - `monitoringHub` — Prometheus, Telegram Alertmanager, Grafana, Loki, probes, dashboards, and external heartbeats
-- `laptopServer` — lid-close ignore, wake-on-LAN
 </details>
 
 <details>
-<summary>Shell & Tools (4)</summary>
+<summary>Hosted Services and Backups</summary>
+
+- `opencloud` — OpenCloud at `cloud.henhal.net`
+- `opencloudRadicale` — CalDAV/CardDAV through OpenCloud
+- `opencloudKeycloak` — authentication at `auth.henhal.net`
+- `opencloudTunnel` — Cloudflare tunnel and private monitoring ingress
+- `opencloudConsistentSource` — consistent OpenCloud backup source
+- `githubMirror` — GitHub repository mirror
+- `hpResticS3` — HP off-site Restic backups
+</details>
+
+<details>
+<summary>Shell and Tools</summary>
 
 - `zsh` — shell
 - `tmux` — multiplexer
@@ -282,22 +297,25 @@ my.desktop.browser = "vivaldi";
 </details>
 
 <details>
-<summary>Settings (8)</summary>
+<summary>Settings</summary>
 
 - `git`, `sshConfig`, `secrets` — dev config
 - `nerdFonts` — terminal fonts
-- `devTools`, `sessionVariables`, `direnv`, `utils` — environment
+- `devTools`, `sessionVariables`, `direnv`, `devShellBootstrap`, `utils` — environment
 </details>
 
 ### Host-Specific Settings
 
 ```nix
 networking.hostName = "hp-server";
-programs.dconf.enable = true;
+systemd.defaultUnit = "multi-user.target";
 
-# No desktop environment
-# No my.desktop.* settings
+# No display manager, desktop session, Noctalia, or desktop applications
+# Firecrawl and Hermes are not enabled
 ```
+
+HP is operated remotely over SSH and Tailscale. It is the monitoring and
+service host, not a graphical workstation.
 
 ---
 
@@ -354,17 +372,16 @@ nix-on-droid switch --flake .#default
 
 | Feature | Workstation | Lenovo | HP Server | Android |
 |---------|:-----------:|:------:|:---------:|:-------:|
-| Hyprland | ✅ (primary) | ✅ | — | — |
-| Niri | ✅ | ✅ (primary) | — | — |
-| Sway | ✅ | ✅ | — | — |
-| GNOME | — | ✅ | — | — |
-| NVIDIA | ✅ | — | ✅ | — |
+| Hyprland | available | — | — | — |
+| Niri | ✅ (default) | ✅ (default) | — | — |
+| Sway | available | — | — | — |
+| Noctalia v5 | ✅ | ✅ | — | — |
+| NVIDIA | ✅ | — | — | — |
 | AMD GPU | — | ✅ | — | — |
 | Gaming | ✅ | — | — | — |
 | Secure Boot | ✅ | — | — | — |
 | Sunshine | ✅ | — | — | — |
 | Server stack | — | — | ✅ | — |
-| VS Code Server | — | — | ✅ | — |
 | Battery mgmt | — | ✅ | — | — |
 | Desktop apps | ✅ | ✅ | — | — |
 | AI tools | ✅ | ✅ | — | — |
