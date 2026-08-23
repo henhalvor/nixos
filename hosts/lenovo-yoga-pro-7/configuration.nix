@@ -45,6 +45,7 @@
         self.nixosModules.sshServer
         self.nixosModules.tailscale
         self.nixosModules.monitoringExporter
+        self.nixosModules.moonlight
 
         # Desktop foundation (Phase 5)
         self.nixosModules.desktopCommon

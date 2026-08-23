@@ -75,6 +75,9 @@
       };
     in
     {
-      home.packages = [ freecadXcb ];
+      # FreeCAD's Render workbench writes POV-Ray scene files, while POV-Ray
+      # itself performs the render. Configure the profile path to `povray` in
+      # FreeCAD's Render preferences after activation.
+      home.packages = [ freecadXcb pkgs.povray ];
     };
 }
