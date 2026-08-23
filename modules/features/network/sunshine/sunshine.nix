@@ -11,6 +11,34 @@
     pkgs,
     ...
   }:
+  let
+    niri = lib.getExe config.programs.niri.package;
+
+    focusSunshine = pkgs.writeShellScriptBin "sunshine-focus" ''
+      set -eu
+
+      state_file="''${XDG_RUNTIME_DIR}/sunshine-previous-output"
+      ${niri} msg --json focused-output \
+        | ${pkgs.jq}/bin/jq -r '.name' > "$state_file"
+      ${niri} msg action focus-workspace 10
+      ${niri} msg action focus-monitor sunshine
+    '';
+
+    restoreSunshineFocus = pkgs.writeShellScriptBin "sunshine-restore-focus" ''
+      set -eu
+
+      state_file="''${XDG_RUNTIME_DIR}/sunshine-previous-output"
+      if [ -s "$state_file" ]; then
+        output="$(${pkgs.coreutils}/bin/cat "$state_file")"
+        case "$output" in
+          HDMI-A-1|DP-1|sunshine)
+            ${niri} msg action focus-monitor "$output"
+            ;;
+        esac
+        ${pkgs.coreutils}/bin/rm -f "$state_file"
+      fi
+    '';
+  in
   {
     sops.secrets = {
       "sunshine-username" = {
@@ -46,6 +74,12 @@
           {
             name = "Desktop (Sunshine virtual display)";
             "image-path" = "desktop.png";
+            "prep-cmd" = [
+              {
+                do = lib.getExe focusSunshine;
+                undo = lib.getExe restoreSunshineFocus;
+              }
+            ];
           }
         ];
       };

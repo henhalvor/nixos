@@ -202,6 +202,10 @@ in
             mod-key = "Super";
             mod-key-nested = "Alt";
             workspace-auto-back-and-forth = _: { };
+            # Move the pointer when the remote session focuses workspace 10.
+            warp-mouse-to-focus = _: {
+              props.mode = "center-xy";
+            };
             focus-follows-mouse = _: {
               props.max-scroll-amount = "0%";
             };
