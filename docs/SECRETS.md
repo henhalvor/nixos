@@ -46,7 +46,7 @@ host key.
 | `secrets/shared-interactive.yaml` | henhal on all hosts | AI and coding credentials approved for interactive shells |
 | `secrets/auth.yaml` | system activation on all hosts | Initial account password hash |
 | `secrets/hp-agent.yaml` | HP server only | Hermes Telegram, agent-only provider, Firecrawl, and Workspace credentials |
-| `secrets/workstation-services.yaml` | workstation only | OpenCode server credentials |
+| `secrets/workstation-services.yaml` | workstation only | OpenCode server and Sunshine web UI credentials |
 | `secrets/syncthing/<host>.yaml` | matching host only | Host-specific Syncthing identity |
 | `secrets/opencloud.yaml` | HP server only, when added | OpenCloud, Keycloak, and Cloudflare Tunnel credentials |
 | `secrets/hp-backup.yaml` | HP server root services only, when added | Restic/S3 backup credentials |
