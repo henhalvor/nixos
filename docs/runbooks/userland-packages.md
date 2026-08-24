@@ -23,6 +23,12 @@ userland outdated
 userland doctor
 ```
 
+`userland list` queries each available backend for current metadata. When a
+package has an available newer version, the table adds an `UPGRADE COMMAND`
+column with the exact manager-qualified command to run. These availability
+queries may use the network and can leave a package as `unknown` when its
+native backend cannot resolve a version.
+
 Use JSON when another script needs the same inventory:
 
 ```bash
@@ -30,6 +36,8 @@ userland list --json
 userland outdated --json
 userland managers --json
 ```
+
+JSON inventory rows include `upgrade_command` when an upgrade is available.
 
 Every mutable package has a manager-qualified identifier. Examples include
 `mise:node@22.14.0` and `flatpak:org.gimp.GIMP`.

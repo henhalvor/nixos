@@ -7,6 +7,7 @@ import argparse
 import json
 import os
 import re
+import shlex
 import shutil
 import subprocess
 import sys
@@ -132,6 +133,12 @@ def parse_mise_outdated(payload: str) -> dict[str, str]:
         if isinstance(entry, dict) and entry.get("latest"):
             latest[str(tool)] = str(entry["latest"])
     return latest
+
+
+def upgrade_command(package_id: str) -> str:
+    """Return the copy-paste command for one manager-qualified package ID."""
+
+    return f"userland update {shlex.quote(package_id)}"
 
 
 def parse_flatpak_list(payload: str) -> list[dict[str, str]]:
@@ -266,6 +273,15 @@ class Userland:
         for row in rows:
             tool = row["name"]
             available = latest.get(tool, UNKNOWN)
+            if available == UNKNOWN and outdated is not None and outdated.returncode == 0:
+                # `mise outdated --json` omits direct GitHub tools when they are
+                # current. Query `mise latest` so those tools still get a
+                # useful AVAILABLE/STATUS result in the unified inventory.
+                latest_result = self._run("mise", ["mise", "latest", tool], cwd=self.home)
+                if latest_result is not None and latest_result.returncode == 0:
+                    parsed_latest = parse_version(latest_result.stdout)
+                    if parsed_latest != UNKNOWN:
+                        available = parsed_latest
             row["available"] = available
             if available == UNKNOWN:
                 row["status"] = "unknown"
@@ -416,6 +432,9 @@ class Userland:
             rows.extend(self.appimage_rows(include_available))
         if "upstream" in selected:
             rows.extend(self.upstream_rows(include_available))
+        for row in rows:
+            if row.get("status") == "outdated":
+                row["upgrade_command"] = upgrade_command(row["package_id"])
         return rows
 
     def manager_status(self) -> list[dict[str, Any]]:
@@ -722,11 +741,14 @@ def split_package_id(package_id: str) -> tuple[str, str]:
 
 def print_rows(rows: list[dict[str, str]]) -> None:
     columns = ["manager", "package_id", "name", "installed", "available", "status"]
+    if any(row.get("upgrade_command") for row in rows):
+        columns.append("upgrade_command")
     if not rows:
         print("No packages reported.")
         return
     widths = {column: max(len(column), *(len(str(row.get(column, ""))) for row in rows)) for column in columns}
-    print("  ".join(column.upper().ljust(widths[column]) for column in columns))
+    headings = {"upgrade_command": "UPGRADE COMMAND"}
+    print("  ".join(headings.get(column, column.upper()).ljust(widths[column]) for column in columns))
     print("  ".join("-" * widths[column] for column in columns))
     for row in rows:
         print("  ".join(str(row.get(column, "")).ljust(widths[column]) for column in columns))
@@ -807,7 +829,7 @@ def main(argv: list[str] | None = None) -> int:
                 print_manager_status(statuses)
             return 0
         if args.command in {"list", "outdated"}:
-            rows = userland.list_rows(args.manager, include_available=args.command == "outdated")
+            rows = userland.list_rows(args.manager, include_available=True)
             if args.json:
                 print(
                     json.dumps(
