@@ -1,123 +1,126 @@
-# Sunshine — remote game streaming server
-# Source: nixos/modules/server/sunshine/default.nix + monitor scripts
-# Defines options.my.sunshine.user for user-specific config.
-# Monitor setup/restore scripts are exported as packages for hyprland to reference.
-{...}: {
-  flake.nixosModules.sunshine = {
-    config,
-    pkgs,
-    lib,
-    ...
-  }: let
-    cfg = config.my.sunshine;
-    homeDir = config.users.users.${cfg.user}.home;
+# Sunshine remote game-streaming server.
+#
+# The display selection is deliberately declarative. Niri creates the stable
+# `sunshine` virtual output, and Sunshine captures that output through the
+# Wayland screencopy backend.
+{ ... }:
+{
+  flake.nixosModules.sunshine =
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
+    let
+      niri = lib.getExe config.programs.niri.package;
 
-    sunshine-monitor-setup = pkgs.writeShellScriptBin "sunshine-monitor-setup" ''
-      #!/bin/bash
-      DEBUG_FILE="/tmp/sunshine-monitor-setup.log"
-      STATE_FILE="/tmp/sunshine-monitor-state"
+      focusSunshine = pkgs.writeShellScriptBin "sunshine-focus" ''
+        set -eu
 
-      echo "=== Sunshine Monitor Setup $(date) ===" >> "$DEBUG_FILE"
+        state_file="''${XDG_RUNTIME_DIR}/sunshine-previous-output"
+        ${niri} msg --json focused-output \
+          | ${pkgs.jq}/bin/jq -r '.name' > "$state_file"
+        ${niri} msg action focus-workspace 10
+        ${niri} msg action focus-monitor sunshine
+      '';
 
-      HDMI_DPMS=$(${pkgs.hyprland}/bin/hyprctl monitors -j | ${pkgs.jq}/bin/jq -r '.[] | select(.name=="HDMI-A-1") | .dpmsStatus')
-      DP_DPMS=$(${pkgs.hyprland}/bin/hyprctl monitors -j | ${pkgs.jq}/bin/jq -r '.[] | select(.name=="DP-1") | .dpmsStatus')
+      restoreSunshineFocus = pkgs.writeShellScriptBin "sunshine-restore-focus" ''
+        set -eu
 
-      echo "HDMI-A-1 DPMS: $HDMI_DPMS" >> "$DEBUG_FILE"
-      echo "DP-1 DPMS: $DP_DPMS" >> "$DEBUG_FILE"
-
-      echo "HDMI_DPMS=$HDMI_DPMS" > "$STATE_FILE"
-      echo "DP_DPMS=$DP_DPMS" >> "$STATE_FILE"
-
-      if [ "$HDMI_DPMS" = "false" ] || [ "$DP_DPMS" = "false" ]; then
-        echo "Monitors were off - turning them on for streaming..." >> "$DEBUG_FILE"
-        ${pkgs.hyprland}/bin/hyprctl dispatch dpms on >> "$DEBUG_FILE" 2>&1
-        sleep 2
-      fi
-
-      echo "Disabling DP-1 (Samsung)..." >> "$DEBUG_FILE"
-      ${pkgs.hyprland}/bin/hyprctl keyword monitor "DP-1,disable" >> "$DEBUG_FILE" 2>&1
-      sleep 1
-
-      echo "Rotating HDMI-A-1 to landscape..." >> "$DEBUG_FILE"
-      ${pkgs.hyprland}/bin/hyprctl keyword monitor "HDMI-A-1,1920x1080@144,0x0,1" >> "$DEBUG_FILE" 2>&1
-      sleep 1
-
-      echo "Moving workspaces to HDMI-A-1..." >> "$DEBUG_FILE"
-      ${pkgs.hyprland}/bin/hyprctl dispatch moveworkspacetomonitor 1 HDMI-A-1 >> "$DEBUG_FILE" 2>&1
-      ${pkgs.hyprland}/bin/hyprctl dispatch moveworkspacetomonitor 2 HDMI-A-1 >> "$DEBUG_FILE" 2>&1
-      ${pkgs.hyprland}/bin/hyprctl dispatch moveworkspacetomonitor 3 HDMI-A-1 >> "$DEBUG_FILE" 2>&1
-
-      echo "=== End Setup ===" >> "$DEBUG_FILE"
-    '';
-
-    sunshine-monitor-restore = pkgs.writeShellScriptBin "sunshine-monitor-restore" ''
-      #!/bin/bash
-      DEBUG_FILE="/tmp/sunshine-monitor-restore.log"
-      STATE_FILE="/tmp/sunshine-monitor-state"
-
-      echo "=== Sunshine Monitor Restore $(date) ===" >> "$DEBUG_FILE"
-
-      if [ -f "$STATE_FILE" ]; then
-        source "$STATE_FILE"
-        echo "Loaded saved DPMS state: HDMI=$HDMI_DPMS, DP=$DP_DPMS" >> "$DEBUG_FILE"
-      else
-        echo "Warning: No saved DPMS state found" >> "$DEBUG_FILE"
-        HDMI_DPMS="true"
-        DP_DPMS="true"
-      fi
-
-      echo "Re-enabling DP-1 (Samsung)..." >> "$DEBUG_FILE"
-      ${pkgs.hyprland}/bin/hyprctl keyword monitor "DP-1,2560x1440@144,1080x0,1" >> "$DEBUG_FILE" 2>&1
-      sleep 1
-
-      echo "Rotating HDMI-A-1 back to portrait..." >> "$DEBUG_FILE"
-      ${pkgs.hyprland}/bin/hyprctl keyword monitor "HDMI-A-1,1920x1080@144,0x-180,1,transform,1" >> "$DEBUG_FILE" 2>&1
-      sleep 1
-
-      echo "Restoring workspace assignments..." >> "$DEBUG_FILE"
-      ${pkgs.hyprland}/bin/hyprctl dispatch moveworkspacetomonitor 1 HDMI-A-1 >> "$DEBUG_FILE" 2>&1
-      ${pkgs.hyprland}/bin/hyprctl dispatch moveworkspacetomonitor 2 DP-1 >> "$DEBUG_FILE" 2>&1
-      ${pkgs.hyprland}/bin/hyprctl dispatch moveworkspacetomonitor 3 DP-1 >> "$DEBUG_FILE" 2>&1
-      sleep 1
-
-      if [ "$HDMI_DPMS" = "false" ] || [ "$DP_DPMS" = "false" ]; then
-        echo "Restoring DPMS state (monitors were off before streaming)..." >> "$DEBUG_FILE"
-        ${pkgs.hyprland}/bin/hyprctl dispatch dpms off >> "$DEBUG_FILE" 2>&1
-      fi
-
-      rm -f "$STATE_FILE"
-      echo "=== End Restore ===" >> "$DEBUG_FILE"
-    '';
-  in {
-    options.my.sunshine = {
-      user = lib.mkOption {
-        type = lib.types.str;
-        description = "Username for Sunshine config deployment";
+        state_file="''${XDG_RUNTIME_DIR}/sunshine-previous-output"
+        if [ -s "$state_file" ]; then
+          output="$(${pkgs.coreutils}/bin/cat "$state_file")"
+          case "$output" in
+            HDMI-A-1|DP-1|sunshine)
+              ${niri} msg action focus-monitor "$output"
+              ;;
+          esac
+          ${pkgs.coreutils}/bin/rm -f "$state_file"
+        fi
+      '';
+    in
+    {
+      sops.secrets = {
+        "sunshine-username" = {
+          sopsFile = ../../../../secrets/workstation-services.yaml;
+          key = "SUNSHINE_USERNAME";
+          owner = "henhal";
+          mode = "0400";
+        };
+        "sunshine-password" = {
+          sopsFile = ../../../../secrets/workstation-services.yaml;
+          key = "SUNSHINE_PASSWORD";
+          owner = "henhal";
+          mode = "0400";
+        };
       };
-    };
 
-    config = {
       services.sunshine = {
         enable = true;
         autoStart = true;
         capSysAdmin = true;
-        openFirewall = true;
+        openFirewall = false;
+
+        settings = {
+          capture = "wlr";
+          # Sunshine's Linux/Wayland output_name uses the numeric display ID.
+          # Niri reports the virtual sunshine output as display 2.
+          output_name = "2";
+          sunshine_name = "workstation";
+          # Allow Android clients to emulate Super/Mod with Right Alt.
+          key_rightalt_to_key_win = "enabled";
+        };
+
+        applications = {
+          apps = [
+            {
+              name = "Desktop (Sunshine virtual display)";
+              "image-path" = "desktop.png";
+              "prep-cmd" = [
+                {
+                  do = lib.getExe focusSunshine;
+                  undo = lib.getExe restoreSunshineFocus;
+                }
+              ];
+            }
+          ];
+        };
       };
+
+      # Sunshine stores the web password as a salted hash in its state file.
+      # Apply the SOPS-backed credentials through Sunshine's supported writer
+      # before the user service starts, without embedding either value in Nix.
+      systemd.user.services.sunshine.preStart = ''
+        set -euo pipefail
+        username="$(${pkgs.coreutils}/bin/cat ${config.sops.secrets."sunshine-username".path})"
+        password="$(${pkgs.coreutils}/bin/cat ${config.sops.secrets."sunshine-password".path})"
+        ${lib.getExe config.services.sunshine.package} --creds "$username" "$password"
+        unset username password
+      '';
 
       environment.systemPackages = with pkgs; [
         libva-utils
         cudatoolkit
-        sunshine-monitor-setup
-        sunshine-monitor-restore
       ];
 
-      services.avahi.publish.enable = true;
-      services.avahi.publish.userServices = true;
+      # Sunshine listens on all addresses, but the firewall admits its ports
+      # only through the private Tailscale interface.
+      networking.firewall.interfaces.tailscale0 = {
+        allowedTCPPorts = [
+          47984
+          47989
+          47990
+          48010
+        ];
+        allowedUDPPorts = [
+          47998
+          47999
+          48000
+          48002
+          48010
+        ];
+      };
 
-      # Deploy apps.json declaratively
-      systemd.tmpfiles.rules = [
-        "L+ ${homeDir}/.config/sunshine/apps.json - ${cfg.user} users - ${./apps.json}"
-      ];
     };
-  };
 }

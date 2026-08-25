@@ -6,7 +6,7 @@
 # Set values in user module's home-manager block.
 {self, ...}: {
   # NixOS module — system-level desktop prerequisites
-  flake.nixosModules.desktopCommon = {pkgs, ...}: {
+  flake.nixosModules.desktopCommon = {lib, pkgs, ...}: {
     services.xserver.xkb = {
       layout = "no";
       variant = "";
@@ -17,7 +17,7 @@
       extraPortals = [pkgs.xdg-desktop-portal-gtk];
       # Niri has no backend-specific portal configuration. Select GTK as the
       # fallback so its FileChooser implementation is available there.
-      config.common.default = ["gtk"];
+      config.common.default = lib.mkDefault ["gtk"];
     };
 
     programs.dconf.enable = true;

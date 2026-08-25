@@ -17,6 +17,8 @@
   ...
 }:
 let
+  withVirtualOutputs = pkgs: pkgs.extend inputs.niri-virtual-outputs.overlays.default;
+
   mkNiriPackage =
     {
       pkgs,
@@ -200,6 +202,10 @@ in
             mod-key = "Super";
             mod-key-nested = "Alt";
             workspace-auto-back-and-forth = _: { };
+            # Move the pointer when the remote session focuses workspace 10.
+            warp-mouse-to-focus = _: {
+              props.mode = "center-xy";
+            };
             focus-follows-mouse = _: {
               props.max-scroll-amount = "0%";
             };
@@ -810,7 +816,7 @@ in
                 "8" = _: { };
                 "9" = _: { };
                 "10" = {
-                  open-on-output = "HEADLESS-1";
+                  open-on-output = "sunshine";
                 };
                 "mail" = {
                   open-on-output = "DP-1";
@@ -856,6 +862,17 @@ in
               };
               focus-at-startup = _: { };
             };
+            "sunshine" = {
+              create-virtual = _: { };
+              mode = "1920x1080@60.000";
+              scale = 1;
+              position = _: {
+                props = {
+                  x = 0;
+                  y = 1920;
+                };
+              };
+            };
           };
         };
       };
@@ -871,8 +888,9 @@ in
     }:
     let
       hostname = config.networking.hostName;
+      niriPkgs = if hostname == "workstation" then withVirtualOutputs pkgs else pkgs;
       niriPkg = mkNiriPackage {
-        inherit pkgs;
+        pkgs = niriPkgs;
         hostVariant = if hostname == "workstation" then "workstation" else "laptop";
         noctaliaVersion = config.my.noctalia.version or "v4";
         wallpaper = ../../../../assets/wallpapers/${config.my.theme.wallpaper};
@@ -910,7 +928,7 @@ in
     {
       packages.wrappedNiri = mkNiriPackage { inherit pkgs; };
       packages.wrappedNiri-workstation = mkNiriPackage {
-        inherit pkgs;
+        pkgs = withVirtualOutputs pkgs;
         hostVariant = "workstation";
       };
     };

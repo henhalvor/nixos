@@ -11,6 +11,17 @@ NIX_SSHOPTS='-o RemoteCommand=none' \
  --ask-sudo-password
 ```
 
+**Remotely rebuild lenovo-yoga-pro-7**
+
+```bash
+NIX_SSHOPTS='-o RemoteCommand=none' \
+ nixos-rebuild switch \
+ --flake path:/home/henhal/.dotfiles#lenovo-yoga-pro-7 \
+ --target-host lenovo-yoga-pro-7 \
+ --sudo \
+ --ask-sudo-password
+```
+
 ---
 
 **Edit sops secrets**

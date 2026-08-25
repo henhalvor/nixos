@@ -14,6 +14,9 @@
     import-tree.url = "github:vic/import-tree";
     wrapper-modules.url = "github:BirdeeHub/nix-wrapper-modules";
 
+    # Experimental Niri virtual-output support for Sunshine/Moonlight.
+    niri-virtual-outputs.url = "github:willybarret/niri/wip/virtual-outputs";
+
     home-manager = {
       url = "github:nix-community/home-manager/release-25.11";
       inputs.nixpkgs.follows = "nixpkgs";
