@@ -10,6 +10,29 @@
     }:
     let
       cfg = config.my.userlandPackages;
+      installerType = lib.types.submodule {
+        options = {
+          url = lib.mkOption {
+            type = lib.types.str;
+            description = "HTTPS URL of the reviewed upstream installer.";
+          };
+          interpreter = lib.mkOption {
+            type = lib.types.enum [ "bash" "sh" ];
+            default = "bash";
+            description = "Interpreter used for the downloaded installer file.";
+          };
+          arguments = lib.mkOption {
+            type = lib.types.listOf lib.types.str;
+            default = [ ];
+            description = "Arguments passed to the installer after the downloaded file.";
+          };
+          allowedHosts = lib.mkOption {
+            type = lib.types.listOf lib.types.str;
+            default = [ ];
+            description = "Allowed installer download and redirect hosts.";
+          };
+        };
+      };
       adapterType = lib.types.submodule (
         { ... }:
         {
@@ -28,9 +51,60 @@
                 and health checks. Commands never run through a shell.
               '';
             };
+
+            installer = lib.mkOption {
+              type = lib.types.nullOr installerType;
+              default = null;
+              description = "Optional reviewed bootstrap installer.";
+            };
+
+            expectedExecutables = lib.mkOption {
+              type = lib.types.listOf lib.types.str;
+              default = [ ];
+              description = "Executables that must resolve after installation.";
+            };
+
+            requirements = {
+              packages = lib.mkOption {
+                type = lib.types.listOf lib.types.package;
+                default = [ ];
+                description = "Nix-owned runtime and build prerequisites for this adapter.";
+              };
+              chromiumSandbox = lib.mkOption {
+                type = lib.types.bool;
+                default = false;
+                description = "Provide the NixOS Chromium setuid sandbox to Electron applications.";
+              };
+            };
           };
         }
       );
+      defaultAdapters = {
+        hermes = {
+          displayName = "Hermes Agent";
+          installer = {
+            url = "https://hermes-agent.nousresearch.com/install.sh";
+            interpreter = "bash";
+            allowedHosts = [
+              "hermes-agent.nousresearch.com"
+              "raw.githubusercontent.com"
+            ];
+          };
+          commands = {
+            version = [ "hermes" "--version" ];
+            update = [ "hermes" "update" ];
+            health = [ "hermes" "doctor" ];
+          };
+          expectedExecutables = [ "hermes" ];
+          requirements = {
+            packages = with pkgs; [
+              gcc
+              gnumake
+            ];
+            chromiumSandbox = true;
+          };
+        };
+      };
     in
     {
       options.my.userlandPackages = {
@@ -49,24 +123,34 @@
         };
       };
 
-      config = lib.mkIf cfg.enable {
-        assertions = [
-          {
-            assertion = config.users.users ? henhal;
-            message = "my.userlandPackages requires the henhal user to exist.";
-          }
-        ];
+      config = lib.mkMerge [
+        {
+          my.userlandPackages.upstreamAdapters = lib.mkDefault defaultAdapters;
+        }
+        (lib.mkIf cfg.enable {
+          assertions = [
+            {
+              assertion = config.users.users ? henhal;
+              message = "my.userlandPackages requires the henhal user to exist.";
+            }
+          ];
 
-        home-manager.sharedModules = [ self.homeModules.userlandPackages ];
+          home-manager.sharedModules = [ self.homeModules.userlandPackages ];
 
-        programs.appimage = lib.mkIf cfg.enableGui {
-          enable = true;
-          binfmt = true;
-        };
+          programs.appimage = lib.mkIf cfg.enableGui {
+            enable = true;
+            binfmt = true;
+          };
 
-        services.flatpak.enable = lib.mkIf cfg.enableGui true;
-        environment.systemPackages = lib.mkIf cfg.enableGui [ pkgs.gearlever ];
-      };
+          services.flatpak.enable = lib.mkIf cfg.enableGui true;
+          environment.systemPackages =
+            lib.optional cfg.enableGui pkgs.gearlever
+            ++ lib.concatMap (adapter: adapter.requirements.packages) (lib.attrValues cfg.upstreamAdapters);
+          security.chromiumSuidSandbox.enable = lib.any (
+            adapter: adapter.requirements.chromiumSandbox
+          ) (lib.attrValues cfg.upstreamAdapters);
+        })
+      ];
     };
 
   flake.homeModules.userlandPackages =
@@ -84,18 +168,28 @@
         upstreamAdapters = { };
       } osConfig;
 
-      adaptersFile = pkgs.writeText "userland-upstream-adapters.json" (
-        builtins.toJSON cfg.upstreamAdapters
-      );
+      runtimeAdapters = lib.mapAttrs (_: adapter: {
+        inherit (adapter) displayName commands installer expectedExecutables;
+      }) cfg.upstreamAdapters;
+      adaptersFile = pkgs.writeText "userland-upstream-adapters.json" (builtins.toJSON runtimeAdapters);
+      chromiumSandboxPath = "/run/wrappers/bin/${pkgs.chromium.sandbox.passthru.sandboxExecutableName}";
 
       userland = pkgs.writeShellApplication {
         name = "userland";
         runtimeInputs = [
           pkgs.coreutils
+          pkgs.bash
+          pkgs.curl
+          pkgs.git
+          pkgs.gnutar
+          pkgs.gzip
           pkgs.mise
+          pkgs.unzip
+          pkgs.xz
         ]
           ++ lib.optional cfg.enableGui pkgs.flatpak
-          ++ lib.optional cfg.enableGui pkgs.gearlever;
+          ++ lib.optional cfg.enableGui pkgs.gearlever
+          ++ lib.concatMap (adapter: adapter.requirements.packages) (lib.attrValues cfg.upstreamAdapters);
         text = ''
           ${lib.optionalString cfg.enableGui "export USERLAND_GEARLEVER_VERSION=${lib.escapeShellArg pkgs.gearlever.version}"}
           exec ${pkgs.python3}/bin/python3 ${./userland.py} \
@@ -110,6 +204,12 @@
         enable = true;
         package = pkgs.mise;
         enableZshIntegration = true;
+      };
+
+      home.sessionVariables = lib.mkIf (lib.any (
+        adapter: adapter.requirements.chromiumSandbox
+      ) (lib.attrValues cfg.upstreamAdapters)) {
+        CHROME_DEVEL_SANDBOX = chromiumSandboxPath;
       };
 
       home.activation = lib.mkIf cfg.enableGui {

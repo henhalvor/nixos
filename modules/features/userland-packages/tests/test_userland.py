@@ -63,12 +63,12 @@ class ParserTests(unittest.TestCase):
         self.assertEqual(rows[0]["available"], "1.18.22")
         self.assertEqual(rows[0]["status"], "outdated")
         self.assertEqual(
-            rows[0]["upgrade_command"],
+            rows[0]["update_method"],
             "userland update mise:github:anomalyco/opencode@1.18.21",
         )
         self.assertIn(["mise", "latest", "github:anomalyco/opencode"], fake.calls)
 
-    def test_print_rows_adds_upgrade_command_column_for_outdated_packages(self):
+    def test_print_rows_adds_update_method_column_for_outdated_packages(self):
         output = StringIO()
         with redirect_stdout(output):
             userland.print_rows(
@@ -80,12 +80,12 @@ class ParserTests(unittest.TestCase):
                         "installed": "1.18.21",
                         "available": "1.18.22",
                         "status": "outdated",
-                        "upgrade_command": "userland update mise:github:anomalyco/opencode@1.18.21",
+                        "update_method": "userland update mise:github:anomalyco/opencode@1.18.21",
                     }
                 ]
             )
         rendered = output.getvalue()
-        self.assertIn("UPGRADE COMMAND", rendered)
+        self.assertIn("UPDATE METHOD", rendered)
         self.assertIn("userland update mise:github:anomalyco/opencode@1.18.21", rendered)
 
     def test_flatpak_rows_detect_commit_changes(self):
@@ -119,6 +119,55 @@ class ParserTests(unittest.TestCase):
             fixture.flush()
             with self.assertRaises(ValueError):
                 userland.load_adapters(Path(fixture.name))
+
+    def test_installer_path_excludes_directories_that_expose_sudo(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            safe = root / "safe"
+            privileged = root / "privileged"
+            safe.mkdir()
+            privileged.mkdir()
+            (privileged / "sudo").touch()
+            filtered = userland.path_without_executable(
+                f"{safe}{userland.os.pathsep}{privileged}",
+                "sudo",
+            )
+        self.assertEqual(filtered, str(safe))
+
+    def test_adapter_installer_requires_https_and_allowlisted_host(self):
+        adapter = {
+            "bad": {
+                "installer": {
+                    "url": "http://example.test/install.sh",
+                    "allowedHosts": ["example.test"],
+                }
+            }
+        }
+        with tempfile.NamedTemporaryFile(mode="w+", suffix=".json") as fixture:
+            fixture.write(json.dumps(adapter))
+            fixture.flush()
+            with self.assertRaises(ValueError):
+                userland.load_adapters(Path(fixture.name))
+
+    def test_upstream_rows_show_native_update_method_without_available_version(self):
+        adapters = {
+            "hermes": {
+                "display_name": "Hermes Agent",
+                "commands": {
+                    "version": ["hermes", "--version"],
+                    "update": ["hermes", "update"],
+                },
+                "installer": None,
+                "expected_executables": ["hermes"],
+            }
+        }
+        facade = userland.Userland(adapters)
+        completed = subprocess.CompletedProcess(["hermes", "--version"], 0, "Hermes 1.2.3\n", "")
+        with patch.object(userland, "command_path", return_value="/home/test/.local/bin/hermes"):
+            with patch.object(facade, "_run", return_value=completed):
+                rows = facade.list_rows(manager="upstream", include_available=True)
+        self.assertEqual(rows[0]["status"], "unknown")
+        self.assertEqual(rows[0]["update_method"], "Native: hermes update")
 
 
 if __name__ == "__main__":

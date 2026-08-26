@@ -87,7 +87,7 @@ The options are:
 | --- | --- |
 | `my.userlandPackages.enable` | Enables the userland facade and mise integration. |
 | `my.userlandPackages.enableGui` | Enables user-scoped Flatpak, AppImage binfmt support, the Flatpak service, and Gear Lever. |
-| `my.userlandPackages.upstreamAdapters` | Optional reviewed adapters for upstream installers that do not fit mise, Flatpak, or Gear Lever. |
+| `my.userlandPackages.upstreamAdapters` | Reviewed upstream installer allowlist. Hermes is included by default; hosts may add or override entries. |
 
 After changing these options, activate the host generation. A plain `nix
 build` validates a generation but does not activate it:
@@ -114,7 +114,9 @@ When enabled, the NixOS side:
 - injects the Home Manager userland module;
 - enables `programs.appimage` and binfmt when `enableGui` is true;
 - enables the Flatpak service when `enableGui` is true; and
-- installs Gear Lever as Nix-owned infrastructure when `enableGui` is true.
+- installs Gear Lever as Nix-owned infrastructure when `enableGui` is true;
+- installs Nix-owned prerequisites declared by enabled upstream adapters; and
+- enables the Chromium setuid sandbox when an adapter requires it.
 
 The module does not install arbitrary mutable applications into the Nix store.
 
@@ -126,7 +128,9 @@ The Home Manager side:
 - adds Python, mise, and the enabled backend executables to that wrapper's
   runtime path;
 - enables `programs.mise` with the pinned Nix package and Zsh integration;
-- adds `userland` to the user's Home Manager packages; and
+- adds `userland` to the user's Home Manager packages;
+- exposes the NixOS Chromium sandbox to Electron through
+  `CHROME_DEVEL_SANDBOX` when an adapter requires it; and
 - configures the user Flathub remote during activation when GUI support is
   enabled.
 
@@ -190,16 +194,22 @@ The normal table is:
 MANAGER  PACKAGE_ID  NAME  INSTALLED  AVAILABLE  STATUS
 ```
 
-When a newer version is known, the table adds `UPGRADE COMMAND` after
-`STATUS`. The command is generated from the exact manager-qualified package ID,
-for example:
+When an update method is actionable, the table adds `UPDATE METHOD` after
+`STATUS`. Managed backends show the exact manager-qualified `userland` command:
 
 ```text
-UPGRADE COMMAND
+UPDATE METHOD
 userland update mise:github:example/tool@1.2.3
 ```
 
-JSON rows include `upgrade_command` only when an update is available.
+Upstream applications show their native updater even when the facade cannot
+compare an available version:
+
+```text
+Native: hermes update
+```
+
+JSON rows use `update_method` for the same value.
 
 Statuses are:
 
@@ -241,6 +251,7 @@ Always name the manager explicitly:
 userland install mise node@22
 userland install mise github:anomalyco/opencode
 userland install flatpak flathub:org.gimp.GIMP
+userland install upstream hermes
 ```
 
 The mise specification is passed to `mise use --global`. That means mise
@@ -266,6 +277,15 @@ integration to Gear Lever:
 
 ```bash
 userland install appimage "$HOME/Downloads/example.AppImage"
+```
+
+Upstream installation accepts only recipes in the Nix allowlist. The facade
+shows the source and expected commands, asks for confirmation, downloads the
+installer into a private temporary directory, and runs the file as the current
+user. Pass `--yes` only for a reviewed non-interactive invocation:
+
+```bash
+userland install upstream hermes --yes
 ```
 
 ### Update one package
@@ -361,13 +381,26 @@ not merely because an AppImage exists.
 ### Upstream adapters
 
 The `upstreamAdapters` option is an allowlist for reviewed user-scoped tools
-that do not fit mise, Flatpak, or Gear Lever. Each adapter declares argument
-arrays for operations such as `version`, `available`, `install`, `update`,
-`remove`, and `health`.
+that do not fit mise, Flatpak, or Gear Lever. The module includes Hermes by
+default so each host does not repeat the recipe and its Nix prerequisites.
+Hosts can add recipes or override a built-in recipe through normal Nix module
+merging.
 
-Adapters never run through a shell, and they must not invoke privileged
-commands. There are no arbitrary self-updaters in the default host
-configuration.
+Lifecycle commands are argument arrays and never run through a shell. A
+bootstrap installer is different: its recipe declares an HTTPS URL, an
+interpreter, allowed redirect hosts, and expected installed commands. The
+facade downloads the script before invoking the interpreter. It rejects root
+execution and removes PATH entries that expose `sudo` while the installer
+runs. This makes upstream installers take their documented unprivileged path.
+It is not a sandbox against a malicious script that calls an absolute path.
+
+Hermes remains user-owned under `~/.hermes`. GCC, Make, shared libraries, and
+the Chromium setuid sandbox are Nix-owned prerequisites. The module exports
+the NixOS sandbox through `CHROME_DEVEL_SANDBOX`; it does not allow Hermes to
+make a mutable file under `~/.hermes` root-owned or setuid. Hermes Desktop must
+be tested after activation. If it ignores the system sandbox and insists on a
+sudo fixup, treat the desktop path as unsupported rather than using
+`--no-sandbox`.
 
 ## GitHub release asset problems
 

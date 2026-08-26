@@ -31,6 +31,7 @@
           glib
           nss
           nspr
+          ffmpeg
           dbus
           atk
           at-spi2-atk

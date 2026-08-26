@@ -23,11 +23,10 @@ userland outdated
 userland doctor
 ```
 
-`userland list` queries each available backend for current metadata. When a
-package has an available newer version, the table adds an `UPGRADE COMMAND`
-column with the exact manager-qualified command to run. These availability
-queries may use the network and can leave a package as `unknown` when its
-native backend cannot resolve a version.
+`userland list` queries each available backend for current metadata. The
+`UPDATE METHOD` column shows the exact manager-qualified command for managed
+backends. Upstream applications show their native updater, such as `Native:
+hermes update`, even when their available version is unknown.
 
 Use JSON when another script needs the same inventory:
 
@@ -37,7 +36,7 @@ userland outdated --json
 userland managers --json
 ```
 
-JSON inventory rows include `upgrade_command` when an upgrade is available.
+JSON inventory rows use `update_method` when an update method is actionable.
 
 Every mutable package has a manager-qualified identifier. Examples include
 `mise:node@22.14.0` and `flatpak:org.gimp.GIMP`.
@@ -49,6 +48,7 @@ Always name the manager explicitly:
 ```bash
 userland install mise node@22
 userland install flatpak flathub:org.gimp.GIMP
+userland install upstream hermes
 userland remove mise:node@22.14.0
 userland remove flatpak:org.gimp.GIMP
 ```
@@ -56,6 +56,11 @@ userland remove flatpak:org.gimp.GIMP
 The mise command writes the mutable global mise configuration under the home
 directory. Flatpak commands always use the user installation. The facade does
 not accept a system Flatpak target.
+
+Upstream installation accepts only recipes declared by the Nix module. It
+downloads the reviewed installer before running it as the current user. Use
+`--yes` for a non-interactive invocation. `userland` never invokes `sudo`;
+NixOS owns required system packages and the Chromium sandbox.
 
 Search the native registries with:
 

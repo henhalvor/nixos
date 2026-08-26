@@ -11,6 +11,10 @@ import shlex
 import shutil
 import subprocess
 import sys
+import tempfile
+import urllib.error
+import urllib.parse
+import urllib.request
 from pathlib import Path
 from typing import Any
 
@@ -32,6 +36,14 @@ FORBIDDEN_EXECUTABLES = {
 
 def command_path(executable: str) -> str | None:
     return shutil.which(executable)
+
+
+def path_without_executable(path: str, executable: str) -> str:
+    return os.pathsep.join(
+        entry
+        for entry in path.split(os.pathsep)
+        if entry and not (Path(entry) / executable).exists()
+    )
 
 
 def first_line(value: str) -> str:
@@ -59,6 +71,7 @@ def run_command(
     argv: list[str],
     *,
     cwd: Path | None = None,
+    env: dict[str, str] | None = None,
     stream: bool = False,
 ) -> subprocess.CompletedProcess[str]:
     if not argv:
@@ -66,10 +79,11 @@ def run_command(
     if any("\x00" in part for part in argv):
         raise ValueError("command contains a NUL byte")
     if stream:
-        return subprocess.run(argv, cwd=cwd, check=False, text=True)
+        return subprocess.run(argv, cwd=cwd, env=env, check=False, text=True)
     return subprocess.run(
         argv,
         cwd=cwd,
+        env=env,
         check=False,
         text=True,
         capture_output=True,
@@ -139,6 +153,21 @@ def upgrade_command(package_id: str) -> str:
     """Return the copy-paste command for one manager-qualified package ID."""
 
     return f"userland update {shlex.quote(package_id)}"
+
+
+def native_update_method(argv: list[str]) -> str:
+    return f"Native: {shlex.join(argv)}"
+
+
+class AllowedRedirectHandler(urllib.request.HTTPRedirectHandler):
+    def __init__(self, allowed_hosts: set[str]) -> None:
+        self.allowed_hosts = allowed_hosts
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        host = urllib.parse.urlparse(newurl).hostname
+        if host not in self.allowed_hosts:
+            raise urllib.error.URLError(f"installer redirect to unapproved host {host!r}")
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
 
 
 def parse_flatpak_list(payload: str) -> list[dict[str, str]]:
@@ -223,9 +252,40 @@ def load_adapters(path: Path) -> dict[str, dict[str, Any]]:
             if any(part in FORBIDDEN_EXECUTABLES or part in {"-c", "--command"} for part in argv):
                 raise ValueError(f"adapter {name!r} contains a forbidden command")
             normalized[action] = argv
+        installer = spec.get("installer")
+        normalized_installer = None
+        if installer is not None:
+            if not isinstance(installer, dict):
+                raise ValueError(f"adapter {name!r} installer must be an object")
+            url = installer.get("url")
+            parsed = urllib.parse.urlparse(url) if isinstance(url, str) else None
+            allowed_hosts = installer.get("allowedHosts", [])
+            arguments = installer.get("arguments", [])
+            interpreter = installer.get("interpreter", "bash")
+            if parsed is None or parsed.scheme != "https" or not parsed.hostname:
+                raise ValueError(f"adapter {name!r} installer must use HTTPS")
+            if interpreter not in {"bash", "sh"}:
+                raise ValueError(f"adapter {name!r} has an unsupported installer interpreter")
+            if not isinstance(allowed_hosts, list) or not allowed_hosts or parsed.hostname not in allowed_hosts:
+                raise ValueError(f"adapter {name!r} installer host must be allowlisted")
+            if not all(isinstance(host, str) and host for host in allowed_hosts):
+                raise ValueError(f"adapter {name!r} has malformed allowed installer hosts")
+            if not isinstance(arguments, list) or not all(isinstance(arg, str) for arg in arguments):
+                raise ValueError(f"adapter {name!r} has malformed installer arguments")
+            normalized_installer = {
+                "url": url,
+                "interpreter": interpreter,
+                "arguments": arguments,
+                "allowed_hosts": allowed_hosts,
+            }
+        expected = spec.get("expectedExecutables", [])
+        if not isinstance(expected, list) or not all(isinstance(item, str) and item for item in expected):
+            raise ValueError(f"adapter {name!r} has malformed expected executables")
         adapters[name] = {
             "display_name": str(spec.get("displayName") or name),
             "commands": normalized,
+            "installer": normalized_installer,
+            "expected_executables": expected,
         }
     return adapters
 
@@ -387,6 +447,17 @@ class Userland:
                     )
                 )
                 continue
+            if not command_path(version_command[0]):
+                rows.append(
+                    package_row(
+                        "upstream",
+                        f"upstream:{name}",
+                        adapter["display_name"],
+                        status="unavailable",
+                        error="not installed",
+                    )
+                )
+                continue
             result = self._run("upstream", version_command, cwd=self.home)
             if result is None or result.returncode != 0:
                 rows.append(
@@ -419,6 +490,8 @@ class Userland:
                     status=status,
                 )
             )
+            if commands.get("update"):
+                rows[-1]["update_method"] = native_update_method(commands["update"])
         return rows
 
     def list_rows(self, manager: str | None = None, include_available: bool = False) -> list[dict[str, str]]:
@@ -433,8 +506,8 @@ class Userland:
         if "upstream" in selected:
             rows.extend(self.upstream_rows(include_available))
         for row in rows:
-            if row.get("status") == "outdated":
-                row["upgrade_command"] = upgrade_command(row["package_id"])
+            if row.get("status") == "outdated" and not row.get("update_method"):
+                row["update_method"] = upgrade_command(row["package_id"])
         return rows
 
     def manager_status(self) -> list[dict[str, Any]]:
@@ -523,20 +596,23 @@ class Userland:
         for name, adapter in self.adapters.items():
             commands = adapter["commands"]
             executable = Path(next(iter(commands.values()))[0]).name if commands else name
+            capabilities = {
+                action
+                for action in commands
+                if action in {"version", "available", "update", "remove", "health"}
+            }
+            if adapter.get("installer"):
+                capabilities.add("install")
             statuses.append(
                 {
                     "manager": f"upstream:{name}",
                     "executable": executable,
-                    "available": bool(commands.get("version")),
+                    "available": bool(commands.get("version") and command_path(commands["version"][0])),
                     "version": UNKNOWN,
                     "scope": "user",
                     "network": "adapter-defined",
                     "credentials": "adapter-defined",
-                    "capabilities": sorted(
-                        action
-                        for action in commands
-                        if action in {"version", "available", "install", "update", "remove", "health"}
-                    ),
+                    "capabilities": sorted(capabilities),
                     "note": adapter["display_name"],
                 }
             )
@@ -562,7 +638,7 @@ class Userland:
         print(result_error(result), file=sys.stderr)
         return result.returncode or 1
 
-    def install(self, manager: str, spec: str) -> int:
+    def install(self, manager: str, spec: str, assume_yes: bool = False) -> int:
         if not spec or spec.startswith("-") or "\x00" in spec:
             print("Error: package specification must be a non-option value.", file=sys.stderr)
             return 2
@@ -576,6 +652,8 @@ class Userland:
                 print("Error: AppImage installation requires an existing absolute file path.", file=sys.stderr)
                 return 2
             argv = ["gearlever", "--integrate", str(path), "--yes"]
+        elif manager == "upstream":
+            return self.install_upstream(spec, assume_yes)
         elif manager.startswith("upstream:"):
             name = manager.split(":", 1)[1]
             command = self.adapters.get(name, {}).get("commands", {}).get("install")
@@ -587,6 +665,76 @@ class Userland:
             print(f"Error: installation is not supported for manager {manager!r}.", file=sys.stderr)
             return 2
         return self._mutate(manager, argv)
+
+    def install_upstream(self, name: str, assume_yes: bool) -> int:
+        adapter = self.adapters.get(name)
+        if not adapter:
+            print(f"Error: upstream adapter {name!r} is not allowlisted.", file=sys.stderr)
+            return 2
+        installer = adapter.get("installer")
+        if not installer:
+            print(f"Error: upstream adapter {name!r} has no installer.", file=sys.stderr)
+            return 2
+        if os.geteuid() == 0:
+            print("Error: userland must run as a normal user, not root.", file=sys.stderr)
+            return 2
+        print(f"Package: {adapter['display_name']}")
+        print(f"Source: {installer['url']}")
+        print("Scope: current user")
+        expected = adapter["expected_executables"]
+        print(f"Expected commands: {', '.join(expected) or 'none declared'}")
+        if not assume_yes:
+            if not sys.stdin.isatty():
+                print("Error: upstream installation requires --yes without a TTY.", file=sys.stderr)
+                return 2
+            try:
+                answer = input("Download and run this installer? [y/N] ")
+            except EOFError:
+                return 2
+            if answer.strip().lower() not in {"y", "yes"}:
+                print("Cancelled.")
+                return 0
+        try:
+            with tempfile.TemporaryDirectory(prefix="userland-installer-") as directory:
+                path = Path(directory) / "installer"
+                opener = urllib.request.build_opener(AllowedRedirectHandler(set(installer["allowed_hosts"])))
+                request = urllib.request.Request(installer["url"], headers={"User-Agent": "userland/1"})
+                with opener.open(request, timeout=60) as response:
+                    final_host = urllib.parse.urlparse(response.geturl()).hostname
+                    if final_host not in installer["allowed_hosts"]:
+                        raise urllib.error.URLError(f"installer resolved to unapproved host {final_host!r}")
+                    path.write_bytes(response.read())
+                installer_path = path_without_executable(os.environ.get("PATH", ""), "sudo")
+                installer_env = os.environ.copy()
+                installer_env["PATH"] = installer_path
+                interpreter_path = shutil.which(installer["interpreter"], path=installer_path)
+                if interpreter_path is None:
+                    print(f"Error: {installer['interpreter']} is not available in PATH.", file=sys.stderr)
+                    return 1
+                result = run_command(
+                    [interpreter_path, str(path), *installer["arguments"]],
+                    cwd=self.home,
+                    env=installer_env,
+                    stream=True,
+                )
+                code = result.returncode
+        except (OSError, urllib.error.URLError) as exc:
+            print(f"Error: unable to download installer: {exc}", file=sys.stderr)
+            return 1
+        if code != 0:
+            return code
+        missing = [executable for executable in expected if not command_path(executable)]
+        if missing:
+            print(f"Error: installer finished but these commands are missing: {', '.join(missing)}", file=sys.stderr)
+            return 1
+        version = adapter["commands"].get("version")
+        if version:
+            result = run_command(version, cwd=self.home)
+            if result.returncode != 0:
+                print(f"Error: post-install version check failed: {result_error(result)}", file=sys.stderr)
+                return 1
+            print(f"Installed version: {parse_version(result.stdout)}")
+        return 0
 
     def update_one(self, package_id: str) -> int:
         manager, value = split_package_id(package_id)
@@ -741,13 +889,13 @@ def split_package_id(package_id: str) -> tuple[str, str]:
 
 def print_rows(rows: list[dict[str, str]]) -> None:
     columns = ["manager", "package_id", "name", "installed", "available", "status"]
-    if any(row.get("upgrade_command") for row in rows):
-        columns.append("upgrade_command")
+    if any(row.get("update_method") for row in rows):
+        columns.append("update_method")
     if not rows:
         print("No packages reported.")
         return
     widths = {column: max(len(column), *(len(str(row.get(column, ""))) for row in rows)) for column in columns}
-    headings = {"upgrade_command": "UPGRADE COMMAND"}
+    headings = {"update_method": "UPDATE METHOD"}
     print("  ".join(headings.get(column, column.upper()).ljust(widths[column]) for column in columns))
     print("  ".join("-" * widths[column] for column in columns))
     for row in rows:
@@ -801,6 +949,7 @@ def build_parser() -> argparse.ArgumentParser:
     install = subparsers.add_parser("install", help="Install a package through one manager")
     install.add_argument("manager")
     install.add_argument("spec")
+    install.add_argument("--yes", action="store_true")
 
     update = subparsers.add_parser("update", help="Update one package or all known updates")
     update.add_argument("package_id", nargs="?")
@@ -849,7 +998,7 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "search":
             return userland.search(args.manager, args.query)
         if args.command == "install":
-            return userland.install(args.manager, args.spec)
+            return userland.install(args.manager, args.spec, args.yes)
         if args.command == "update":
             if args.all == bool(args.package_id):
                 parser.error("use exactly one of PACKAGE_ID or --all")
