@@ -394,13 +394,21 @@ execution and removes PATH entries that expose `sudo` while the installer
 runs. This makes upstream installers take their documented unprivileged path.
 It is not a sandbox against a malicious script that calls an absolute path.
 
-Hermes remains user-owned under `~/.hermes`. GCC, Make, shared libraries, and
-the Chromium setuid sandbox are Nix-owned prerequisites. The module exports
-the NixOS sandbox through `CHROME_DEVEL_SANDBOX`; it does not allow Hermes to
-make a mutable file under `~/.hermes` root-owned or setuid. Hermes Desktop must
-be tested after activation. If it ignores the system sandbox and insists on a
-sudo fixup, treat the desktop path as unsupported rather than using
-`--no-sandbox`.
+Hermes remains user-owned under `~/.hermes`. GCC, Make, shared libraries, the
+Chromium setuid sandbox, AT-SPI accessibility bus, and the `/bin/bash`
+compatibility link are Nix-owned prerequisites. Hermes and cua-driver hardcode
+`/bin/bash` for the Computer Use installer, so the module creates that link
+declaratively when an adapter sets `requirements.binBash`. Hermes also sets
+`requirements.atSpi` so cua-driver can inspect semantic UI trees instead of
+falling back to screenshots and coordinate input alone. Enabling AT-SPI removes
+NixOS's `NO_AT_BRIDGE=1` and `GTK_A11Y=none` session defaults, so log out and
+back in after the first activation.
+
+The module exports the NixOS sandbox through `CHROME_DEVEL_SANDBOX`; it does
+not allow Hermes to make a mutable file under `~/.hermes` root-owned or setuid.
+Hermes Desktop must be tested after activation. If it ignores the system
+sandbox and insists on a sudo fixup, treat the desktop path as unsupported
+rather than using `--no-sandbox`.
 
 ## GitHub release asset problems
 

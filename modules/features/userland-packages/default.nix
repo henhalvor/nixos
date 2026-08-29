@@ -75,6 +75,16 @@
                 default = false;
                 description = "Provide the NixOS Chromium setuid sandbox to Electron applications.";
               };
+              binBash = lib.mkOption {
+                type = lib.types.bool;
+                default = false;
+                description = "Provide /bin/bash for upstream software that hardcodes the FHS path.";
+              };
+              atSpi = lib.mkOption {
+                type = lib.types.bool;
+                default = false;
+                description = "Enable the AT-SPI accessibility bus for semantic desktop inspection.";
+              };
             };
           };
         }
@@ -102,6 +112,8 @@
               gnumake
             ];
             chromiumSandbox = true;
+            binBash = true;
+            atSpi = true;
           };
         };
       };
@@ -149,6 +161,17 @@
           security.chromiumSuidSandbox.enable = lib.any (
             adapter: adapter.requirements.chromiumSandbox
           ) (lib.attrValues cfg.upstreamAdapters);
+          services.gnome.at-spi2-core.enable = lib.any (
+            adapter: adapter.requirements.atSpi
+          ) (lib.attrValues cfg.upstreamAdapters);
+
+          # Hermes and cua-driver both execute their Computer Use installers
+          # through the literal /bin/bash path. Bash on PATH is insufficient,
+          # so NixOS owns this compatibility link instead of leaving a manual
+          # root-created symlink outside the system configuration.
+          systemd.tmpfiles.rules = lib.optional (lib.any (
+            adapter: adapter.requirements.binBash
+          ) (lib.attrValues cfg.upstreamAdapters)) "L+ /bin/bash - - - - ${pkgs.bashInteractive}/bin/bash";
         })
       ];
     };

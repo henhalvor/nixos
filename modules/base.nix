@@ -41,6 +41,9 @@
           gtk3
           pango
           xorg.libX11
+          # The upstream cua-driver binary used by Hermes Computer Use links
+          # libXi.so.6 directly; nix-ld must expose it on NixOS.
+          xorg.libXi
           xorg.libXcomposite
           xorg.libXdamage
           xorg.libXext
@@ -61,6 +64,7 @@
         home-manager
         os-prober
         vim
+        ffmpeg
 
         # External hard drive tools
         ntfs3g
