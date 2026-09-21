@@ -216,6 +216,26 @@
         "type": "github"
       }
     },
+    "freecad-launcher": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs-unstable"
+        ]
+      },
+      "locked": {
+        "lastModified": 1790007208,
+        "narHash": "sha256-pHQ1cH+mQtglj7IjYkRW7J3f37kDOVZh5bWLI30CMoA=",
+        "owner": "henhalvor",
+        "repo": "freecad-launcher",
+        "rev": "6b4737d8411deea0fe612421f0cc060688a1fa94",
+        "type": "github"
+      },
+      "original": {
+        "owner": "henhalvor",
+        "repo": "freecad-launcher",
+        "type": "github"
+      }
+    },
     "fromYaml": {
       "flake": false,
       "locked": {
@@ -785,6 +805,7 @@
       "inputs": {
         "android-nixpkgs": "android-nixpkgs",
         "flake-parts": "flake-parts",
+        "freecad-launcher": "freecad-launcher",
         "garbage-day-nvim": "garbage-day-nvim",
         "home-manager": "home-manager",
         "import-tree": "import-tree",

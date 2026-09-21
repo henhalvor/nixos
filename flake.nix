@@ -74,6 +74,12 @@
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # FreeCAD Launcher owns FreeCAD stable/weekly AppImages on both hosts.
+    freecad-launcher = {
+      url = "github:henhalvor/freecad-launcher";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
+    };
   };
 
   outputs = inputs:

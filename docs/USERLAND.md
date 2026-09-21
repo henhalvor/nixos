@@ -618,6 +618,44 @@ that an arbitrary upstream GitHub release contains the expected executable.
 That requires the package-specific command and workflow verification described
 above.
 
+## FreeCAD Launcher (not Userland-owned)
+
+FreeCAD stable and weekly builds are owned by the FreeCAD Launcher, not by Gear
+Lever or the mutable userland. The launcher installs official
+`FreeCAD/FreeCAD` AppImages under `$XDG_DATA_HOME/freecad-launcher/versions/`
+and launches them through the Nix-provided `appimage-run`, with mandatory
+environment cleanup and the existing stable/weekly profiles.
+
+Gear Lever remains the generic AppImage manager for every other package.
+FreeCAD is no longer installed with `userland install appimage`, so
+`userland list --manager appimage` and `userland outdated` no longer cover it.
+
+### Migration
+
+1. Install and enable the launcher from the dotfiles flake
+   (`services.freecad-launcher.enable` and `programs.freecad-launcher.enable`).
+2. In the launcher, download a verified stable and weekly release, or use
+   "Import from Python launcher" to adopt an existing AppImage when its SHA-256
+   matches an official GitHub release asset.
+3. Confirm the stable (`~/.config/FreeCAD`) and weekly
+   (`~/.config/FreeCAD-weekly`) profiles open correctly.
+4. Back up `~/AppImages/freecad.appimage` and both profile trees.
+5. Remove FreeCAD from Gear Lever with its exact package ID, then drop the
+   `freecadXcb`/`freecadWeekly` wrappers and desktop entries from
+   `modules/features/applications/freecad.nix` (now a thin bridge that imports
+   the launcher's NixOS and Home Manager modules and retains `pkgs.povray`).
+
+### Recovery
+
+- A previous NixOS generation and the backed-up `~/AppImages/freecad.appimage`
+  remain the rollback path until the launcher is validated on both hosts.
+- A cancelled or interrupted download removes its `.part` file and is never
+  recorded as installed; retry from the Versions view.
+- If an AppImage fails under FUSE, the launcher retries in extract-and-run mode
+  automatically. Extract-and-run sessions are not counted in statistics.
+- Update the launcher by advancing the `freecad-launcher` input in the dotfiles
+  flake lock; it has no self-updater.
+
 ## Related documents
 
 - [Userland package proposal](plans/Userland-packages.md)
