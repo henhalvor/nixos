@@ -702,6 +702,10 @@ in
               matches = [ { app-id = ''^org\.gnome\.FileRoller$''; } ];
               open-floating = true;
             }
+            {
+              matches = [ { app-id = ''^org\.gnome\.Nautilus$''; } ];
+              open-floating = true;
+            }
 
             # Pavucontrol
             {
