@@ -707,6 +707,27 @@ in
               open-floating = true;
             }
 
+            # File chooser dialogs (browser/Electron GTK pickers and portal pickers).
+            # Must come after the browser rules to override their open-maximized.
+            # Sized to fit the 1080px-wide portrait monitor.
+            {
+              matches = [
+                { title = "^(Open|Save|File Upload|Select|Choose|Upload|Export|Import)( .*)?$"; }
+                { app-id = "^xdg-desktop-portal-(gtk|gnome)$"; }
+                # Unpackaged Electron apps: the main window sets its own app-id,
+                # dialogs fall back to the generic "electron" one.
+                { app-id = "^electron$"; }
+              ];
+              open-floating = true;
+              open-maximized = false;
+              default-column-width = {
+                fixed = 900;
+              };
+              default-window-height = {
+                fixed = 600;
+              };
+            }
+
             # Pavucontrol
             {
               matches = [ { app-id = "^pavucontrol$"; } ];
@@ -917,12 +938,19 @@ in
   # Auxiliary packages needed at runtime alongside niri.
   # (brightnessctl, pamixer, playerctl are already in desktopCommon)
   flake.homeModules.niri =
-    { pkgs, ... }:
+    { pkgs, lib, ... }:
     {
       home.packages = with pkgs; [
         ddcutil
         bluez
         blueberry
+      ];
+
+      # GTK3 file choosers restore their last saved size and ignore niri's
+      # default size, so pin it to match the floating file-dialog window rule.
+      dconf.settings."org/gtk/settings/file-chooser".window-size = lib.hm.gvariant.mkTuple [
+        900
+        600
       ];
     };
 
