@@ -65,7 +65,7 @@
         # self.nixosModules.mako
         self.nixosModules.rofi
         self.nixosModules.clipman
-        self.nixosModules.grimblast
+        self.nixosModules.grimScreenshot
         self.nixosModules.waylandApplets
         self.nixosModules.gammastep
 

@@ -39,7 +39,7 @@
           ];
           image = [
             {
-              run = ''imv "$@"'';
+              run = ''gthumb "$@"'';
               fork = true;
             }
           ];

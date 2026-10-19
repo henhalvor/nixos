@@ -23,6 +23,7 @@
             notify-send --expire-time=2000 "Screenshot" "Saved to $FILE"
             ;;
           --swappy)
+            mkdir -p ~/Pictures/Screenshots
             grim -g "$(slurp)" - | swappy -f -
             ;;
           *)
@@ -34,5 +35,12 @@
     };
   in {
     home.packages = [pkgs.grim pkgs.slurp pkgs.swappy pkgs.wl-clipboard screenshotScript];
+
+    # Save edited screenshots alongside niri's, using the same naming scheme
+    xdg.configFile."swappy/config".text = ''
+      [Default]
+      save_dir=$HOME/Pictures/Screenshots
+      save_filename_format=Screenshot from %Y-%m-%d %H-%M-%S.png
+    '';
   };
 }
