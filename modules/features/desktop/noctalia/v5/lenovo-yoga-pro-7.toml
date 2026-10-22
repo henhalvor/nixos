@@ -20,7 +20,6 @@ radius = 0
 thickness = 30
 widget_spacing = 16
 
-
 [brightness]
 enable_ddcutil = true
 sync_all_monitors = true
@@ -29,6 +28,7 @@ sync_all_monitors = true
 enabled = true
 
     [calendar.account.opencloud]
+    color = "primary"
     name = "Opencloud"
     provider = "custom"
     server_url = "https://cloud.henhal.net/caldav/"
@@ -41,7 +41,7 @@ enabled = true
 [dock]
 auto_hide = true
 background_opacity = 0.60999998636543751
-enabled = true
+enabled = false
 position = "left"
 radius = 45
 reserve_space = false
@@ -54,7 +54,7 @@ enabled = true
     action = "launcher"
 
     [hot_corners.top_left]
-    action = "window_switcher"
+    action = "none"
 
     [hot_corners.top_right]
     action = "control_center"
@@ -141,9 +141,9 @@ app_icon_colorize = true
 corner_radius_scale = 2.0
 font_family = "Hack Nerd Font"
 launch_apps_as_systemd_services = true
-telemetry_enabled = false
-polkit_agent = true
 niri_overview_type_to_launch_enabled = false
+polkit_agent = true
+telemetry_enabled = false
 
 [theme]
 builtin = "Ayu"
