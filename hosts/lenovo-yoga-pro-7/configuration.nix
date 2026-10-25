@@ -22,6 +22,7 @@
         self.nixosModules.base
         self.nixosModules.bootloader
         self.nixosModules.networking
+        self.nixosModules.firewall
         inputs.home-manager.nixosModules.home-manager
 
         # Theme (Phase 2)
