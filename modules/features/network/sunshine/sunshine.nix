@@ -39,6 +39,22 @@
           ${pkgs.coreutils}/bin/rm -f "$state_file"
         fi
       '';
+
+      sunshinePorts = {
+        allowedTCPPorts = [
+          47984
+          47989
+          47990
+          48010
+        ];
+        allowedUDPPorts = [
+          47998
+          47999
+          48000
+          48002
+          48010
+        ];
+      };
     in
     {
       sops.secrets = {
@@ -58,6 +74,10 @@
 
       services.sunshine = {
         enable = true;
+        # The default build resolves libcuda.so.1 through LD_LIBRARY_PATH, which
+        # the capSysAdmin setcap wrapper strips, so NVENC fails to load. The
+        # CUDA build adds the driver runpath directly.
+        package = pkgs.sunshine.override { cudaSupport = true; };
         autoStart = true;
         capSysAdmin = true;
         openFirewall = false;
@@ -105,21 +125,12 @@
       ];
 
       # Sunshine listens on all addresses, but the firewall admits its ports
-      # only through the private Tailscale interface.
-      networking.firewall.interfaces.tailscale0 = {
-        allowedTCPPorts = [
-          47984
-          47989
-          47990
-          48010
-        ];
-        allowedUDPPorts = [
-          47998
-          47999
-          48000
-          48002
-          48010
-        ];
+      # only through the home LAN interfaces (wired and Wi-Fi) and the private
+      # Tailscale interface for remote access. Docker bridges stay closed.
+      networking.firewall.interfaces = {
+        enp6s0 = sunshinePorts;
+        wlp5s0 = sunshinePorts;
+        tailscale0 = sunshinePorts;
       };
 
     };
