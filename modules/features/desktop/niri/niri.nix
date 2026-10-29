@@ -889,12 +889,19 @@ in
             };
             "sunshine" = {
               create-virtual = _: { };
-              mode = "1920x1080@60.000";
-              scale = 1;
+              # Native resolution of the Galaxy Tab S10 Ultra, so Moonlight
+              # doesn't upscale the stream. Scale keeps ~1080p logical space.
+              mode = "2960x1848@60.000";
+              scale = 1.75;
+              # Sunshine's absolute pointer mapping ignores the output offset
+              # and mixes logical/pixel sizes, so the cursor only covers the
+              # whole stream when this output sits at the origin. With the
+              # physical monitors enabled, niri resolves the overlap with
+              # HDMI-A-1 by auto-placing this output to the right.
               position = _: {
                 props = {
                   x = 0;
-                  y = 1920;
+                  y = 0;
                 };
               };
             };
