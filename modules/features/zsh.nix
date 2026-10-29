@@ -73,6 +73,8 @@
           gco = "git checkout";
           gb = "git branch";
           wm = "workmux";
+          "claude-henhalvor.dev" =
+            "CLAUDE_CONFIG_DIR=~/.claude-henhalvor.dev /home/henhal/.local/share/mise/installs/github-anthropics-claude-code/2.1.302/claude";
         };
         sessionVariables = {
           FZF_DEFAULT_COMMAND = "fd --hidden  --strip-cwd-prefix --exclude .git";

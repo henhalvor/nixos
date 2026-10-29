@@ -249,7 +249,7 @@ Always name the manager explicitly:
 
 ```bash
 userland install mise node@22
-userland install mise github:anomalyco/opencode
+userland install mise 'npm:@opencode/cli@latest'
 userland install flatpak flathub:org.gimp.GIMP
 userland install upstream hermes
 ```
@@ -294,7 +294,7 @@ Use the exact ID shown by `userland list`:
 
 ```bash
 userland update mise:node@22.14.0
-userland update mise:github:anomalyco/opencode@1.18.21
+userland update mise:npm:@opencode/cli@2.1.4
 userland update flatpak:org.gimp.GIMP
 ```
 
@@ -326,7 +326,7 @@ upstream release is visible and attributable.
 
 ```bash
 userland remove mise:node@22.14.0
-userland remove mise:github:anomalyco/opencode@1.18.21
+userland remove mise:npm:@opencode/cli@2.1.4
 userland remove flatpak:org.gimp.GIMP
 userland remove appimage:Applications/example.AppImage
 ```
@@ -419,7 +419,12 @@ archives, and mise can extract the wrong one successfully. In that case mise
 may report `installed` even though the expected command is absent or nested at
 an unexpected path.
 
-This happened with:
+A related failure is a repository that publishes a version line only as git
+tags, with no GitHub Releases attached. Release-based backends cannot install
+those versions at all. OpenCode 2 is the current example; see
+[OpenCode v2](#opencode-v2-npm-backend).
+
+Asset selection failures happened with:
 
 - `github:openai/codex`; and
 - `github:can1357/oh-my-pi`.
@@ -511,6 +516,56 @@ metadata catalog could carry the asset options and expected command names, and
 installation could verify the executable before reporting success. That would
 be an enhancement to the facade, not a reason to make Home Manager own the
 mutable mise config.
+
+## OpenCode v2 (npm backend)
+
+OpenCode 2 is published as the npm package `@opencode/cli`, and in the GitHub
+repository only as version tags without GitHub Releases. Release-based backends
+therefore cannot install it: `github:anomalyco/opencode` stops at 1.19.4, and an
+explicit tag install such as `mise install opencode@2.1.4` resolves a 2.x tag
+and then fails with `404 Not Found ... releases/tags/v2.1.4`.
+
+mise maps the short name `opencode` to the npm package from release 2026.10.9
+onward. Older mise releases, including the pinned Nix package on the current
+hosts, must name the backend explicitly:
+
+```toml
+[tools]
+
+"npm:@opencode/cli" = "latest"
+```
+
+Install and verify through the facade:
+
+```bash
+userland install mise 'npm:@opencode/cli@latest'
+exec zsh -l
+opencode --version
+```
+
+The npm backend needs a Node runtime from the same mise config. OpenCode 2
+reuses `~/.config/opencode` and `~/.local/share/opencode`, so the existing
+configuration and stored credentials carry over; sessions live in a SQLite
+database at `~/.local/share/opencode/opencode.db`.
+
+`userland list --manager mise` reports the row as
+`mise:npm:@opencode/cli@<version>`; that is the ID to use for updates and
+removal. Once a mise release at or above 2026.10.9 is available, the same tool
+can be simplified to `opencode = "latest"`.
+
+The binary is owned by mise, not by OpenCode's self-updater. Both `opencode
+upgrade` and the TUI `/upgrade` command fail with `Installation method not
+found`, which is expected for this installation method. Update with `userland
+update mise:npm:@opencode/cli@<version>`, `userland update --all`, or `mise
+upgrade` instead. Setting `"update": "disable"` in
+`~/.config/opencode/opencode.jsonc` stops OpenCode from advertising an updater
+it cannot drive in this installation.
+
+Rolling back to v1 reuses the previous release-based backend:
+
+```bash
+mise use --global github:anomalyco/opencode@1.19.4
+```
 
 ## Stability and security boundary
 
