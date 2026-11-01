@@ -9,7 +9,7 @@
   flake.homeModules.grimScreenshot = {pkgs, ...}: let
     screenshotScript = pkgs.writeShellApplication {
       name = "screenshot";
-      runtimeInputs = with pkgs; [grim slurp swappy coreutils libnotify];
+      runtimeInputs = with pkgs; [grim slurp satty wl-clipboard coreutils libnotify];
       text = ''
         case "''${1:-}" in
           --copy)
@@ -22,25 +22,21 @@
             grim -g "$(slurp)" "$FILE"
             notify-send --expire-time=2000 "Screenshot" "Saved to $FILE"
             ;;
-          --swappy)
+          --edit)
             mkdir -p ~/Pictures/Screenshots
-            grim -g "$(slurp)" - | swappy -f -
+            grim -g "$(slurp)" - | satty --filename - \
+              --output-filename "$HOME/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png" \
+              --copy-command wl-copy \
+              --early-exit
             ;;
           *)
-            echo "Usage: screenshot [--copy|--save|--swappy]"
+            echo "Usage: screenshot [--copy|--save|--edit]"
             exit 1
             ;;
         esac
       '';
     };
   in {
-    home.packages = [pkgs.grim pkgs.slurp pkgs.swappy pkgs.wl-clipboard screenshotScript];
-
-    # Save edited screenshots alongside niri's, using the same naming scheme
-    xdg.configFile."swappy/config".text = ''
-      [Default]
-      save_dir=$HOME/Pictures/Screenshots
-      save_filename_format=Screenshot from %Y-%m-%d %H-%M-%S.png
-    '';
+    home.packages = [pkgs.grim pkgs.slurp pkgs.satty pkgs.wl-clipboard screenshotScript];
   };
 }

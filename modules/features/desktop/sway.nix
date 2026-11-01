@@ -183,7 +183,7 @@
                 then "noctalia msg screenshot-fullscreen"
                 else "screenshot --save"
               }";
-              "${modifier}+Shift+Print" = "exec screenshot --swappy";
+              "${modifier}+Shift+Print" = "exec screenshot --edit";
             }
             // hostKeybindings);
       };

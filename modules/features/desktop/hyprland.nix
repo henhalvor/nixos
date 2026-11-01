@@ -418,7 +418,7 @@
               then "noctalia msg screenshot-fullscreen"
               else "screenshot --save"
             }"
-            "$mainMod SHIFT, Print, exec, screenshot --swappy"
+            "$mainMod SHIFT, Print, exec, screenshot --edit"
 
             # Focus movement
             "$mainMod, left, movefocus, l"

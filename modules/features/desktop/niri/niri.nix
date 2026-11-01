@@ -424,7 +424,7 @@ in
               content.spawn-sh = "toggle-thunderbird";
             };
 
-            # Screenshots (v5 uses Noctalia; swappy stays on the grim wrapper)
+            # Screenshots (v5 uses Noctalia; satty editing stays on the grim wrapper)
             "Print" = _: {
               props.repeat = false;
               content.spawn =
@@ -459,7 +459,7 @@ in
               props.repeat = false;
               content.spawn = [
                 "screenshot"
-                "--swappy"
+                "--edit"
               ];
             };
 
@@ -725,6 +725,19 @@ in
               };
               default-window-height = {
                 fixed = 600;
+              };
+            }
+
+            # Satty screenshot editor: sizes itself to the capture, so give it
+            # a usable default that scales with the output (portrait or landscape)
+            {
+              matches = [ { app-id = ''^com\.gabm\.satty$''; } ];
+              open-floating = true;
+              default-column-width = {
+                proportion = 0.7;
+              };
+              default-window-height = {
+                proportion = 0.7;
               };
             }
 
