@@ -364,6 +364,9 @@
           # Settings from the LiveSync provisioning tool
           # (utils/couchdb/provision.ts), expressed declaratively.
           extraConfig = {
+            # One replica per database on this single node (the upstream
+            # setup's enable_single_node does the same).
+            cluster.n = 1;
             couchdb = {
               single_node = true;
               max_document_size = 50000000;
@@ -396,6 +399,9 @@
             ConditionPathIsMountPoint = "/srv/opencloud";
           };
           after = [ "srv-opencloud.mount" ];
+          # The Erlang port mapper CouchDB spawns otherwise listens on all
+          # interfaces; the node itself already uses loopback only.
+          environment.ERL_EPMD_ADDRESS = "127.0.0.1";
           serviceConfig = {
             RuntimeDirectory = "couchdb";
             RuntimeDirectoryMode = "0700";
