@@ -83,11 +83,14 @@
             [[ "$got" == "$want" ]] || { echo "$what: expected HTTP $want, got $got" >&2; exit 1; }
           }
 
+          # /_up answers before the configured admins are accepted, so wait
+          # for an authenticated request rather than only the health check.
+          adminReady() { admin --output /dev/null --write-out '%{http_code}' "$base/_all_dbs" || true; }
           for _ in $(seq 60); do
-            [[ "$(status "$base/_up")" == 200 ]] && break
+            [[ "$(adminReady)" == 200 ]] && break
             sleep 1
           done
-          expect 200 "$(status "$base/_up")" "CouchDB readiness"
+          expect 200 "$(adminReady)" "CouchDB admin readiness"
 
           # single_node creates the system databases; this only verifies them.
           for system_db in _users _replicator "$db"; do
@@ -431,6 +434,8 @@
           serviceConfig = {
             Type = "oneshot";
             RemainAfterExit = true;
+            Restart = "on-failure";
+            RestartSec = 10;
             ExecStart = "${provision}/bin/couchdb-livesync-provision";
             NoNewPrivileges = true;
             PrivateTmp = true;
