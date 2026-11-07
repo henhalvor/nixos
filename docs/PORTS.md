@@ -28,6 +28,7 @@ These are the URLs to try first.
 | --- | --- | --- | --- |
 | OpenCloud | `https://cloud.henhal.net/` | HP `127.0.0.1:9200` | Cloudflare Tunnel |
 | Keycloak | `https://auth.henhal.net/` | HP `127.0.0.1:8080` | Cloudflare Tunnel |
+| Obsidian LiveSync (CouchDB) | `https://obsidian-livesync.henhal.net/` | HP `127.0.0.1:5984` | Cloudflare Tunnel and Access service token; LiveSync clients only, no web UI in use |
 | Grafana | `https://monitor.henhal.net/` | HP `127.0.0.1:3000` | Cloudflare Tunnel, Keycloak and MFA |
 | Sunshine web manager | `https://workstation.tail37a5eb.ts.net:47990/` | Workstation `0.0.0.0:47990/tcp` | Tailscale only; uses Sunshine's self-signed certificate |
 | Syncthing | `http://127.0.0.1:8384/` | Each NixOS host `127.0.0.1:8384` | Local only, or use an SSH forward |
@@ -72,6 +73,7 @@ in use.
 | OpenCloud internal components | HP `127.0.0.1:9219`, `127.0.0.1:9220`, `127.0.0.1:19220` | HTTP, TCP `9219`, `9220`, `19220` | WebDAV debug, Search, and Graph component listeners; loopback only |
 | Keycloak | HP `127.0.0.1:8080` | HTTP, TCP `8080` | Cloudflare origin for `auth.henhal.net` |
 | Radicale | HP `127.0.0.1:5232` | HTTP, TCP `5232` | CalDAV/CardDAV backend called by OpenCloud; no standalone web UI |
+| CouchDB | HP `127.0.0.1:5984` | HTTP, TCP `5984` | Self-hosted LiveSync database; Cloudflare origin for `obsidian-livesync.henhal.net` |
 | OpenLDAP | HP `127.0.0.1:1389` | LDAP, TCP `1389` | OpenCloud identity backend; loopback only |
 | Grafana | HP `127.0.0.1:3000` | HTTP, TCP `3000` | Cloudflare origin for `monitor.henhal.net` |
 | Prometheus | HP `127.0.0.1:9090` | HTTP, TCP `9090` | Metrics database and web UI |

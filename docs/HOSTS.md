@@ -284,6 +284,7 @@ Tailscale. Its lid policy suspends briefly and then hibernates after two hours.
 - `opencloudRadicale` — CalDAV/CardDAV through OpenCloud
 - `opencloudKeycloak` — authentication at `auth.henhal.net`
 - `opencloudTunnel` — Cloudflare tunnel and private monitoring ingress
+- `obsidianLivesync` — Self-hosted LiveSync CouchDB at `obsidian-livesync.henhal.net` and the headless HP `~/Vault` mirror
 - `opencloudConsistentSource` — consistent OpenCloud backup source
 - `githubMirror` — GitHub repository mirror
 - `hpResticS3` — HP off-site Restic backups

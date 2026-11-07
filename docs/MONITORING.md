@@ -26,7 +26,7 @@ The completed implementation record is
   the monitoring stack itself
 - Restic snapshot freshness, sampled repository checks, and every staged source,
   including the required Radicale calendar/contact stage
-- Syncthing Vault/Shared health and GitHub mirror freshness
+- Syncthing Shared health and GitHub mirror freshness
 - selected warning/error journal events with bounded labels and redaction
 - per-executable CPU and resident-memory usage without command-line or PID labels
 

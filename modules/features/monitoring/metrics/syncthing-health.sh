@@ -22,7 +22,9 @@ fi
 # HELP henhal_syncthing_pending_items Pending item count for a reviewed Syncthing folder.
 # TYPE henhal_syncthing_pending_items gauge
 EOF
-  for folder in vault shared; do
+  # Vault is synchronized by Self-hosted LiveSync, not Syncthing.
+  folders=(shared)
+  for folder in "${folders[@]}"; do
     synced=0
     pending=0
     if [[ -n "$api_key" ]]; then

@@ -52,6 +52,7 @@
         self.nixosModules.opencloudRadicale
         self.nixosModules.opencloudKeycloak
         self.nixosModules.opencloudTunnel
+        self.nixosModules.obsidianLivesync
         self.nixosModules.opencloudConsistentSource
         self.nixosModules.githubMirror
         self.nixosModules.hpResticS3
@@ -131,6 +132,13 @@
         httpHostHeader = "monitor.henhal.net";
       };
 
+      # Obsidian Self-hosted LiveSync; also keeps HP's ~/Vault as a plain-file
+      # mirror for the Vault backup source. See docs/OBSIDIAN.md.
+      my.obsidianLivesync = {
+        enable = true;
+        host = "obsidian-livesync.henhal.net";
+      };
+
       my.opencloudConsistentSource.enable = true;
       my.githubMirror.enable = true;
       my.hpBackup = {
@@ -173,6 +181,10 @@
           "github-mirror.service"
           "radicale.service"
           "radicale-backup-stage.service"
+          "couchdb.service"
+          "couchdb-livesync-provision.service"
+          "docker-obsidian-livesync-cli.service"
+          "vault-backup-stage.service"
           "syncthing.service"
           # "firecrawl.service"
           # "hermes-agent.service"
@@ -183,6 +195,8 @@
           "cloudflared-tunnel-d5383138-72c4-4879-924a-319edc4c20c6.service"
           "restic-backups-hp-offsite.service"
           "github-mirror.service"
+          "couchdb.service"
+          "docker-obsidian-livesync-cli.service"
           # "firecrawl.service"
           # "hermes-agent.service"
         ];
@@ -199,6 +213,7 @@
           grafana = "http://127.0.0.1:3000/api/health";
           keycloak = "http://127.0.0.1:8080/realms/opencloud/.well-known/openid-configuration";
           opencloud = "http://127.0.0.1:9200/";
+          couchdb = "http://127.0.0.1:5984/_up";
         };
         scrapeTargets = {
           hp-server = "127.0.0.1";

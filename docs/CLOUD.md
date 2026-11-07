@@ -7,9 +7,9 @@ files that should be accessible through the web, Linux desktop clients, and
 Android. Files are stored on the HP server's dedicated T7 filesystem and are
 protected off-site by the nightly Restic backup described in [BACKUP.md](BACKUP.md).
 
-OpenCloud is not the owner of every file. `Vault` remains Syncthing-only,
-`Shared` is a separate Syncthing folder, and active source-code repositories
-remain Git/GitHub-managed.
+OpenCloud is not the owner of every file. The Obsidian `Vault` is synchronized
+by Self-hosted LiveSync ([OBSIDIAN.md](OBSIDIAN.md)), `Shared` is a separate
+Syncthing folder, and active source-code repositories remain Git/GitHub-managed.
 
 ## Service layout
 
@@ -59,15 +59,16 @@ device or assuming the server has the newest version. Avoid editing the same
 file on two devices at once, especially CAD files, because a conflict copy can
 be created.
 
-### Syncthing-only folders
+### Folders outside OpenCloud
 
 ```text
-~/Vault   # Obsidian vault; all configured Syncthing peers, including HP
+~/Vault   # Obsidian vault; Self-hosted LiveSync on every device, HP mirror via the LiveSync CLI
 ~/Shared  # general local sharing; Syncthing peers, including HP
 ```
 
 Keep both outside `~/Cloud`. They are backed up through their HP-side staged
-Syncthing sources, not through OpenCloud.
+sources, not through OpenCloud. Do not sync the vault through OpenCloud
+(WebDAV/Remotely Save) or Syncthing as well.
 
 Do not place active Git repositories in either sync root. Use Git/GitHub; HP's
 read-only mirrors and Restic provide the recovery layer.

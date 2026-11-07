@@ -50,6 +50,7 @@ host key.
 | `secrets/syncthing/<host>.yaml` | matching host only | Host-specific Syncthing identity |
 | `secrets/opencloud.yaml` | HP server only, when added | OpenCloud, Keycloak, and Cloudflare Tunnel credentials |
 | `secrets/hp-backup.yaml` | HP server root services only, when added | Restic/S3 backup credentials |
+| `secrets/obsidian-livesync.yaml` | HP server root/CouchDB services only | CouchDB admin and LiveSync account passwords, cookie secret, and the vault E2EE passphrase (see [OBSIDIAN.md](OBSIDIAN.md#secrets)) |
 | `secrets/monitoring.yaml` | HP server root services only | Grafana OIDC/break-glass secrets, Alertmanager receiver, and independent heartbeat URLs |
 
 These HP-only paths have recipient rules in `.sops.yaml`; create a profile only

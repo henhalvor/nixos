@@ -17,7 +17,8 @@
       # Built-in Restic sources. Do not repeat these in `my.hpBackup.extraPaths`:
       # - /run/opencloud-backup/current: complete stopped-service OpenCloud unit
       # - /var/lib/opencloud-identity-backup/latest: Keycloak/OpenLDAP export
-      # - /var/lib/{vault,shared}-backup/latest: staged Syncthing directories
+      # - /var/lib/vault-backup/latest: stopped-service Vault mirror and LiveSync CouchDB
+      # - /var/lib/shared-backup/latest: staged Syncthing Shared directory
       # - /var/lib/radicale-backup/latest: verified stopped-service DAV store
       # - /var/lib/github-mirrors/current and /var/lib/hermes-backup/latest
       # `extraPaths` is only for ordinary HP-local files that can be read live.
@@ -216,10 +217,93 @@
             cp "$root/latest/manifest.json" "$status"
           '';
         };
-      vaultStage = mkSyncthingStage {
-        name = "vault";
-        folderId = "vault";
-        source = "/home/henhal/Vault";
+      livesyncCfg = config.my.obsidianLivesync;
+      # HP's Vault is a LiveSync CLI mirror, not a Syncthing folder. Stage the
+      # plain files (the primary restore path) together with the CouchDB store
+      # that holds the encrypted replicas and conflict history.
+      vaultStage = pkgs.writeShellApplication {
+        name = "vault-backup-stage";
+        runtimeInputs = with pkgs; [
+          coreutils
+          findutils
+          jq
+          rsync
+          systemd
+          util-linux
+        ];
+        text = ''
+          set -o pipefail
+          root=/var/lib/vault-backup
+          status=${statusDir}/vault.json
+          vault=${lib.escapeShellArg livesyncCfg.vaultPath}
+          couchData=${lib.escapeShellArg "${livesyncCfg.storageRoot}/data"}
+          cli=${lib.escapeShellArg "${livesyncCfg.cliServiceName}.service"}
+          candidate=""
+          cli_stopped=0
+          couch_stopped=0
+
+          cleanup() {
+            if (( couch_stopped )); then
+              systemctl start couchdb.service couchdb-livesync-provision.service || true
+            fi
+            if (( cli_stopped )); then
+              systemctl start "$cli" || true
+            fi
+            [[ -z "$candidate" ]] || rm -rf "$candidate"
+          }
+          trap cleanup EXIT
+
+          fail() {
+            mkdir -p ${statusDir}
+            jq -n --arg timestamp "$(date --iso-8601=seconds)" --arg detail "$1" \
+              '{timestamp: $timestamp, result: "degraded", detail: $detail}' >"$status.tmp"
+            mv -f "$status.tmp" "$status"
+            exit 0
+          }
+
+          mountpoint -q /srv/opencloud || fail "the OpenCloud data filesystem is not mounted"
+          [[ "$(findmnt -no UUID -T /srv/opencloud)" == ${lib.escapeShellArg config.my.opencloud.storageUuid} ]] \
+            || fail "the mounted OpenCloud filesystem UUID is not the reviewed T7"
+          [[ -d "$vault" ]] || fail "the HP Vault mirror is missing: $vault"
+          [[ -d "$couchData" ]] || fail "the CouchDB data directory is missing: $couchData"
+          [[ -e ${lib.escapeShellArg "${livesyncCfg.cliStateDir}/initialised"} ]] \
+            || fail "the HP Vault mirror has not been initialised with obsidian-livesync-hp-init"
+          systemctl is-active --quiet couchdb.service || fail "CouchDB is not active"
+          systemctl is-active --quiet "$cli" || fail "the LiveSync CLI daemon is not active"
+
+          exec 9>${sourceLock}; flock -x 9 || fail "could not acquire source lock"
+          # Stop the only local writer first, then CouchDB, so neither the
+          # Vault nor the database files change while they are copied.
+          cli_stopped=1
+          systemctl stop "$cli" || fail "could not stop the LiveSync CLI daemon"
+          couch_stopped=1
+          systemctl stop couchdb.service || fail "could not stop CouchDB"
+          systemctl is-active --quiet couchdb.service && fail "CouchDB remained active after stop"
+
+          candidate="$(mktemp -d "$root/candidate.XXXXXX")" || fail "could not create Vault staging directory"
+          rsync -aHAX --numeric-ids "$vault/" "$candidate/contents/" || fail "Vault mirror copy failed"
+          rsync -aHAX --numeric-ids "$couchData/" "$candidate/couchdb/" || fail "CouchDB data copy failed"
+          [[ -n "$(find "$candidate/contents" -mindepth 1 -print -quit)" ]] || fail "the staged Vault mirror is empty"
+
+          jq -n \
+            --arg timestamp "$(date --iso-8601=seconds)" \
+            --arg source "$vault" \
+            --arg couchdb "$couchData" \
+            --arg couchdbVersion ${lib.escapeShellArg config.services.couchdb.package.version} \
+            '{timestamp: $timestamp, result: "healthy", source: $source, couchdb: $couchdb, method: "stopped-service rsync -aHAX", couchdbVersion: $couchdbVersion}' \
+            >"$candidate/manifest.json"
+
+          systemctl start couchdb.service couchdb-livesync-provision.service || fail "could not restart CouchDB after staging"
+          couch_stopped=0
+          systemctl start "$cli" || fail "could not restart the LiveSync CLI daemon after staging"
+          cli_stopped=0
+
+          rm -rf "$root/previous"
+          [[ ! -d "$root/latest" ]] || mv "$root/latest" "$root/previous"
+          mv "$candidate" "$root/latest"
+          candidate=""
+          cp "$root/latest/manifest.json" "$status"
+        '';
       };
       sharedStage = mkSyncthingStage {
         name = "shared";
@@ -456,6 +540,10 @@
             message = "my.hpBackup requires my.opencloud.radicale.enable.";
           }
           {
+            assertion = livesyncCfg.enable;
+            message = "my.hpBackup stages the HP Vault mirror and requires my.obsidianLivesync.enable.";
+          }
+          {
             assertion = !cfg.enableSuccessHeartbeat || cfg.successHeartbeatUrlFile != null;
             message = "my.hpBackup.successHeartbeatUrlFile is required when the success heartbeat is enabled.";
           }
@@ -559,15 +647,22 @@
           serviceConfig.Type = "oneshot";
           script = "exec ${identityExport}/bin/opencloud-identity-export";
         };
-        systemd.services.syncthing-vault-backup = {
-          description = "Create a consistent staged HP Syncthing vault source";
-          after = [ "syncthing.service" ];
+        systemd.services.vault-backup-stage = {
+          description = "Create a consistent staged HP Vault mirror and LiveSync CouchDB source";
+          after = [
+            "couchdb.service"
+            "${livesyncCfg.cliServiceName}.service"
+          ];
           serviceConfig.Type = "oneshot";
-          script = "exec ${vaultStage}/bin/syncthing-vault-backup";
+          unitConfig = {
+            RequiresMountsFor = "/srv/opencloud";
+            ConditionPathIsMountPoint = "/srv/opencloud";
+          };
+          script = "exec ${vaultStage}/bin/vault-backup-stage";
         };
         systemd.services.syncthing-shared-backup = {
           description = "Create a consistent staged HP Syncthing Shared source";
-          after = [ "syncthing.service" "syncthing-vault-backup.service" ];
+          after = [ "syncthing.service" "vault-backup-stage.service" ];
           serviceConfig.Type = "oneshot";
           script = "exec ${sharedStage}/bin/syncthing-shared-backup";
         };
@@ -611,7 +706,7 @@
           after = [
             "github-mirror.service"
             "opencloud-identity-export.service"
-            "syncthing-vault-backup.service"
+            "vault-backup-stage.service"
             "syncthing-shared-backup.service"
             "radicale-backup-stage.service"
             "hermes-export.service"
@@ -619,7 +714,7 @@
           wants = [
             "github-mirror.service"
             "opencloud-identity-export.service"
-            "syncthing-vault-backup.service"
+            "vault-backup-stage.service"
             "syncthing-shared-backup.service"
             "radicale-backup-stage.service"
             "hermes-export.service"

@@ -66,24 +66,9 @@
         #   ];
         #   ignorePerms = true;
         # };
-        # Since hp server is headless we sync between it and workstation using syncthing, other devices use obsidian app remotely-sync plugin through opencloud.
-        vault = {
-          path = "Vault";
-          participants = [
-            "workstation"
-            # "yoga-pro-7"
-            # "android-phone"
-            # "android-tablet"
-            "hp-server"
-          ];
-          ignorePerms = true;
-          # Per-device pane/window layout is not vault content and creates
-          # avoidable conflict copies when synchronized across devices.
-          ignorePatterns = [
-            ".obsidian/workspace.json"
-            ".obsidian/workspace-mobile.json"
-          ];
-        };
+        # The Obsidian ~/Vault is synchronized by Self-hosted LiveSync on every
+        # device (HP runs the headless CLI); see obsidian-livesync.nix. Never
+        # add it back here: two sync systems on one vault cause conflicts.
         # screenshots = {
         #   path = "Pictures/Screenshots";
         #   participants = [
