@@ -10,6 +10,10 @@
     ...
   }: let
     isHpServer = config.networking.hostName == "hp-server";
+    # Hermes is currently disabled on HP. sops-nix rejects the whole manifest
+    # when a secret's owner does not exist, so only declare Hermes secrets
+    # while its service account is defined.
+    hermesEnabled = isHpServer && config.users.users ? hermes-agent;
     sharedInteractiveFile = ../../secrets/shared-interactive.yaml;
     authFile = ../../secrets/auth.yaml;
     hpAgentFile = ../../secrets/hp-agent.yaml;
@@ -42,7 +46,7 @@
             mode = "0400";
           };
         }
-        // lib.optionalAttrs isHpServer {
+        // lib.optionalAttrs hermesEnabled {
           TELEGRAM_BOT_TOKEN = {
             sopsFile = hpAgentFile;
             owner = "hermes-agent";
@@ -80,7 +84,7 @@
             '';
           };
         }
-        // lib.optionalAttrs isHpServer {
+        // lib.optionalAttrs hermesEnabled {
           hermes-agent-env = {
             owner = "hermes-agent";
             group = "hermes-agent";
