@@ -63,6 +63,8 @@ age keys:
 | `COUCHDB_AUTH_SECRET` | CouchDB cookie-signing secret |
 | `LIVESYNC_COUCHDB_PASSWORD` | Password of the `obsidian` account used by every device and the CLI |
 | `LIVESYNC_E2EE_PASSPHRASE` | End-to-end encryption and path-obfuscation passphrase |
+| `CLOUDFLARE_ACCESS_CLIENT_ID` | Cloudflare Access service-token ID (record only; not used by Nix) |
+| `CLOUDFLARE_ACCESS_CLIENT_SECRET` | Cloudflare Access service-token secret (record only; not used by Nix) |
 
 Read a value on the workstation or Lenovo:
 
@@ -79,8 +81,12 @@ requires rebuilding the remote database and fetching it again on every device.
 The `obsidian` password can be rotated: edit the secret, rebuild HP, then
 update the password in each device's LiveSync settings.
 
-The Cloudflare Access service token is not stored in this repository. It
-lives in Cloudflare and in each device's LiveSync settings and Setup URI.
+The Cloudflare Access service token is recorded in the same file for recovery
+only; no module declares it, so it is never installed on HP. Devices receive
+it as LiveSync custom headers (one `Name: value` per line) or through the
+Setup URI. Add or change the record with
+`nix shell nixpkgs#sops -c sops secrets/obsidian-livesync.yaml`. When the token
+is renewed in Cloudflare, update this record and every device's custom headers.
 
 ## Cloudflare configuration (manual)
 
