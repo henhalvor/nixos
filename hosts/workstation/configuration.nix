@@ -41,6 +41,7 @@
         self.nixosModules.docker
         self.nixosModules.syncthing
         self.nixosModules.bootWindows
+        self.nixosModules.bluetoothFix
         self.nixosModules.garbageCollection
 
         # Server/connectivity (Phase 4)
