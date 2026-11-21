@@ -33,6 +33,22 @@
           };
         };
       };
+      userServiceType = lib.types.submodule {
+        options = {
+          unit = lib.mkOption {
+            type = lib.types.str;
+            description = "Unit name without the .service suffix.";
+          };
+          extraPath = lib.mkOption {
+            type = lib.types.listOf lib.types.str;
+            default = [ ];
+            description = ''
+              Stable tool directories kept ahead of the NixOS profile
+              directories. systemd specifiers such as %h are expanded.
+            '';
+          };
+        };
+      };
       adapterType = lib.types.submodule (
         { ... }:
         {
@@ -64,6 +80,15 @@
               description = "Executables that must resolve after installation.";
             };
 
+            userService = lib.mkOption {
+              type = lib.types.nullOr userServiceType;
+              default = null;
+              description = ''
+                systemd user unit that the upstream tool writes and rewrites
+                itself. Hosts opt in through persistentServices.
+              '';
+            };
+
             requirements = {
               packages = lib.mkOption {
                 type = lib.types.listOf lib.types.package;
@@ -79,6 +104,11 @@
                 type = lib.types.bool;
                 default = false;
                 description = "Provide /bin/bash for upstream software that hardcodes the FHS path.";
+              };
+              caBundle = lib.mkOption {
+                type = lib.types.bool;
+                default = false;
+                description = "Provide /etc/ssl/cert.pem for bundled runtimes that ignore the NixOS CA path.";
               };
               atSpi = lib.mkOption {
                 type = lib.types.bool;
@@ -106,6 +136,17 @@
             health = [ "hermes" "doctor" ];
           };
           expectedExecutables = [ "hermes" ];
+          userService = {
+            unit = "hermes-gateway";
+            extraPath = [
+              "%h/.hermes/hermes-agent/node_modules/.bin"
+              "%h/.hermes/bin"
+              "%h/.local/bin"
+              # MCP servers and tools Hermes launches by name
+              "%h/.local/dev/npm/global/bin"
+              "%h/.local/share/mise/shims"
+            ];
+          };
           requirements = {
             packages = with pkgs; [
               gcc
@@ -113,6 +154,7 @@
             ];
             chromiumSandbox = true;
             binBash = true;
+            caBundle = true;
             atSpi = true;
           };
         };
@@ -133,6 +175,17 @@
           default = { };
           description = "Reviewed user-scoped upstream self-updater adapters.";
         };
+
+        persistentServices = lib.mkOption {
+          type = lib.types.listOf lib.types.str;
+          default = [ ];
+          example = [ "hermes" ];
+          description = ''
+            Upstream adapters whose user service should run without a login
+            session. Enables lingering and a Nix-owned PATH drop-in; the
+            upstream tool still installs and owns the unit file.
+          '';
+        };
       };
 
       config = lib.mkMerge [
@@ -145,7 +198,15 @@
               assertion = config.users.users ? henhal;
               message = "my.userlandPackages requires the henhal user to exist.";
             }
-          ];
+          ]
+          ++ map (name: {
+            assertion = (cfg.upstreamAdapters.${name} or { userService = null; }).userService != null;
+            message = "my.userlandPackages.persistentServices: adapter '${name}' does not exist or declares no userService.";
+          }) cfg.persistentServices;
+
+          # Keep the user manager running from boot so persistent user
+          # services survive logout and start without a login.
+          users.users.henhal.linger = lib.mkIf (cfg.persistentServices != [ ]) true;
 
           home-manager.sharedModules = [ self.homeModules.userlandPackages ];
 
@@ -172,6 +233,13 @@
           systemd.tmpfiles.rules = lib.optional (lib.any (
             adapter: adapter.requirements.binBash
           ) (lib.attrValues cfg.upstreamAdapters)) "L+ /bin/bash - - - - ${pkgs.bashInteractive}/bin/bash";
+
+          # Hermes ships python-build-standalone, whose OpenSSL looks for
+          # /etc/ssl/cert.pem or a hashed /etc/ssl/certs directory. NixOS
+          # provides neither, so HTTPS fails certificate verification.
+          environment.etc."ssl/cert.pem" = lib.mkIf (lib.any (
+            adapter: adapter.requirements.caBundle
+          ) (lib.attrValues cfg.upstreamAdapters)) { source = config.security.pki.caBundle; };
         })
       ];
     };
@@ -189,7 +257,39 @@
         enable = false;
         enableGui = false;
         upstreamAdapters = { };
+        persistentServices = [ ];
       } osConfig;
+
+      # Upstream tools write their unit's PATH for an FHS system, so
+      # git, systemctl, and other NixOS commands are missing. The tool
+      # rewrites its unit on update; a drop-in survives that.
+      servicePath =
+        extraPath:
+        lib.concatStringsSep ":" (
+          extraPath
+          ++ [
+            "/run/wrappers/bin"
+            "/etc/profiles/per-user/${config.home.username}/bin"
+            "/run/current-system/sw/bin"
+            "/usr/local/bin"
+            "/usr/bin"
+            "/bin"
+          ]
+        );
+      persistentDropIns = lib.listToAttrs (
+        map (
+          name:
+          let
+            service = cfg.upstreamAdapters.${name}.userService;
+          in
+          lib.nameValuePair "systemd/user/${service.unit}.service.d/userland-path.conf" {
+            text = ''
+              [Service]
+              Environment="PATH=${servicePath service.extraPath}"
+            '';
+          }
+        ) cfg.persistentServices
+      );
 
       runtimeAdapters = lib.mapAttrs (_: adapter: {
         inherit (adapter) displayName commands installer expectedExecutables;
@@ -222,6 +322,8 @@
     in
     lib.mkIf cfg.enable {
       home.packages = [ userland ];
+
+      xdg.configFile = persistentDropIns;
 
       programs.mise = {
         enable = true;

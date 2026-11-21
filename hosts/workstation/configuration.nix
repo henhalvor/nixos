@@ -138,6 +138,7 @@
       my.userlandPackages = {
         enable = true;
         enableGui = true;
+        persistentServices = [ "hermes" ];
       };
 
       my.monitoring.exporter = {

@@ -88,6 +88,7 @@ The options are:
 | `my.userlandPackages.enable` | Enables the userland facade and mise integration. |
 | `my.userlandPackages.enableGui` | Enables user-scoped Flatpak, AppImage binfmt support, the Flatpak service, and Gear Lever. |
 | `my.userlandPackages.upstreamAdapters` | Reviewed upstream installer allowlist. Hermes is included by default; hosts may add or override entries. |
+| `my.userlandPackages.persistentServices` | Adapters whose user service runs without a login session. The workstation sets `[ "hermes" ]`. |
 
 After changing these options, activate the host generation. A plain `nix
 build` validates a generation but does not activate it:
@@ -398,7 +399,10 @@ Hermes remains user-owned under `~/.hermes`. GCC, Make, shared libraries, the
 Chromium setuid sandbox, AT-SPI accessibility bus, and the `/bin/bash`
 compatibility link are Nix-owned prerequisites. Hermes and cua-driver hardcode
 `/bin/bash` for the Computer Use installer, so the module creates that link
-declaratively when an adapter sets `requirements.binBash`. Hermes also sets
+declaratively when an adapter sets `requirements.binBash`. Hermes bundles a
+standalone Python whose OpenSSL looks for `/etc/ssl/cert.pem`, which NixOS does
+not provide; `requirements.caBundle` links that path to the system CA bundle so
+HTTPS downloads during `hermes update` pass certificate verification. Hermes also sets
 `requirements.atSpi` so cua-driver can inspect semantic UI trees instead of
 falling back to screenshots and coordinate input alone. Enabling AT-SPI removes
 NixOS's `NO_AT_BRIDGE=1` and `GTK_A11Y=none` session defaults, so log out and
@@ -409,6 +413,40 @@ not allow Hermes to make a mutable file under `~/.hermes` root-owned or setuid.
 Hermes Desktop must be tested after activation. If it ignores the system
 sandbox and insists on a sudo fixup, treat the desktop path as unsupported
 rather than using `--no-sandbox`.
+
+### Persistent user services
+
+Some upstream tools install their own systemd user unit; Hermes writes
+`~/.config/systemd/user/hermes-gateway.service` with `hermes gateway install`
+and rewrites it on update. That file is mutable upstream state and survives
+NixOS rebuilds. Do not use `hermes gateway install --system`: it writes into
+NixOS-managed `/etc/systemd/system` and crosses the user-scope boundary.
+
+An adapter declares the unit through `userService`, and a host opts in with
+`persistentServices`. For each opted-in adapter, Nix owns two things:
+
+- `users.users.henhal.linger = true`, so the user manager starts at boot and
+  the service keeps running after logout; and
+- a Home Manager drop-in,
+  `~/.config/systemd/user/<unit>.service.d/userland-path.conf`, that replaces
+  the unit's FHS-only PATH. Without it, commands the service runs directly,
+  such as `git`, `systemctl`, `systemd-run`, and `loginctl`, are not found on
+  NixOS. The drop-in keeps the adapter's stable tool directories first, then
+  `/run/wrappers/bin`, the per-user profile, and the system profile.
+
+The drop-in deliberately omits versioned directories such as
+`~/.hermes/tools/node-<version>/bin`: Hermes composes its managed Node
+environment per call. Shell commands run by the agent use `bash -l`, which
+sources `/etc/profile` and gets the full NixOS PATH regardless.
+
+Setup on a host with the option enabled:
+
+```bash
+sudo nixos-rebuild switch --flake .#workstation
+hermes gateway setup
+hermes gateway install
+systemctl --user show hermes-gateway -p Environment   # PATH from the drop-in
+```
 
 ## GitHub release asset problems
 

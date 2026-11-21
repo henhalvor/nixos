@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "skills": {
+    "firecrawl": {
+      "source": "firecrawl/skills",
+      "sourceType": "github",
+      "skillPath": "skills/core/firecrawl/SKILL.md",
+      "computedHash": "a49e835d3121cf35bcd1db11199e58a1a4f3c11e219311204274063dad048a1a"
+    }
+  }
+}

@@ -281,6 +281,10 @@
       systemd.enable = true;
       xwayland.enable = true;
       package = pkgs-unstable.hyprland;
+      # NixOS owns the portals (hyprland.nix, desktopCommon). An HM portal
+      # overrides NIX_XDG_DESKTOP_PORTAL_DIR with a hyprland-only directory,
+      # which removes the GTK FileChooser from niri sessions.
+      portalPackage = null;
 
       settings = {
         debug.disable_logs = true;
