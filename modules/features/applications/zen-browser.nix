@@ -64,20 +64,26 @@
         '';
     in {inherit id xpi;};
 
+    # Policies must go on the *unwrapped* package: the zen binary resolves its
+    # app dir to the unwrapped store path, so a policies.json written by
+    # wrapFirefox (extraPolicies/extraPrefs) is never read.
     zen =
-      pkgs.wrapFirefox inputs.zen-browser.packages.${system}.beta-unwrapped
-      {
-        icon = "zen-browser";
-        extraPolicies.ExtensionSettings.${netflixKeepQuality.id} = {
-          installation_mode = "force_installed";
-          install_url = "file://${netflixKeepQuality.xpi}";
+      pkgs.wrapFirefox
+      (inputs.zen-browser.packages.${system}.beta-unwrapped.override {
+        policies = {
+          ExtensionSettings.${netflixKeepQuality.id} = {
+            installation_mode = "force_installed";
+            install_url = "file://${netflixKeepQuality.xpi}";
+          };
+          # Zen is built without MOZ_REQUIRE_SIGNING, so this lets the local
+          # (unsigned) extension above load.
+          Preferences."xpinstall.signatures.required" = {
+            Value = false;
+            Status = "locked";
+          };
         };
-        # Zen is built without MOZ_REQUIRE_SIGNING, so this lets the local
-        # (unsigned) extension above load.
-        extraPrefs = ''
-          lockPref("xpinstall.signatures.required", false);
-        '';
-      };
+      })
+      {icon = "zen-browser";};
   in {
     home.packages = [zen];
 
