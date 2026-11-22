@@ -1,8 +1,11 @@
+[audio]
+colorize_icons = true
+
 [bar.default]
 background_opacity = 0.4999999888241291
 color = "primary"
 end = [
-    "media",
+    "bar",
     "notifications",
     "clipboard",
     "network",
@@ -20,7 +23,6 @@ radius = 0
 thickness = 30
 widget_spacing = 16
 
-
 [brightness]
 enable_ddcutil = true
 sync_all_monitors = true
@@ -29,6 +31,7 @@ sync_all_monitors = true
 enabled = true
 
     [calendar.account.opencloud]
+    color = "primary"
     name = "Opencloud"
     provider = "custom"
     server_url = "https://cloud.henhal.net/caldav/"
@@ -41,7 +44,8 @@ enabled = true
 [dock]
 auto_hide = true
 background_opacity = 0.60999998636543751
-enabled = true
+colorize_icons = true
+enabled = false
 position = "left"
 radius = 45
 reserve_space = false
@@ -54,7 +58,7 @@ enabled = true
     action = "launcher"
 
     [hot_corners.top_left]
-    action = "window_switcher"
+    action = "none"
 
     [hot_corners.top_right]
     action = "control_center"
@@ -75,19 +79,28 @@ widget_order = [ "lockscreen-login-box@eDP-1", "lockscreen-login-box@DP-1", "loc
     cx = 1280.0
     cy = 1321.0
     output = "DP-1"
+    placement_height = 0.0
+    placement_width = 0.0
     rotation = 0.0
     type = "login_box"
 
         [lockscreen_widgets.widget."lockscreen-login-box@DP-1".settings]
-        background_color = "surface_variant"
+        background_color = "surface_container"
         background_opacity = 0.88
         background_radius = 12.0
+        center_password_text = false
         input_opacity = 1.0
         input_radius = 6.0
+        layout = "regular"
         show_caps_lock = true
         show_keyboard_layout = true
         show_login_button = true
-        show_password_hint = true
+        show_media = true
+        show_media_controls = true
+        show_password_reveal = true
+        show_session_buttons = true
+        show_unlock_hint = true
+        show_weather = true
 
     [lockscreen_widgets.widget."lockscreen-login-box@HDMI-A-1"]
     box_height = 70.0
@@ -95,55 +108,87 @@ widget_order = [ "lockscreen-login-box@eDP-1", "lockscreen-login-box@DP-1", "loc
     cx = 540.0
     cy = 1801.0
     output = "HDMI-A-1"
+    placement_height = 0.0
+    placement_width = 0.0
     rotation = 0.0
     type = "login_box"
 
         [lockscreen_widgets.widget."lockscreen-login-box@HDMI-A-1".settings]
-        background_color = "surface_variant"
+        background_color = "surface_container"
         background_opacity = 0.88
         background_radius = 12.0
+        center_password_text = false
         input_opacity = 1.0
         input_radius = 6.0
+        layout = "regular"
         show_caps_lock = true
         show_keyboard_layout = true
         show_login_button = true
-        show_password_hint = true
+        show_media = true
+        show_media_controls = true
+        show_password_reveal = true
+        show_session_buttons = true
+        show_unlock_hint = true
+        show_weather = true
 
     [lockscreen_widgets.widget."lockscreen-login-box@eDP-1"]
-    box_height = 70.0
-    box_width = 400.0
+    box_height = 196.0
+    box_width = 720.0
     cx = 854.0
     cy = 948.0
     output = "eDP-1"
+    placement_height = 1067.0
+    placement_width = 1707.0
     rotation = 0.0
     type = "login_box"
 
         [lockscreen_widgets.widget."lockscreen-login-box@eDP-1".settings]
-        background_color = "surface_variant"
+        background_color = "surface_container"
         background_opacity = 0.88
         background_radius = 12.0
+        center_password_text = false
         input_opacity = 1.0
         input_radius = 6.0
+        layout = "regular"
         show_caps_lock = true
         show_keyboard_layout = true
         show_login_button = true
-        show_password_hint = true
+        show_media = true
+        show_media_controls = true
+        show_password_reveal = true
+        show_session_buttons = true
+        show_unlock_hint = true
+        show_weather = true
+
+[notification]
+colorize_icons = true
+
+[plugin_settings."demencia89/androidconnect"]
+hide_when_disconnected = false
+panel_placement = "floating"
 
 [plugin_settings."noctalia/wallhaven"]
 browser_placement = "floating"
 browser_position = "center"
 
 [plugins]
-enabled = [ "noctalia/wallhaven", "noctalia/timer" ]
+enabled = [ "noctalia/wallhaven", "noctalia/timer", "demencia89/androidconnect" ]
 
 [shell]
-app_icon_colorize = true
 corner_radius_scale = 2.0
 font_family = "Hack Nerd Font"
 launch_apps_as_systemd_services = true
-telemetry_enabled = false
-polkit_agent = true
 niri_overview_type_to_launch_enabled = false
+polkit_agent = true
+polkit_colorize_icons = true
+screen_time_colorize_icons = true
+telemetry_enabled = false
+
+    [shell.launcher]
+    colorize_icons = true
+
+    [shell.window_switcher]
+    colorize_icons = true
 
 [theme]
 builtin = "Ayu"
@@ -173,6 +218,12 @@ directory = "/home/henhal/.dotfiles/assets/wallpapers"
     path = "/home/henhal/.dotfiles/assets/wallpapers/mountains-3.jpg"
     theme_mode = "dark"
 
+[widget.active_window]
+colorize_icons = true
+
+[widget.bar]
+type = "demencia89/androidconnect:bar"
+
 [widget.brightness]
 enabled = true
 
@@ -182,5 +233,12 @@ format = "{:%d.%m %H:%M}  "
 [widget.session]
 enabled = true
 
+[widget.taskbar]
+colorize_icons = true
+
 [widget.tray]
+colorize_icons = true
 enabled = true
+
+[widget.workspaces]
+colorize_icons = true
