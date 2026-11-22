@@ -127,7 +127,6 @@
         "toolkit.telemetry.unified" = false;
         "browser.newtabpage.activity-stream.telemetry" = false;
         "layers.acceleration.disabled" = false;
-        "gfx.webrender.software.opengl" = true;
       };
     };
   };
