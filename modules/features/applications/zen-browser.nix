@@ -12,8 +12,74 @@
 
   flake.homeModules.zenBrowser = {pkgs, ...}: let
     system = pkgs.stdenv.hostPlatform.system;
+
+    # Netflix judges decoder performance by droppedVideoFrames. When Zen is on
+    # a hidden niri workspace nothing is presented, so every decoded frame
+    # counts as "dropped" and Netflix downgrades 1080p -> 720p -> 540p (with an
+    # audio hiccup at each switch). This hides that counter from the page.
+    netflixKeepQuality = let
+      id = "netflix-keep-quality@local";
+      manifest = builtins.toJSON {
+        manifest_version = 3;
+        name = "Netflix: keep quality when hidden";
+        version = "1.0";
+        browser_specific_settings.gecko.id = id;
+        host_permissions = ["https://www.netflix.com/*"];
+        content_scripts = [
+          {
+            matches = ["https://www.netflix.com/*"];
+            js = ["content.js"];
+            run_at = "document_start";
+            world = "MAIN";
+            all_frames = true;
+          }
+        ];
+      };
+      contentJs = ''
+        (() => {
+          const proto = HTMLVideoElement.prototype;
+          const orig = proto.getVideoPlaybackQuality;
+          if (!orig) return;
+          proto.getVideoPlaybackQuality = function () {
+            const q = orig.call(this);
+            return {
+              creationTime: q.creationTime,
+              totalVideoFrames: q.totalVideoFrames,
+              droppedVideoFrames: 0,
+              corruptedVideoFrames: q.corruptedVideoFrames,
+            };
+          };
+        })();
+      '';
+      xpi =
+        pkgs.runCommand "netflix-keep-quality.xpi" {
+          nativeBuildInputs = [pkgs.zip];
+          passAsFile = ["manifest" "contentJs"];
+          inherit manifest contentJs;
+        } ''
+          mkdir ext
+          cp "$manifestPath" ext/manifest.json
+          cp "$contentJsPath" ext/content.js
+          (cd ext && zip -X -q "$out" manifest.json content.js)
+        '';
+    in {inherit id xpi;};
+
+    zen =
+      pkgs.wrapFirefox inputs.zen-browser.packages.${system}.beta-unwrapped
+      {
+        icon = "zen-browser";
+        extraPolicies.ExtensionSettings.${netflixKeepQuality.id} = {
+          installation_mode = "force_installed";
+          install_url = "file://${netflixKeepQuality.xpi}";
+        };
+        # Zen is built without MOZ_REQUIRE_SIGNING, so this lets the local
+        # (unsigned) extension above load.
+        extraPrefs = ''
+          lockPref("xpinstall.signatures.required", false);
+        '';
+      };
   in {
-    home.packages = [inputs.zen-browser.packages.${system}.default];
+    home.packages = [zen];
 
     xdg.mimeApps.enable = true;
     xdg.mimeApps.defaultApplications = {
