@@ -174,7 +174,11 @@ in {
       rust-analyzer
       lua-language-server
       nil
-      pkgs-unstable.typescript-go
+      # typescript-go was merged into typescript (7.x), which only ships `tsc`.
+      # nvim-lspconfig's tsgo config still runs `tsgo --lsp --stdio`.
+      (pkgs-unstable.writeShellScriptBin "tsgo" ''
+        exec ${pkgs-unstable.typescript}/bin/tsc "$@"
+      '')
       nodePackages.typescript-language-server
       tailwindcss-language-server
       nodePackages.vscode-langservers-extracted
