@@ -129,6 +129,13 @@
       # track the newest mainline kernel from unstable rather than 25.11's.
       boot.kernelPackages = pkgs-unstable.linuxPackages_latest;
 
+      # Panel Replay Selective Update (the default PSR mode on this OLED panel)
+      # draws thin full-width tearing bands; the kernel logs "Selective fetch
+      # area calculation failed in pipe A". Disabling PSR at runtime via
+      # i915_edp_psr_debug=0x1 removed it (2026-11-23). Costs some idle power.
+      # Retest on newer kernels by removing this and checking the band is gone.
+      boot.kernelParams = [ "xe.enable_psr=0" ];
+
       my.noctalia.version = "v5";
 
       # Idle and lid timings (seconds). See modules/features/desktop/swayidle.nix.
