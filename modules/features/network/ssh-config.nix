@@ -191,6 +191,38 @@
           serverAliveInterval = 30;
           serverAliveCountMax = 3;
         };
+
+        "lenovo-tailscale" = {
+          hostname = "lenovo-yoga-pro-7.tail37a5eb.ts.net";
+          user = "henhal";
+          extraOptions = {
+            RequestTTY = "yes";
+            RemoteCommand = "tmux new-session -A -s main";
+            Compression = "yes";
+            ControlMaster = "auto";
+            ControlPath = "~/.ssh/control:%h:%p:%r";
+            ControlPersist = "10m";
+          };
+          compression = true;
+          serverAliveInterval = 30;
+          serverAliveCountMax = 3;
+        };
+
+        "galaxy-book6-pro-tailscale" = {
+          hostname = "galaxy-book6-pro.tail37a5eb.ts.net";
+          user = "henhal";
+          extraOptions = {
+            RequestTTY = "yes";
+            RemoteCommand = "tmux new-session -A -s main";
+            Compression = "yes";
+            ControlMaster = "auto";
+            ControlPath = "~/.ssh/control:%h:%p:%r";
+            ControlPersist = "10m";
+          };
+          compression = true;
+          serverAliveInterval = 30;
+          serverAliveCountMax = 3;
+        };
       };
     };
   };

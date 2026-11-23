@@ -20,6 +20,8 @@
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICbU4sdXQwBdx/k/usv9DO6WByxwu6zYodYGfsGrHpbX henhal@yoga-pro-7"
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEs49ICQp01DqPO/Mwxl13fEsYjM+ghwZWp/orbTZrV3 tablet@android"
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINpF0P3LVOGnhKsTo1jchRDvcE4YefAou2MMxTF8TkfN henhalvor@gmail.com"
+        # galaxy-book6-pro
+        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICcHnHsmKUvBFpKYJbMaOUmOP9h+2Mee3V72qHO/ZtJ8 henhalvor@gmail.com"
       ];
     };
 
