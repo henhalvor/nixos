@@ -51,6 +51,23 @@ in
       isWorkstation = config.hostVariant == "workstation";
 
       # Workstation-only helper: toggle HDMI-A-1 / DP-1 on/off
+      # Laptop helper: cycle the built-in panel 120 → 90 → 60 → 120 Hz.
+      # 60/120 are native panel modes; 90 is a custom (CVT) mode that niri
+      # generates. Temporary: a niri restart or config reload returns to 120.
+      niri-refresh-cycle = pkgs.writeShellScriptBin "niri-refresh-cycle" ''
+        out=eDP-1
+        res=2880x1800
+        cur=$(niri msg --json outputs \
+          | ${lib.getExe pkgs.jq} -r --arg o "$out" '.[$o].modes[.[$o].current_mode].refresh_rate / 1000 | round')
+        case "$cur" in
+          120) next=90;  niri msg output "$out" custom-mode "$res@90" ;;
+          90)  next=60;  niri msg output "$out" mode "$res@60.000" ;;
+          *)   next=120; niri msg output "$out" mode "$res@120.000" ;;
+        esac
+        ${pkgs.libnotify}/bin/notify-send -a niri -t 1500 -h string:x-canonical-private-synchronous:refresh \
+          "Refresh rate" "$out: $next Hz"
+      '';
+
       niri-toggle-monitors = pkgs.writeShellScriptBin "niri-toggle-monitors" ''
         DEBUG_FILE="/tmp/niri-monitor-toggle.log"
         echo "=== Monitor Toggle Debug $(date) ===" >> "$DEBUG_FILE"
@@ -553,20 +570,29 @@ in
             };
 
             # Laptop brightness (overridden on workstation)
+            # Some firmware (Galaxy Book6 Pro) sends every brightness key press
+            # twice from the ACPI "Video Bus" device at the same instant. The
+            # cooldown drops the duplicate so one press = one step.
             "XF86MonBrightnessUp" = _: {
-              props.allow-when-locked = true;
+              props = {
+                allow-when-locked = true;
+                cooldown-ms = 50;
+              };
               content.spawn = [
                 "${lib.getExe pkgs.brightnessctl}"
                 "s"
-                "+10%"
+                "+5%"
               ];
             };
             "XF86MonBrightnessDown" = _: {
-              props.allow-when-locked = true;
+              props = {
+                allow-when-locked = true;
+                cooldown-ms = 50;
+              };
               content.spawn = [
                 "${lib.getExe pkgs.brightnessctl}"
                 "s"
-                "10%-"
+                "5%-"
               ];
             };
 
@@ -578,6 +604,13 @@ in
             "Mod+WheelScrollUp" = _: {
               props.cooldown-ms = 150;
               content.focus-workspace-up = _: { };
+            };
+          }
+          # Laptop-only binds
+          // lib.optionalAttrs (!isWorkstation) {
+            "Mod+Shift+R" = _: {
+              props.repeat = false;
+              content.spawn = lib.getExe niri-refresh-cycle;
             };
           }
           # Workstation-only binds
