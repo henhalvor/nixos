@@ -827,6 +827,16 @@ in
             }
           ];
 
+          # ── Lid switch (laptops) ───────────────────────────────────────
+          # Niri turns the built-in panel off by itself while the lid is
+          # closed. These hooks come from the swayidle module and exist only
+          # on hosts that set `my.swayidle.lidSuspendDelay` (no-op elsewhere).
+          switch-events = {
+            # Niri 25.11 switch events accept `spawn` only (no `spawn-sh`).
+            lid-close.spawn = [ "sh" "-c" "command -v lid-close-hook >/dev/null && exec lid-close-hook" ];
+            lid-open.spawn = [ "sh" "-c" "command -v lid-open-hook >/dev/null && exec lid-open-hook" ];
+          };
+
           # ── Workspaces ─────────────────────────────────────────────────
           workspaces =
             if isWorkstation then

@@ -131,9 +131,17 @@
 
       my.noctalia.version = "v5";
 
+      # Idle and lid timings (seconds). See modules/features/desktop/swayidle.nix.
+      #   AC:      lock 5 min, screen off 10 min, never suspend; lid = lock.
+      #   Battery: same, plus suspend 20 min after screen off (30 min idle),
+      #            and 20 min after lid close. Suspend hibernates after 2h.
       my.swayidle = {
         lockCommand = "noctalia";
         session = "niri";
+        lockTimeout = 300;
+        screenOffTimeout = 600;
+        suspendTimeout = 600 + 1200;
+        lidSuspendDelay = 1200;
       };
 
       my.rofi.lockCommand = "noctalia";
@@ -165,9 +173,34 @@
       # Default session
       services.displayManager.defaultSession = "niri";
 
-      # Keep short lid closures as fast modern standby, then hibernate after
-      # two hours. TODO(install): requires swap and resume settings in hardware.nix.
-      services.logind.settings.Login.HandleLidSwitch = lib.mkForce "suspend-then-hibernate";
+      # The CS42L45 codec (built-in mic, speaker routing) has no UCM profile in
+      # 25.11's alsa-ucm-conf 1.2.14; 1.2.16+ adds cs42l45 and cs42l45-dmic.
+      # Without it PipeWire falls back to a stereo-out-only profile with no mic.
+      # The new UCM files use syntax 8, which alsa-lib 1.2.14 rejects, so
+      # PipeWire and WirePlumber are rebuilt (stable toolchain) against alsa-lib
+      # and alsa-ucm-conf 1.2.16 from unstable. The rest of the system keeps the
+      # stable alsa-lib. Drop this once the stable channel ships >= 1.2.16.
+      services.pipewire =
+        let
+          alsaLibNew =
+            (pkgs.alsa-lib.override { alsa-ucm-conf = pkgs-unstable.alsa-ucm-conf; }).overrideAttrs
+              (_: {
+                inherit (pkgs-unstable.alsa-lib) version src;
+                # The 1.2.14 CVE backport is already upstream in 1.2.16.
+                patches = pkgs-unstable.alsa-lib.patches;
+              });
+          pipewireNew = pkgs.pipewire.override { alsa-lib = alsaLibNew; };
+        in
+        {
+          package = pipewireNew;
+          wireplumber.package = pkgs.wireplumber.override { pipewire = pipewireNew; };
+        };
+
+      # Lid close only locks (Niri turns the panel off). On battery the
+      # swayidle lid hook suspends after my.swayidle.lidSuspendDelay.
+      # Every suspend is suspend-then-hibernate: s2idle, then hibernate after
+      # two hours. Resume device is set in hardware.nix.
+      services.logind.settings.Login.HandleLidSwitch = lib.mkForce "lock";
       systemd.sleep.extraConfig = ''
         HibernateDelaySec=2h
       '';

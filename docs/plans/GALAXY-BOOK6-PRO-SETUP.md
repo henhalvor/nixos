@@ -234,6 +234,33 @@ to set the user password unless the order below is followed:
 Run these on the laptop after the first successful switch. Record results
 here and turn fixes into config changes.
 
+### Results (2026-11-23, kernel 7.3.5, Mesa 25.2.6)
+
+| Check | Result |
+|---|---|
+| Platform | OK: Core Ultra 7 356H, GPU `8086:b0a0` on `xe` |
+| Speakers | Sink present (`sof-soundwire`), but only the `output:stereo-fallback` profile: no UCM match. Codecs are Cirrus CS35L57 amps + CS42L45 (SDCA) |
+| Microphone | **Missing.** No ALSA source in PipeWire. alsa-ucm-conf 1.2.14 (25.11) has no `cs42l45` profile; 1.2.16.1 (unstable) has `cs42l45.conf` + `cs42l45-dmic.conf`. **Fixed:** PipeWire/WirePlumber rebuilt against alsa-lib + alsa-ucm-conf 1.2.16.1 (host config). `alsaucm` lists Speaker, Mic, Headphones, Headset, HDMI1-3 |
+| Webcam | IPU7 (staging driver) loads, `/dev/video*` exist, PipeWire lists `ipu7 (V4L2)` raw nodes. Not a usable camera without libcamera IPU7 support. Not tested in an app |
+| Fingerprint | Goodix `27c6:6984`. Not enabled |
+| Wi-Fi / BT | iwlwifi firmware `c102` loads (the `c103`–`c107` "failed" lines are normal probing). Wi-Fi not connected during check (on Ethernet). BT powered |
+| Keyboard backlight | OK: `samsung-galaxybook::kbd_backlight` |
+| Samsung driver | OK: loaded; profiles `low-power balanced performance`. Firmware attributes: `power_on_lid_open`, `usb_charging` only (no Fn lock) |
+| VA-API | OK: iHD 25.3.4, H.264/HEVC/VP9/AV1 decode |
+| Vulkan / GL | OK: ANV "Intel Graphics (PTL)"; GL renderer is Intel, not llvmpipe |
+| Power profiles | OK: power-profiles-daemon drives `platform_profile`; EPP `balance_performance` on balanced |
+| thermald | Running, no "Unsupported cpu" error |
+| Charge limit | `charge_control_end_threshold` exists, set to 100 (no limit, as decided) |
+| Display | `eDP-1` 2880x1800@120, scale 1.75, VRR supported but disabled |
+| Sleep | `[s2idle]` |
+| Hibernate | **Not configured:** swap `/dev/nvme0n1p3` (33.8G, unencrypted) exists, but no `resume=` / `boot.resumeDevice`, `/sys/power/resume` is `0:0`. suspend-then-hibernate will fail. **Fixed:** `boot.resumeDevice` set in `hardware.nix` |
+| Extra | `sunshine-sink` virtual sink appears because `pipewire.nix` always adds it. **Fixed:** moved into the `sunshine` module |
+
+Still to do by hand (need root, an app, or time on battery): mpv/browser
+hardware decoding, idle discharge on battery, powertop tunables and
+C-states, PSR, 1-hour suspend drain and s0ix residency, lid on external power,
+external display.
+
 ### Hardware basics
 
 - [ ] Confirm the platform: `lscpu` shows Core Ultra 7 356H, and

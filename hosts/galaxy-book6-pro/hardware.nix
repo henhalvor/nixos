@@ -32,6 +32,9 @@
     [ { device = "/dev/disk/by-uuid/75ef5d0f-af12-4ab7-a4f9-cd3a1a4229d5"; }
     ];
 
+  # Hibernate into the swap partition (33.8G, RAM is ~31G). Added by hand.
+  boot.resumeDevice = "/dev/disk/by-uuid/75ef5d0f-af12-4ab7-a4f9-cd3a1a4229d5";
+
   # Enables DHCP on each ethernet and wireless interface. In case of scripted networking
   # (the default) this is the recommended approach. When using systemd-networkd it's
   # still possible to use this option, but it's recommended to use it in conjunction

@@ -57,6 +57,28 @@
       };
     in
     {
+      # Virtual sink that Sunshine (and gaming.nix's PULSE_SOURCE) captures
+      # for streamed audio. Lives here so only the streaming host gets it.
+      services.pipewire.extraConfig.pipewire."99-sunshine-virtual-sink" = {
+        "context.modules" = [
+          {
+            name = "libpipewire-module-loopback";
+            args = {
+              "node.description" = "Sunshine Virtual Sink";
+              "capture.props" = {
+                "audio.position" = [ "FL" "FR" ];
+                "media.class" = "Audio/Sink";
+                "node.name" = "sunshine-sink";
+              };
+              "playback.props" = {
+                "node.name" = "sunshine-sink.monitor";
+                "node.passive" = true;
+              };
+            };
+          }
+        ];
+      };
+
       sops.secrets = {
         "sunshine-username" = {
           sopsFile = ../../../../secrets/workstation-services.yaml;
