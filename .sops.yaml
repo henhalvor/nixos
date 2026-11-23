@@ -7,6 +7,7 @@ keys:
   - &lenovo age1sxv8q8hlyc8lhy3ydzexds93rl8pdql944hm4y2df56pq4qssujskg3k9q
   - &workstation age1qrxkpmvytq3cfrka4nkl2sn79nyg2r7t8qm55m0rl7vrlqc7v3zqadq2yj
   - &hp-server age1w05f4s0uqatmctt2vpz786722ux4y30fe89lsw3rzz7xtkuxa9tqefmyzw
+  - &galaxy-book6-pro age138jls00ncm4pmvuk8fkqw9l3a2m438zl4y6r5gy8mrsvcgqpj3xqp5vu8g
 
 creation_rules:
   - path_regex: secrets/shared-interactive\.yaml$
@@ -17,6 +18,7 @@ creation_rules:
         - *lenovo
         - *workstation
         - *hp-server
+        - *galaxy-book6-pro
   - path_regex: secrets/auth\.yaml$
     key_groups:
       - age:
@@ -25,6 +27,7 @@ creation_rules:
         - *lenovo
         - *workstation
         - *hp-server
+        - *galaxy-book6-pro
   - path_regex: secrets/hp-agent\.yaml$
     key_groups:
       - age:
@@ -79,3 +82,9 @@ creation_rules:
         - *henhal-lenovo
         - *henhal-workstation
         - *hp-server
+  - path_regex: secrets/syncthing/galaxy-book6-pro\.yaml$
+    key_groups:
+      - age:
+        - *henhal-lenovo
+        - *henhal-workstation
+        - *galaxy-book6-pro

@@ -8,6 +8,8 @@
   flake.homeModules.mpv = { pkgs, ... }: {
     home.packages = with pkgs; [ mpv ];
     programs.mpv.enable = true;
+    # mpv decodes in software by default; use the GPU (VA-API/NVDEC) when safe.
+    programs.mpv.config.hwdec = "auto-safe";
 
     xdg.mimeApps.enable = true;
     xdg.mimeApps.defaultApplications = {
