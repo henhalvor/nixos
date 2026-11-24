@@ -1,6 +1,6 @@
 # Samsung Galaxy Book6 Pro — system configuration
 # Daily driver: workstation apps and tooling with the Lenovo's laptop wiring.
-# See docs/plans/GALAXY-BOOK6-PRO-SETUP.md for the install procedure.
+# See docs/GALAXY-BOOK6-PRO.md for hardware status, workarounds and power notes.
 {
   self,
   inputs,
