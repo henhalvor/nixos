@@ -6,7 +6,35 @@
     home-manager.sharedModules = [self.homeModules.sshConfig];
   };
 
-  flake.homeModules.sshConfig = {...}: let
+  flake.homeModules.sshConfig = {pkgs, ...}: let
+    # Remote filesystems for yazi's native SFTP VFS (yazi >= 25.12.29).
+    # Yazi does not read ~/.ssh/config, so hosts are listed here and rendered
+    # into ~/.config/yazi/vfs.toml. Auth goes through the SSH agent
+    # ($SSH_AUTH_SOCK); interactive prompts are not supported.
+    # Browse with `cd sftp://<name>` or the `g r <key>` keymaps below.
+    yaziRemotes = [
+      {
+        name = "server";
+        host = "hp-server-1.tail37a5eb.ts.net";
+        key = "s";
+      }
+      {
+        name = "workstation";
+        host = "workstation.tail37a5eb.ts.net";
+        key = "w";
+      }
+      {
+        name = "lenovo";
+        host = "lenovo-yoga-pro-7.tail37a5eb.ts.net";
+        key = "l";
+      }
+      {
+        name = "galaxy";
+        host = "galaxy-book6-pro.tail37a5eb.ts.net";
+        key = "g";
+      }
+    ];
+
     portsToForward = [
       {
         bind.port = 3000;
@@ -95,6 +123,26 @@
       } # Expo Debugger
     ];
   in {
+    xdg.configFile."yazi/vfs.toml".source = (pkgs.formats.toml {}).generate "yazi-vfs.toml" {
+      sftp = builtins.listToAttrs (map (r: {
+          inherit (r) name;
+          value = {
+            inherit (r) host;
+            user = "henhal";
+            port = 22;
+          };
+        })
+        yaziRemotes);
+    };
+
+    programs.yazi.keymap.mgr.prepend_keymap =
+      map (r: {
+        on = ["g" "r" r.key];
+        run = "cd sftp://${r.name}";
+        desc = "Remote: ${r.name}";
+      })
+      yaziRemotes;
+
     programs.ssh = {
       enable = true;
       enableDefaultConfig = false;

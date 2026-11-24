@@ -9,12 +9,15 @@
   flake.homeModules.yazi = {
     config,
     pkgs,
+    pkgs-unstable,
     ...
   }: {
     programs.yazi = {
       enable = true;
+      # Unstable: remote file management (SFTP VFS) needs yazi >= 25.12.29.
+      package = pkgs-unstable.yazi;
       settings = {
-        manager = {
+        mgr = {
           show_hidden = true;
           sort_by = "natural";
           sort_dir_first = true;

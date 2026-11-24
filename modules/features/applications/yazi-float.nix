@@ -26,7 +26,7 @@
           START_DIR="$HOME"
         fi
 
-        exec ${pkgs.yazi}/bin/yazi --cwd-file="$CWD_FILE" "$START_DIR"
+        exec ${config.programs.yazi.package}/bin/yazi --cwd-file="$CWD_FILE" "$START_DIR"
       '')
     ];
   };
