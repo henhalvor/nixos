@@ -7,9 +7,14 @@
 
 - Better image organization in nautilus or other files manager alternative
 
-- Annoying: When doing electron testing or agentic coding, the focus in my window manager (niri or hyprland) gets focused when an electron windows opens or my agent finsihes a turn in the terminal chat, the focus gets taken away from what im doing and set to the active agent or electron window. this is quite jarring, any fixes?
+- Setup T3 code - global instructions for agents to use dev shells - is there global AGENTS.md for t3 code or similar??
 
-- Low power mode for workstation so i cant hear fan noise but dont have to turn of the system.
+- Figgure out theming on samsung laptop
+
+- Noctalia, remove annoying hot corners
+
+- Connect phone over adb wireless debugging
+
 <!-- - Printer setup -->
 
 <!-- Phase 6 and 7 custom dashboards and alerts security-monitoring-implementation.md -->
@@ -20,13 +25,10 @@
   <!-- - Remove current screenshot tool, use noctalia built in -->
   <!-- - Remove current clipboard and launcher keybinds use noctalia built in -->
 
-- hermes agent backup export && hermes agent update
-
 <!-- PHASE 4 in security and backup implementation plan -->
 
 <!-- - Set up bitwarden account with google authenticator + migrate passwords there -->
 
-- Rebuild lenovo yoga pro 7 laptop + configure hybernation
 <!-- PHASE 6 in implementation plan -->
 
 <!-- confirm github repo backup is working -->
@@ -37,5 +39,3 @@
 <!-- - Floating email window -->
 
 <!-- - Swaylock / swayidle should use wallpaper defined in user config -->
-
-- rice swaylock (find out why noctalia lock is not being used)

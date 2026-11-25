@@ -239,6 +239,19 @@ Tailscale. Its lid policy suspends briefly and then hibernates after two hours.
 
 ---
 
+## Samsung Galaxy Book6 Pro
+
+**Type:** Laptop (daily driver)<br>
+**Window manager / desktop shell:** Niri with Noctalia v5<br>
+**Graphics:** Intel Panther Lake on the `xe` driver<br>
+**Bootloader:** systemd-boot
+
+Hardware status, firmware quirks, workarounds, power measurements and
+reinstall notes are in
+[`hosts/galaxy-book6-pro/README.md`](../hosts/galaxy-book6-pro/README.md).
+
+---
+
 ## HP Server
 
 **Type:** Headless server<br>

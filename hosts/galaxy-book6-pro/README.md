@@ -4,7 +4,7 @@ Daily-driver laptop. It runs the workstation's apps and tooling with the
 Lenovo's laptop wiring, on Niri and Noctalia v5. This page records what works,
 the workarounds in place, and measured power figures.
 
-Last updated: 2026-11-24 (kernel 7.3.5, NixOS 25.11, Mesa 25.2.6)
+Last updated: 2026-11-25 (kernel 7.3.5, NixOS 25.11, Mesa 25.2.6)
 
 | | |
 |---|---|
@@ -86,6 +86,22 @@ it's no longer needed.
 - **Fix:** the Niri brightness binds (`modules/features/desktop/niri/niri.nix`)
   have `cooldown-ms = 50`, which drops the duplicate. The step is 5%.
 
+### Hibernate breaks the Samsung firmware interface (no fix yet)
+
+- **Problem:** after resuming from hibernate (S4), every `samsung-galaxybook`
+  call to the firmware fails with
+  `acpi SAMB430:00: failed to execute CSFI; device responded with failure code 0xff`.
+  The keyboard backlight can't be turned on, and platform profile changes
+  probably don't reach the firmware either. Plain suspend (s2idle) is not
+  affected. One such error at boot is normal.
+- **Do not** reload the module (`modprobe -r samsung_galaxybook`): the driver
+  sits in the i8042 keyboard path and the built-in keyboard stops working until
+  a reboot.
+- **Fix:** reboot. To make it rare, `HibernateDelaySec=24h`: standby measured
+  under ~1%/h, so hibernating early saved little.
+- **Check for it:** `journalctl -k -b | grep -c "failed to execute CSFI"` (more
+  than 1 means it's broken).
+
 ## Power
 
 ### Profiles
@@ -157,7 +173,7 @@ button) and Noctalia (lock screen and session menu).
 | Lid opened within 20 min | — | Pending suspend cancelled |
 
 - **Every suspend is suspend-then-hibernate:** s2idle, then hibernate after
-  `HibernateDelaySec=2h`. systemd also hibernates earlier if the battery runs
+  `HibernateDelaySec=24h`. systemd also hibernates earlier if the battery runs
   low.
 - **Battery checks happen when a timer fires.** Plugging in before then
   cancels that suspend.
@@ -194,6 +210,24 @@ The hibernate delay is `HibernateDelaySec` in the same file.
 - **VRR:** supported by the panel, currently disabled.
 - **Scale:** 1.75 (logical 1645x1028).
 
+## Remote development on the workstation
+
+Heavy dev work runs on the workstation, with this laptop as the client.
+
+- **SSH aliases:** `workstation-tailscale` opens the tmux session and forwards
+  the dev ports. It cannot run one-off commands
+  (`ssh workstation-tailscale '<cmd>'` fails with "Cannot execute command-line
+  and remote command"). For scripts and tools, use `workstation-t3` (no tmux,
+  no forwards), or add `-o RemoteCommand=none -o RequestTTY=no`.
+- **T3 Code:** the desktop app here adds the workstation as an SSH environment
+  (Settings → Environments → Add environment → SSH → `workstation-t3`). The app
+  downloads its own server into `~/.t3/runtime` on the workstation. Agents,
+  their logins and the project checkouts all live on the workstation.
+- **Agents and dev shells:** agents don't trigger direnv. Global agent
+  instructions (`modules/features/ai/agent-instructions.nix`) tell them to use
+  `direnv exec .`. A new clone on the workstation needs `direnv allow` once.
+- **Not tested yet:** an end-to-end T3 session over `workstation-t3`.
+
 ## Open items
 
 - [ ] Syncthing: generate the identity, store it in
@@ -206,7 +240,8 @@ The hibernate delay is `HibernateDelaySec` in the same file.
       `modules/features/monitoring/rules/availability.yaml`.
 - [ ] Secure Boot: `sbctl create-keys`, switch `bootloader` → `secureBoot`,
       rebuild, enroll the keys in firmware setup mode.
-- [ ] Docs: add this host to `docs/HOSTS.md`, `docs/INSTALL.md` and
+- [ ] Docs: fill out the `docs/HOSTS.md` entry (only a pointer so far) and add
+      this host to `docs/INSTALL.md` and
       `docs/FEATURES.md`.
 - [ ] Not yet tested: hibernate end to end, the 20-minute lid suspend on
       battery, suspend drain overnight (expect ~1–2%/h) and s0ix residency,

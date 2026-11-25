@@ -323,6 +323,11 @@
     lib.mkIf cfg.enable {
       home.packages = [ userland ];
 
+      # mise only activates in interactive zsh. Non-interactive login shells
+      # (`sh -lc`, used by T3 Code SSH environments and other remote agents)
+      # need the shims to find claude, codex, opencode and friends.
+      home.sessionPath = [ "${config.home.homeDirectory}/.local/share/mise/shims" ];
+
       xdg.configFile = persistentDropIns;
 
       programs.mise = {

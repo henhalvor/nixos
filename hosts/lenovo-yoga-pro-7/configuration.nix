@@ -85,6 +85,7 @@
         self.nixosModules.microsoftEdge
         self.nixosModules.obsidian
         self.nixosModules.t3code
+        self.nixosModules.agentInstructions
         self.nixosModules.opencloudDesktop
         self.nixosModules.spotify
         self.nixosModules.gimp

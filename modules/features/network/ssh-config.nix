@@ -206,6 +206,21 @@
           serverAliveCountMax = 3;
         };
 
+        # Plain non-interactive alias for tools that run their own remote
+        # commands (T3 Code desktop SSH environments). The tmux RemoteCommand,
+        # forced TTY and port forwards on workstation-tailscale break them.
+        "workstation-t3" = {
+          hostname = "workstation.tail37a5eb.ts.net";
+          user = "henhal";
+          extraOptions = {
+            ControlMaster = "auto";
+            ControlPath = "~/.ssh/control-t3:%h:%p:%r";
+            ControlPersist = "8h";
+          };
+          serverAliveInterval = 30;
+          serverAliveCountMax = 3;
+        };
+
         "server-tailscale" = {
           hostname = "hp-server-1.tail37a5eb.ts.net";
           user = "henhal";
