@@ -1,6 +1,6 @@
 # Samsung Galaxy Book6 Pro — system configuration
 # Daily driver: workstation apps and tooling with the Lenovo's laptop wiring.
-# See docs/GALAXY-BOOK6-PRO.md for hardware status, workarounds and power notes.
+# See README.md in this directory for hardware status, workarounds and power notes.
 {
   self,
   inputs,
@@ -85,6 +85,7 @@
         self.nixosModules.microsoftEdge
         self.nixosModules.obsidian
         self.nixosModules.t3code
+        self.nixosModules.agentInstructions
         self.nixosModules.opencloudDesktop
         self.nixosModules.spotify
         self.nixosModules.gimp
@@ -141,7 +142,7 @@
       # Idle and lid timings (seconds). See modules/features/desktop/swayidle.nix.
       #   AC:      lock 5 min, screen off 10 min, never suspend; lid = lock.
       #   Battery: same, plus suspend 20 min after screen off (30 min idle),
-      #            and 20 min after lid close. Suspend hibernates after 2h.
+      #            and 20 min after lid close. Suspend hibernates after 24h.
       my.swayidle = {
         lockCommand = "noctalia";
         session = "niri";
@@ -206,10 +207,13 @@
       # Lid close only locks (Niri turns the panel off). On battery the
       # swayidle lid hook suspends after my.swayidle.lidSuspendDelay.
       # Every suspend is suspend-then-hibernate: s2idle, then hibernate after
-      # two hours. Resume device is set in hardware.nix.
+      # 24 hours. s2idle costs under ~1%/h here, and resuming from hibernate
+      # leaves the samsung-galaxybook firmware interface broken (CSFI 0xff:
+      # keyboard backlight and platform profile fail) until a reboot, so
+      # hibernate is kept as a rare fallback. Resume device is in hardware.nix.
       services.logind.settings.Login.HandleLidSwitch = lib.mkForce "lock";
       systemd.sleep.extraConfig = ''
-        HibernateDelaySec=2h
+        HibernateDelaySec=24h
       '';
 
       # Logitech wireless peripherals
