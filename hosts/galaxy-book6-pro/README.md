@@ -58,13 +58,21 @@ it's no longer needed.
 - **Remove when:** the stable channel ships alsa-lib and alsa-ucm-conf 1.2.16
   or newer.
 
-### Display: PSR disabled (`xe.enable_psr=0`)
+### Display: PSR and Panel Replay disabled
 
 - **Problem:** Panel Replay with Selective Update (the default PSR mode on this
   panel) draws thin full-width tearing bands. The kernel logs
   `Selective fetch area calculation failed in pipe A`.
-- **Fix:** `boot.kernelParams = [ "xe.enable_psr=0" ]`. Disabling PSR at
-  runtime removed the bands.
+- **Fix:** `xe.enable_psr=0 xe.enable_panel_replay=0 xe.enable_psr2_sel_fetch=0`
+  in `boot.kernelParams`. `xe.enable_psr=0` alone is not enough: Panel Replay
+  has its own switch, which defaults to auto, so it stayed on and the bands
+  came back now and then. Disabling PSR at runtime (`i915_edp_psr_debug=0x1`)
+  turns off both, which is why the first test looked fixed.
+- **Check it's off:** `PSR mode` in `i915_edp_psr_status` should say disabled,
+  not `Panel Replay Selective Update enabled`.
+- **If bands remain with all three set:** try `xe.enable_fbc=0` (framebuffer
+  compression). Untested here; suggested for similar artifacts in an
+  unverified Intel community thread (Raptor/Lunar/Arrow Lake, no logs).
 - **Cost:** some idle power on a static screen. Idle is still 1.9 W (see below),
   so this is small.
 - **Retest:** at runtime, without a rebuild:
@@ -74,9 +82,8 @@ it's no longer needed.
   echo 0x2 | sudo tee /sys/kernel/debug/dri/0000:00:02.0/i915_edp_psr_debug  # PSR1 only, untested
   echo 0x1 | sudo tee /sys/kernel/debug/dri/0000:00:02.0/i915_edp_psr_debug  # PSR off
   ```
-  If PSR1 (`0x2`) is clean, keep it with
-  `xe.enable_psr2_sel_fetch=0 xe.enable_panel_replay=0` instead of disabling
-  PSR completely.
+  If PSR1 (`0x2`) is clean, drop `xe.enable_psr=0` and keep the other two
+  parameters instead of disabling PSR completely.
 
 ### Brightness keys: double key press
 

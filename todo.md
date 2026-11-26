@@ -13,8 +13,6 @@
 
 - Noctalia, remove annoying hot corners
 
-- Connect phone over adb wireless debugging
-
 <!-- - Printer setup -->
 
 <!-- Phase 6 and 7 custom dashboards and alerts security-monitoring-implementation.md -->

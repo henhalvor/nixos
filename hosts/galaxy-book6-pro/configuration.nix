@@ -134,10 +134,19 @@
       # draws thin full-width tearing bands; the kernel logs "Selective fetch
       # area calculation failed in pipe A". Disabling PSR at runtime via
       # i915_edp_psr_debug=0x1 removed it (2026-11-23). Costs some idle power.
-      # Retest on newer kernels by removing this and checking the band is gone.
-      boot.kernelParams = [ "xe.enable_psr=0" ];
+      # enable_psr=0 alone leaves Panel Replay on (enable_panel_replay defaults
+      # to auto), so the bands returned (2026-11-26); all three are needed.
+      # Retest on newer kernels by removing these and checking the band is gone.
+      boot.kernelParams = [
+        "xe.enable_psr=0"
+        "xe.enable_panel_replay=0"
+        "xe.enable_psr2_sel_fetch=0"
+      ];
 
       my.noctalia.version = "v5";
+      # Noctalia's palette colours GTK, Qt, KDE and kitty; Stylix keeps fonts,
+      # cursor, SDDM and rofi. See modules/features/stylix.nix.
+      my.theme.colorSource = "noctalia";
 
       # Idle and lid timings (seconds). See modules/features/desktop/swayidle.nix.
       #   AC:      lock 5 min, screen off 10 min, never suspend; lid = lock.

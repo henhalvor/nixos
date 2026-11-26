@@ -55,7 +55,7 @@ show_dots = true
 enabled = true
 
     [hot_corners.bottom_right]
-    action = "launcher"
+    action = "none"
 
     [hot_corners.top_left]
     action = "none"
@@ -134,11 +134,11 @@ widget_order = [ "lockscreen-login-box@eDP-1", "lockscreen-login-box@DP-1", "loc
     [lockscreen_widgets.widget."lockscreen-login-box@eDP-1"]
     box_height = 196.0
     box_width = 720.0
-    cx = 854.0
-    cy = 948.0
+    cx = 823.482177734375
+    cy = 914.238037109375
     output = "eDP-1"
-    placement_height = 1067.0
-    placement_width = 1707.0
+    placement_height = 1029.0
+    placement_width = 1646.0
     rotation = 0.0
     type = "login_box"
 
@@ -187,11 +187,14 @@ telemetry_enabled = false
     [shell.launcher]
     colorize_icons = true
 
+    [shell.panel]
+    transparency_mode = "soft"
+
     [shell.window_switcher]
     colorize_icons = true
 
 [theme]
-builtin = "Ayu"
+builtin = "Gruvbox"
 community_palette = "Oxocarbon"
 mode = "dark"
 source = "builtin"
@@ -201,16 +204,19 @@ wallpaper_scheme = "m3-content"
 directory = "/home/henhal/.dotfiles/assets/wallpapers"
 
     [wallpaper.default]
-    path = "/home/henhal/.dotfiles/assets/wallpapers/atoms.png"
+    path = "/home/henhal/.dotfiles/assets/wallpapers/mountains-3.jpg"
 
     [wallpaper.last]
-    path = "/home/henhal/.dotfiles/assets/wallpapers/atoms.png"
+    path = "/home/henhal/.dotfiles/assets/wallpapers/mountains-3.jpg"
 
     [wallpaper.monitors.DP-1]
     path = "/home/henhal/.dotfiles/assets/wallpapers/atoms.png"
 
     [wallpaper.monitors.HDMI-A-1]
     path = "/home/henhal/.dotfiles/assets/wallpapers/atoms.png"
+
+    [wallpaper.monitors.eDP-1]
+    path = "/home/henhal/.dotfiles/assets/wallpapers/mountains-3.jpg"
 
     [[wallpaper.favorite]]
     builtin_palette = "Ayu"
