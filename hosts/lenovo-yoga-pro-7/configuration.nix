@@ -93,7 +93,8 @@
         self.nixosModules.mpv
         self.nixosModules.zathura
         self.nixosModules.onlyoffice
-        self.nixosModules.nautilus
+        # self.nixosModules.nautilus # replaced by luciole
+        self.nixosModules.luciole
         self.nixosModules.missionCenter
         self.nixosModules.gnomeCalculator
         self.nixosModules.vial

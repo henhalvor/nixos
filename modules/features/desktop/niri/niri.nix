@@ -739,6 +739,10 @@ in
               matches = [ { app-id = ''^org\.gnome\.Nautilus$''; } ];
               open-floating = true;
             }
+            {
+              matches = [ { app-id = ''^dev\.noctalia\.luciole$''; } ];
+              open-floating = true;
+            }
 
             # File chooser dialogs (browser/Electron GTK pickers and portal pickers).
             # Must come after the browser rules to override their open-maximized.
@@ -747,6 +751,7 @@ in
               matches = [
                 { title = "^(Open|Save|File Upload|Select|Choose|Upload|Export|Import)( .*)?$"; }
                 { app-id = "^xdg-desktop-portal-(gtk|gnome)$"; }
+                { app-id = ''^dev\.noctalia\.luciole-chooser$''; }
                 # Unpackaged Electron apps: the main window sets its own app-id,
                 # dialogs fall back to the generic "electron" one.
                 { app-id = "^electron$"; }

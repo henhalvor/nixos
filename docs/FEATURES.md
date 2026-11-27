@@ -141,7 +141,8 @@ These are imported by every host.
 
 | Module | File | Pattern | Description |
 |--------|------|---------|-------------|
-| `nautilus` | `nautilus.nix` | HM-only | GNOME Files |
+| `luciole` | `luciole.nix` | Colocated NixOS + HM (flake input) | Noctalia file manager: default for folders, FileManager1 and the portal file picker |
+| `nautilus` | `nautilus.nix` | HM-only | GNOME Files (unused, replaced by `luciole`) |
 | `missionCenter` | `mission-center.nix` | HM-only | System monitor |
 | `gnomeCalculator` | `gnome-calculator.nix` | HM-only | Calculator |
 | `qalculate` | `qalculate.nix` | HM-only | Qalculate (advanced) |

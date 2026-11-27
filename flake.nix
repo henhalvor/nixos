@@ -64,6 +64,10 @@
     # Do not override its nixpkgs input: doing so would disable cache hits.
     noctalia-v5.url = "github:noctalia-dev/noctalia/cachix";
 
+    # Luciole file manager. Same rules as noctalia-v5: the cachix branch is the
+    # newest CI-built commit; don't override nixpkgs or the cache misses.
+    luciole.url = "github:noctalia-dev/luciole/cachix";
+
     # Dev shell inputs
     rust-overlay.url = "https://flakehub.com/f/oxalica/rust-overlay/*.tar.gz";
     android-nixpkgs = {

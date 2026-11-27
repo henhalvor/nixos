@@ -11,7 +11,7 @@
 
 - Figgure out theming on samsung laptop
 
-- Noctalia, remove annoying hot corners
+- Set samsung display to default to 60 hz instead of 120 hz
 
 <!-- - Printer setup -->
 

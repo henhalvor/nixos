@@ -195,10 +195,30 @@ telemetry_enabled = false
 
 [theme]
 builtin = "Gruvbox"
-community_palette = "Oxocarbon"
+community_palette = "Rose Pine Alt"
 mode = "dark"
-source = "builtin"
-wallpaper_scheme = "m3-content"
+source = "community"
+wallpaper_scheme = "vibrant"
+
+    [theme.templates]
+    builtin_ids = [ "btop", "gtk3", "gtk4", "kitty", "luciole", "qt" ]
+    community_ids = [
+        "claude-code",
+        "codex",
+        "brave",
+        "chromium-based",
+        "vivaldi",
+        "zen-browser",
+        "blender",
+        "libreoffice",
+        "vscode",
+        "rofi",
+        "fzf",
+        "lazydocker",
+        "lazygit",
+        "tmux",
+        "yazi"
+    ]
 
 [wallpaper]
 directory = "/home/henhal/.dotfiles/assets/wallpapers"

@@ -95,7 +95,8 @@
         self.nixosModules.zathura
         # self.nixosModules.libreoffice
         self.nixosModules.onlyoffice
-        self.nixosModules.nautilus
+        # self.nixosModules.nautilus # replaced by luciole
+        self.nixosModules.luciole
         self.nixosModules.missionCenter
         self.nixosModules.gnomeCalculator
         self.nixosModules.vial

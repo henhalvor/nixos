@@ -82,7 +82,7 @@ Detailed breakdown of what each host includes and its specific settings.
 - `spotify` — music
 - `gimp`, `gthumb`, `mpv`, `zathura` — media
 - `onlyoffice` — office
-- `nautilus` — file manager (GUI)
+- `luciole` — file manager (GUI, default for folders)
 - `missionCenter` — system monitor
 - `gnomeCalculator` — calculator
 - `vial` — keyboard firmware
@@ -198,7 +198,7 @@ the default.
 - `spotify` — music
 - `gimp`, `gthumb`, `mpv`, `zathura` — media
 - `onlyoffice` — office
-- `nautilus` — file manager (GUI)
+- `luciole` — file manager (GUI, default for folders)
 - `missionCenter` — system monitor
 - `gnomeCalculator` — calculator
 - `vial` — keyboard firmware
