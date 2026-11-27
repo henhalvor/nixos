@@ -144,6 +144,10 @@
         "xe.enable_psr2_sel_fetch=0"
       ];
 
+      # Start the panel at 60 Hz instead of niri's default 120 Hz to save
+      # power; Mod+Shift+R still cycles 120/90/60 until the next niri start.
+      my.niri.laptopPanelMode = "2880x1800@60.000";
+
       my.noctalia.version = "v5";
       # Noctalia's palette colours GTK, Qt, KDE and kitty; Stylix keeps fonts,
       # cursor, SDDM and rofi. See modules/features/stylix.nix.

@@ -4,7 +4,7 @@ Daily-driver laptop. It runs the workstation's apps and tooling with the
 Lenovo's laptop wiring, on Niri and Noctalia v5. This page records what works,
 the workarounds in place, and measured power figures.
 
-Last updated: 2026-11-25 (kernel 7.3.5, NixOS 25.11, Mesa 25.2.6)
+Last updated: 2026-11-27 (kernel 7.3.5, NixOS 25.11, Mesa 25.2.6)
 
 | | |
 |---|---|
@@ -186,11 +186,21 @@ button) and Noctalia (lock screen and session menu).
   cancels that suspend.
 - **Known limitation:** the idle suspend fires once per idle period. If you're
   on AC at the 30-minute mark and unplug later, it waits for a new idle period.
-- **How the lid works:** logind `HandleLidSwitch = "lock"`. Niri turns the panel
-  off and its `lid-close` / `lid-open` switch events call `lid-close-hook` /
-  `lid-open-hook` (from the swayidle module), which start and stop a transient
+- **How the lid works:** logind `HandleLidSwitch = "lock"`. Niri's `lid-close` /
+  `lid-open` switch events run `niri-lid-switch` (in `niri.nix`). On close it
+  runs `niri msg action power-off-monitors` when no external monitor is on,
+  because niri only turns the laptop panel off by itself when an external
+  monitor is connected. Without this the panel stayed lit behind the lid until
+  the 10-minute screen-off. It then calls `lid-close-hook` / `lid-open-hook`
+  (from the swayidle module), which start and stop a transient
   `lid-suspend.timer` user unit. Check it with
   `systemctl --user list-timers lid-suspend.timer`.
+- **Lid suspend is delayed on purpose:** closing the lid on battery suspends
+  after 20 minutes, not immediately; on AC it never suspends. Change
+  `lidSuspendDelay` below for a shorter delay.
+- **Fixed 2026-11-27:** idle suspend never ran. swayidle's service has no
+  `systemctl` on its `PATH`, so `suspend-on-battery` failed with
+  `systemctl: not found`. The script now sets its own `PATH`.
 - **Noctalia:** provides the lock screen (`noctalia msg session lock`), the
   session menu (lock, suspend, hibernate, reboot, shutdown via systemd) and the
   power-profile switch. It has no idle or timeout settings here.
@@ -210,10 +220,13 @@ The hibernate delay is `HibernateDelaySec` in the same file.
 
 ## Display
 
+- **Default refresh rate: 60 Hz**, to save power. Set with
+  `my.niri.laptopPanelMode = "2880x1800@60.000"` in `configuration.nix`;
+  without it niri starts at the panel's preferred 120 Hz.
 - **Refresh rate toggle:** `Mod+Shift+R` cycles the panel 120 → 90 → 60 Hz with
   a notification. 60 and 120 are native modes; 90 is a custom CVT mode Niri
-  generates (89.98 Hz). The choice resets to 120 Hz on reboot or Niri config
-  reload. 60 Hz saves power during video.
+  generates (89.98 Hz). The choice resets to 60 Hz on reboot or Niri config
+  reload.
 - **VRR:** supported by the panel, currently disabled.
 - **Scale:** 1.75 (logical 1645x1028).
 

@@ -25,6 +25,7 @@ let
       hostVariant ? "laptop",
       noctaliaVersion ? "v4",
       wallpaper ? ../../../../assets/wallpapers/atoms.png,
+      laptopPanelMode ? null,
     }:
     inputs.wrapper-modules.wrappers.niri.wrap {
       inherit
@@ -32,6 +33,7 @@ let
         hostVariant
         noctaliaVersion
         wallpaper
+        laptopPanelMode
         ;
       imports = [ self.wrapperModules.niriConfig ];
     };
@@ -53,7 +55,8 @@ in
       # Workstation-only helper: toggle HDMI-A-1 / DP-1 on/off
       # Laptop helper: cycle the built-in panel 120 → 90 → 60 → 120 Hz.
       # 60/120 are native panel modes; 90 is a custom (CVT) mode that niri
-      # generates. Temporary: a niri restart or config reload returns to 120.
+      # generates. Temporary: a niri restart or config reload returns to the
+      # startup mode (laptopPanelMode, or 120 when unset).
       niri-refresh-cycle = pkgs.writeShellScriptBin "niri-refresh-cycle" ''
         out=eDP-1
         res=2880x1800
@@ -66,6 +69,28 @@ in
         esac
         ${pkgs.libnotify}/bin/notify-send -a niri -t 1500 -h string:x-canonical-private-synchronous:refresh \
           "Refresh rate" "$out: $next Hz"
+      '';
+
+      # Lid switch. Niri only turns the laptop panel off on lid close when an
+      # external monitor is connected (should_disable_laptop_panels in
+      # niri's tty backend); alone, the panel stays lit behind the lid. So
+      # power the monitors off ourselves when no external output is on.
+      # Then run the swayidle module's suspend hooks, where installed.
+      niri-lid-switch = pkgs.writeShellScript "niri-lid-switch" ''
+        case "$1" in
+          close)
+            external=$(niri msg --json outputs | ${lib.getExe pkgs.jq} \
+              '[to_entries[] | select(.key | test("^(eDP|LVDS|DSI)-") | not)
+                | select(.value.current_mode != null)] | length')
+            [ "$external" = 0 ] && niri msg action power-off-monitors
+            command -v lid-close-hook >/dev/null && exec lid-close-hook
+            ;;
+          open)
+            niri msg action power-on-monitors
+            command -v lid-open-hook >/dev/null && exec lid-open-hook
+            ;;
+        esac
+        exit 0
       '';
 
       niri-toggle-monitors = pkgs.writeShellScriptBin "niri-toggle-monitors" ''
@@ -207,6 +232,12 @@ in
           type = lib.types.path;
           default = ../../../../assets/wallpapers/atoms.png;
           description = "Wallpaper image path";
+        };
+        laptopPanelMode = lib.mkOption {
+          type = lib.types.nullOr lib.types.str;
+          default = null;
+          example = "2880x1800@60.000";
+          description = "Startup mode for the built-in panel (eDP-1) on laptops. null lets niri pick the highest refresh rate";
         };
       };
 
@@ -866,13 +897,13 @@ in
           ];
 
           # ── Lid switch (laptops) ───────────────────────────────────────
-          # Niri turns the built-in panel off by itself while the lid is
-          # closed. These hooks come from the swayidle module and exist only
-          # on hosts that set `my.swayidle.lidSuspendDelay` (no-op elsewhere).
+          # Panel off on close (see niri-lid-switch), plus the suspend hooks
+          # from the swayidle module on hosts that set
+          # `my.swayidle.lidSuspendDelay`.
           switch-events = {
             # Niri 25.11 switch events accept `spawn` only (no `spawn-sh`).
-            lid-close.spawn = [ "sh" "-c" "command -v lid-close-hook >/dev/null && exec lid-close-hook" ];
-            lid-open.spawn = [ "sh" "-c" "command -v lid-open-hook >/dev/null && exec lid-open-hook" ];
+            lid-close.spawn = [ "${niri-lid-switch}" "close" ];
+            lid-open.spawn = [ "${niri-lid-switch}" "open" ];
           };
 
           # ── Workspaces ─────────────────────────────────────────────────
@@ -924,8 +955,12 @@ in
                 "mail" = _: { };
               };
 
-          # ── Outputs (workstation only) ─────────────────────────────────
-          outputs = lib.optionalAttrs isWorkstation {
+          # ── Outputs ────────────────────────────────────────────────────
+          outputs =
+            lib.optionalAttrs (!isWorkstation && config.laptopPanelMode != null) {
+              "eDP-1".mode = config.laptopPanelMode;
+            }
+            // lib.optionalAttrs isWorkstation {
             "HDMI-A-1" = {
               mode = "1920x1080";
               scale = 1;
@@ -977,6 +1012,7 @@ in
     {
       pkgs,
       config,
+      lib,
       ...
     }:
     let
@@ -987,19 +1023,29 @@ in
         hostVariant = if hostname == "workstation" then "workstation" else "laptop";
         noctaliaVersion = config.my.noctalia.version or "v4";
         wallpaper = ../../../../assets/wallpapers/${config.my.theme.wallpaper};
+        inherit (config.my.niri) laptopPanelMode;
       };
     in
     {
-      programs.niri = {
-        enable = true;
-        package = niriPkg;
+      options.my.niri.laptopPanelMode = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default = null;
+        example = "2880x1800@60.000";
+        description = "Startup mode for the laptop's built-in panel (eDP-1). null lets niri pick the highest refresh rate";
       };
 
-      security.pam.services.swaylock = { };
-      security.polkit.enable = true;
-      programs.light.enable = true;
+      config = {
+        programs.niri = {
+          enable = true;
+          package = niriPkg;
+        };
 
-      home-manager.sharedModules = [ self.homeModules.niri ];
+        security.pam.services.swaylock = { };
+        security.polkit.enable = true;
+        programs.light.enable = true;
+
+        home-manager.sharedModules = [ self.homeModules.niri ];
+      };
     };
 
   # ── Home Manager Module ──────────────────────────────────────────────

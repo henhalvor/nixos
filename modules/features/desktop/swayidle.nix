@@ -82,7 +82,10 @@
 
     # Suspend only when no mains adapter is online. With `lid` as the first
     # argument it also requires the lid to still be closed.
+    # swayidle's service PATH has no systemctl (idle suspend failed with
+    # "systemctl: not found"), nor cat/grep for the AC and lid checks.
     suspendOnBattery = pkgs.writeShellScriptBin "suspend-on-battery" ''
+      export PATH=${lib.makeBinPath [pkgs.coreutils pkgs.gnugrep pkgs.systemd]}:$PATH
       for ps in /sys/class/power_supply/*; do
         if [ "$(cat "$ps/type" 2>/dev/null)" = Mains ] && [ "$(cat "$ps/online" 2>/dev/null)" = 1 ]; then
           exit 0
