@@ -187,6 +187,9 @@ polkit_colorize_icons = true
 screen_time_colorize_icons = true
 telemetry_enabled = false
 
+    [shell.greeter_sync]
+    auto_sync = true
+
     [shell.launcher]
     colorize_icons = true
 

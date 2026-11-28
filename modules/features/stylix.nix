@@ -11,6 +11,8 @@
 #                templates enabled in its TOML ([theme.templates]). Stylix
 #                keeps fonts, cursor and the colours of things Noctalia has no
 #                template for: SDDM, rofi, console/boot, zathura, mpv, Firefox.
+#                (Hosts on the noctaliaGreeter module get the login screen
+#                from Noctalia's greeter sync instead of SDDM.)
 #                Terminal tools (fzf, tmux, yazi) drop their Stylix colours
 #                and follow kitty's ANSI palette, which Noctalia sets.
 #
@@ -18,8 +20,9 @@
 #   - Firefox: `noctalia firefox-theme` (pywalfox), then drop the Stylix target.
 #   - rofi, zathura, mpv: user templates ([theme.templates] in the Noctalia
 #     TOML) that write a colour file each app includes, plus a reload hook.
-#   - SDDM, console/boot: built at Nix time, so they can't follow a runtime
-#     palette; set my.theme.scheme close to Noctalia's palette instead.
+#   - Console/boot (and SDDM on hosts still using it): built at Nix time, so
+#     they can't follow a runtime palette; set my.theme.scheme close to
+#     Noctalia's palette instead.
 # Neovim is never themed from outside; its config picks its own colorscheme.
 {self, ...}: {
   # NixOS module — configures Stylix system-wide

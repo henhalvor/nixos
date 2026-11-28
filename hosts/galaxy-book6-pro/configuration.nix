@@ -57,7 +57,8 @@
 
         # Desktop foundation (Phase 5)
         self.nixosModules.desktopCommon
-        self.nixosModules.sddm
+        # self.nixosModules.sddm # backup: swap back if the greeter breaks
+        self.nixosModules.noctaliaGreeter
 
         # Desktop sessions (Phase 6)
         self.nixosModules.niri
@@ -156,7 +157,8 @@
 
       my.noctalia.version = "v5";
       # Noctalia's palette colours GTK, Qt, KDE and kitty; Stylix keeps fonts,
-      # cursor, SDDM and rofi. See modules/features/stylix.nix.
+      # cursor and rofi. The login screen is Noctalia Greeter, synced from
+      # Noctalia. See modules/features/stylix.nix.
       my.theme.colorSource = "noctalia";
 
       # Idle and lid timings (seconds). See modules/features/desktop/swayidle.nix.

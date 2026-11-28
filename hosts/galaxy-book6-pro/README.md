@@ -38,7 +38,7 @@ Laptop power policy: `modules/features/system/laptop-power.nix`. GPU:
 | Brightness keys | OK (see the double key press workaround) |
 | Fn lock | Firmware only: `Fn` + `Esc` toggles media keys vs F1–F12. Not controllable from Linux |
 | Webcam | Not working out of the box. Sensor is a SmartSens SC200PC (ACPI `SSLC2000`) with no mainline driver, and `ipu_bridge` doesn't list it ("no subdev found in graph"). The `galaxybook6Camera` module adds a community driver; it's off (`my.galaxybook6Camera.enable = false`) and untested. Enable, rebuild and reboot to try it |
-| Fingerprint | Goodix `27c6:6984` (goodixmoc). Needs libfprint from unstable (`fingerprint` module). Used for sudo, polkit and the Noctalia lock screen, not SDDM/TTY login (keeps GNOME Keyring unlocking). Works: enrol and verify OK (2026-11-28) |
+| Fingerprint | Goodix `27c6:6984` (goodixmoc). Needs libfprint from unstable (`fingerprint` module). Used for sudo, polkit and the Noctalia lock screen, not greeter/SDDM/TTY login (keeps GNOME Keyring unlocking). Works: enrol and verify OK (2026-11-28) |
 
 ## Workarounds
 
@@ -229,6 +229,27 @@ The hibernate delay is `HibernateDelaySec` in the same file.
   reload.
 - **VRR:** supported by the panel, currently disabled.
 - **Scale:** 1.75 (logical 1645x1028).
+
+## Login screen
+
+greetd with Noctalia Greeter (`noctaliaGreeter` module), not SDDM. Noctalia
+syncs wallpaper, palette, theme mode, font, corner radius and monitor layout
+to it (`[shell.greeter_sync] auto_sync = true` in the Noctalia TOML; by hand
+with `noctalia msg greeter-sync`). `henhal` may run the sync helper without a
+password. Changes show at the next login screen. Auto-sync only fires on
+a change, not at login, so after a reinstall (or wiping
+`/var/lib/noctalia-greeter`) run `noctalia msg greeter-sync` once; until then
+the greeter shows its built-in default look.
+
+- Password only: fingerprint is off for greetd so the login unlocks GNOME
+  Keyring.
+- Synced state: `/var/lib/noctalia-greeter/sync.toml` and `wallpaper*`.
+  `greeter.toml` (from Nix) wins over it and only sets session and cursor.
+- Logs: `/var/log/noctalia-greeter.log`,
+  `/var/lib/noctalia-greeter/greeter.log`, `journalctl -u greetd`.
+- Fallback: swap `noctaliaGreeter` for the commented `sddm` import in
+  `configuration.nix`. If the greeter won't start, use a TTY
+  (`Ctrl+Alt+F2`) or the previous generation in the boot menu.
 
 ## Remote development on the workstation
 

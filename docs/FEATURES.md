@@ -62,6 +62,7 @@ These are imported by every host.
 |--------|------|---------|-------------|
 | `desktopCommon` | `desktop-common.nix` | Colocated | XDG portals, dconf, fonts, cursor, GTK/Qt theming, `options.my.desktop.*` |
 | `sddm` | `sddm.nix` | NixOS-only | SDDM display manager |
+| `noctaliaGreeter` | `noctalia-greeter.nix` | NixOS-only (flake input) | greetd + Noctalia Greeter; appearance synced from Noctalia. Replaces `sddm` on a host |
 | `gdm` | `gdm.nix` | NixOS-only | GDM display manager |
 
 ## Desktop Sessions (Window Managers)

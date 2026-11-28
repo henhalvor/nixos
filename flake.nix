@@ -68,6 +68,9 @@
     # newest CI-built commit; don't override nixpkgs or the cache misses.
     luciole.url = "github:noctalia-dev/luciole/cachix";
 
+    # Noctalia Greeter (greetd login screen). Same rules as noctalia-v5.
+    noctalia-greeter.url = "github:noctalia-dev/noctalia-greeter/cachix";
+
     # Dev shell inputs
     rust-overlay.url = "https://flakehub.com/f/oxalica/rust-overlay/*.tar.gz";
     android-nixpkgs = {
