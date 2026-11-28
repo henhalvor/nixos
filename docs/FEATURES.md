@@ -38,6 +38,7 @@ These are imported by every host.
 | `syncthing` | `syncthing.nix` | NixOS-only | Syncthing with `options.my.syncthing.user` |
 | `bootWindows` | `boot-windows.nix` | Colocated | Windows boot desktop entry |
 | `systemdLogind` | `systemd-logind.nix` | NixOS-only | Lid/power button handling |
+| `fingerprint` | `fingerprint.nix` | NixOS-only | fprintd with unstable libfprint; fingerprint for sudo/polkit, not DM/TTY login |
 | `minimalBattery` | `minimal-battery.nix` | NixOS-only | TLP + power-profiles-daemon |
 
 ## Server Features

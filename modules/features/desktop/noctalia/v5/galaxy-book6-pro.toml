@@ -63,6 +63,9 @@ enabled = true
     [hot_corners.top_right]
     action = "control_center"
 
+[lockscreen]
+fingerprint = true
+
 [lockscreen_widgets]
 enabled = false
 schema_version = 2

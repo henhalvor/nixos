@@ -38,6 +38,7 @@
         self.nixosModules.printer
         self.nixosModules.android
         self.nixosModules.systemdLogind
+        self.nixosModules.fingerprint
         self.nixosModules.virtualization
         self.nixosModules.docker
         # TODO(install): enable once the Syncthing identity exists, see the

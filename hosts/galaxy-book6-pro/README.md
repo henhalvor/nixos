@@ -38,7 +38,7 @@ Laptop power policy: `modules/features/system/laptop-power.nix`. GPU:
 | Brightness keys | OK (see the double key press workaround) |
 | Fn lock | Firmware only: `Fn` + `Esc` toggles media keys vs F1–F12. Not controllable from Linux |
 | Webcam | Not working. IPU7 driver is in staging; only raw `ipu7` V4L2 nodes, no libcamera support yet |
-| Fingerprint | Goodix `27c6:6984`. Not enabled, support unknown |
+| Fingerprint | Goodix `27c6:6984` (goodixmoc). Needs libfprint from unstable (`fingerprint` module). Used for sudo, polkit and the Noctalia lock screen, not SDDM/TTY login (keeps GNOME Keyring unlocking). Works: enrol and verify OK (2026-11-28) |
 
 ## Workarounds
 
