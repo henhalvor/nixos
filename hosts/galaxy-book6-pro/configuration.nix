@@ -39,6 +39,7 @@
         self.nixosModules.android
         self.nixosModules.systemdLogind
         self.nixosModules.fingerprint
+        self.nixosModules.galaxybook6Camera
         self.nixosModules.virtualization
         self.nixosModules.docker
         # TODO(install): enable once the Syncthing identity exists, see the
@@ -149,6 +150,10 @@
       # power; Mod+Shift+R still cycles 120/90/60 until the next niri start.
       my.niri.laptopPanelMode = "2880x1800@60.000";
 
+      # Webcam (SC200PC on IPU7): out-of-tree driver, untested. Enable, rebuild
+      # and reboot to try it. See modules/features/system/galaxybook6-camera.nix.
+      my.galaxybook6Camera.enable = false;
+
       my.noctalia.version = "v5";
       # Noctalia's palette colours GTK, Qt, KDE and kitty; Stylix keeps fonts,
       # cursor, SDDM and rofi. See modules/features/stylix.nix.
@@ -203,6 +208,8 @@
       # PipeWire and WirePlumber are rebuilt (stable toolchain) against alsa-lib
       # and alsa-ucm-conf 1.2.16 from unstable. The rest of the system keeps the
       # stable alsa-lib. Drop this once the stable channel ships >= 1.2.16.
+      # With the webcam enabled, PipeWire is also built against libcamera 0.7
+      # (see modules/features/system/galaxybook6-camera.nix).
       services.pipewire =
         let
           alsaLibNew =
@@ -212,7 +219,12 @@
                 # The 1.2.14 CVE backport is already upstream in 1.2.16.
                 patches = pkgs-unstable.alsa-lib.patches;
               });
-          pipewireNew = pkgs.pipewire.override { alsa-lib = alsaLibNew; };
+          pipewireNew = pkgs.pipewire.override (
+            { alsa-lib = alsaLibNew; }
+            // lib.optionalAttrs config.my.galaxybook6Camera.enable {
+              inherit (config.my.galaxybook6Camera) libcamera;
+            }
+          );
         in
         {
           package = pipewireNew;

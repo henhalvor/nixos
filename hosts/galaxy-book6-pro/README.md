@@ -37,7 +37,7 @@ Laptop power policy: `modules/features/system/laptop-power.nix`. GPU:
 | Hibernate | OK. `boot.resumeDevice` set to the swap partition in `hardware.nix` |
 | Brightness keys | OK (see the double key press workaround) |
 | Fn lock | Firmware only: `Fn` + `Esc` toggles media keys vs F1–F12. Not controllable from Linux |
-| Webcam | Not working. IPU7 driver is in staging; only raw `ipu7` V4L2 nodes, no libcamera support yet |
+| Webcam | Not working out of the box. Sensor is a SmartSens SC200PC (ACPI `SSLC2000`) with no mainline driver, and `ipu_bridge` doesn't list it ("no subdev found in graph"). The `galaxybook6Camera` module adds a community driver; it's off (`my.galaxybook6Camera.enable = false`) and untested. Enable, rebuild and reboot to try it |
 | Fingerprint | Goodix `27c6:6984` (goodixmoc). Needs libfprint from unstable (`fingerprint` module). Used for sudo, polkit and the Noctalia lock screen, not SDDM/TTY login (keeps GNOME Keyring unlocking). Works: enrol and verify OK (2026-11-28) |
 
 ## Workarounds

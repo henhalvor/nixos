@@ -39,6 +39,7 @@ These are imported by every host.
 | `bootWindows` | `boot-windows.nix` | Colocated | Windows boot desktop entry |
 | `systemdLogind` | `systemd-logind.nix` | NixOS-only | Lid/power button handling |
 | `fingerprint` | `fingerprint.nix` | NixOS-only | fprintd with unstable libfprint; fingerprint for sudo/polkit, not DM/TTY login |
+| `galaxybook6Camera` | `galaxybook6-camera.nix` | NixOS-only | Galaxy Book6 webcam (SC200PC on IPU7): out-of-tree driver, libcamera 0.7, WirePlumber rule. Off unless `my.galaxybook6Camera.enable` |
 | `minimalBattery` | `minimal-battery.nix` | NixOS-only | TLP + power-profiles-daemon |
 
 ## Server Features
